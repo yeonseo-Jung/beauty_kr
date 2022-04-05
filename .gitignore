@@ -1,4 +1,6 @@
 # file
+.ipynb_checkpoints/*.csv
+.ipynb_checkpoints/*.txt
 
 # directory
 backup/
