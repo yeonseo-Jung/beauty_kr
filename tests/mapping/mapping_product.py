@@ -438,7 +438,7 @@ def select_mapped_prd(input_data: pd.DataFrame) -> pd.DataFrame:
     Input Data 
     - input_data: Product name comparison table
     
-    ** necessary columns = ['id_1', 'id_0', 'title_1', 'title_0', 'brand_name', 'category', 'table_name', 'dependency_ratio', 'dependency_count', 'similarity', 'max_length', 'min_length']
+    ** necessary columns = ['id_1', 'table_name', 'dependency_ratio', 'dependency_count', 'similarity', 'max_length', 'min_length']
     
     Output Data 
     - mapped_df: Product Name Mapping Complete Table

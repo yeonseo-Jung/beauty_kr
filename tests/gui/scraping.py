@@ -73,10 +73,17 @@ class CrawlingWindow(QMainWindow, scraping_form):
         
         self.progressBar.setValue(per)
         
-        message = f"{int(per)}% | Progress item: {itm}  Total: {tot} | Elapsed time: {elapsed}s < Remain time: {remain_time}s "
+        elapsed_h = elapsed // 3600
+        elapsed_m = (elapsed % 3600) // 60
+        elapsed_s = elapsed - (elapsed_h * 3600 + elapsed_m * 60)
+        
+        remain_h = remain_time // 3600
+        remain_m = (remain_time % 3600) // 60
+        remain_s = remain_time - (remain_h * 3600 + remain_m * 60)
+        
+        message = f"{int(per)}% | Progress item: {itm}  Total: {tot} | Elapsed time: {elapsed_h}:{elapsed_m}:{elapsed_s} < Remain time: {remain_h}:{remain_m}:{remain_s} "
         self.statusbar.showMessage(message)
         
-    
     
     def categ_toggled(self):
         categs = []
