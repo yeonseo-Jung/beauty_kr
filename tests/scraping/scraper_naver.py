@@ -18,8 +18,8 @@ from bs4 import BeautifulSoup
 from selenium import webdriver
 
 # visualizingcon
-import seaborn as sns
-import matplotlib.pyplot as plt
+# import seaborn as sns
+# import matplotlib.pyplot as plt
 
 
 from tqdm.auto import tqdm

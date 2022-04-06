@@ -66,7 +66,7 @@ def integ_tbl(db_access, table_name_list, columns):
         df = pd.concat([df, df_])
         
     # sort
-    df = df.sort_values(by='brand_name').reset_index(drop=True)
+    df = df.sort_values(by='id').reset_index(drop=True)
     
     return df
     

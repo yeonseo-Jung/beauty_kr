@@ -20,7 +20,7 @@ from mapping.preprocessing import ThreadTitlePreprocess
 from mapping import mapping_product
 
 from gui.get_table import GetDialog
-from gui.scraping import CrawlingWindow
+from gui.gui_scrap import CrawlingWindow
 
 
 import sys

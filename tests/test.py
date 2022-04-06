@@ -5,21 +5,24 @@ import pandas as pd
 
 cur_dir = os.path.dirname(os.path.realpath(__file__))
 root = os.path.abspath(os.path.join(cur_dir, os.pardir))
-backup = root + '/backup'
-cache = root + '/tbl_cache'
+
+
+tbl_cache_dir = root + '/tbl_cache'
+if not os.path.exists(tbl_cache_dir):
+    os.makedirs(tbl_cache_dir)
 
 ''' test access_database '''
-from access_database import access_db
-user_name = 'yeonseosla'
-password = 'jys9807'
-database = 'beauty_kr'
+# from access_database import access_db
+# user_name = 'yeonseosla'
+# password = 'jys9807'
+# database = 'beauty_kr'
 
 
 
 # table_name = ''
 # columns = ['id', 'brand_name', 'product_name', 'selection', 'division', 'groups']
 
-db = access_db.AccessDataBase(user_name, password, database)
+# db = access_db.AccessDataBase(user_name, password, database)
 
 # # get mapping table
 # db.get_tbl('naver_glowpick_mapping_table', 'all').to_csv(cache + '/mapping_table.csv', index=False)
@@ -28,7 +31,7 @@ db = access_db.AccessDataBase(user_name, password, database)
 
 
 ''' test preprocess & reclassify '''
-from mapping import preprocessing
+# from mapping import preprocessing
 
 # title preprocessing & category reclassify
 # df_0 = preprocessing.title_preprocessor(tbl_0.reset_index(drop=True))
@@ -43,7 +46,7 @@ from mapping import preprocessing
 
 
 ''' test mapping '''
-from mapping import mapping_product
+# from mapping import mapping_product
 
 #
 # df_deprepro_0 = pd.read_csv('df_deprepro_0.csv')
