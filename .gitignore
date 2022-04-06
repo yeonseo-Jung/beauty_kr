@@ -1,11 +1,14 @@
 # file
-
+tests/*.spec
 
 # directory
 backup/
 tbl_cache/
 build/
 dist/
+py_env/lib/
+
+
 
 
 
