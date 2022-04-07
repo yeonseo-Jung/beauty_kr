@@ -23,22 +23,22 @@ from selenium import webdriver
 
 
 from tqdm.auto import tqdm
-from multiprocessing import Pool
-import multiprocessing as mp
-from functools import partial
-from contextlib import contextmanager
+# from multiprocessing import Pool
+# import multiprocessing as mp
+# from functools import partial
+# from contextlib import contextmanager
 
 
 # Scrapping
 import selenium
 from selenium import webdriver
-from selenium.webdriver.common.keys import Keys
-from selenium.webdriver.support.ui import WebDriverWait
-from selenium.webdriver.support import expected_conditions as EC
-from webdriver_manager.chrome import ChromeDriverManager
-from selenium.webdriver.common.by import By
+# from selenium.webdriver.common.keys import Keys
+# from selenium.webdriver.support.ui import WebDriverWait
+# from selenium.webdriver.support import expected_conditions as EC
+# from selenium.webdriver.common.by import By
 from selenium.webdriver.chrome.options import Options
 from fake_useragent import UserAgent
+from webdriver_manager.chrome import ChromeDriverManager
 
 
 # Error Handling
@@ -82,7 +82,7 @@ def scroll_down(wd):
     while True:
         wd.execute_script("window.scrollTo(0, document.body.scrollHeight);")
         wd.implicitly_wait(5)
-        time.sleep(3)
+        time.sleep(1.5)
         current_height = wd.execute_script("return document.body.scrollHeight")
 
         if prev_height == current_height:
@@ -100,11 +100,12 @@ def get_nv_item_link_by_brd_new(input_data, product_id):
     
     input_keyword = input_txt_.replace(' ','%20') # 쿼리 내 인터벌
     
+    print(f'\n\n {input_txt_} \n {product_id}')
 
     search_result_url = f'https://search.shopping.naver.com/search/all?&frm=NVSHCAT&origQuery={input_keyword}%20%20%20-세트%20-리필%20-set%20-Set%20-SET%20-패키지%20-페키지%20-Package%20-PACKAGE&pagingIndex=1&pagingSize=40&productSet=model&query={input_keyword}&sort=rel&timestamp=&viewType=list&xq=세트%20리필%20set%20Set%20SET%20패키지%20페키지%20Package%20PACKAGE'       
     
     options = Options()
-    ua = UserAgent()
+    ua = UserAgent(verify_ssl=False, use_cache_server=True, cache=False)
     userAgent = ua.chrome 
     print(userAgent)
     options.add_argument('headless')
@@ -131,8 +132,7 @@ def get_nv_item_link_by_brd_new(input_data, product_id):
             wd.quit()
     
     
-    columns = ['glowpick_id','input_words','product_title','product_url','product_price','product_category','product_description','registered_date','product_reviews_count','product_rating','product_store','jaro_distance']
-    df_info_scrap = pd.DataFrame(columns=columns) 
+    # columns = ['glowpick_id','input_words','product_title','product_url','product_price','product_category','product_description','registered_date','product_reviews_count','product_rating','product_store','jaro_distance'] 
 
 
     scroll_down(wd)

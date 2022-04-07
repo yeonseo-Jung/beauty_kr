@@ -540,6 +540,7 @@ class ThreadComparing(QtCore.QThread, QtCore.QObject):
         for brand in t:
             if self.power == True:
                 self.progress.emit(t)
+                cnt += 1
                 
                 df_brd_1 = brd_grp_1.get_group(brand).reset_index(drop=True)
                 
@@ -573,7 +574,6 @@ class ThreadComparing(QtCore.QThread, QtCore.QObject):
                             
                             compare_output = title_comparison(title_0, title_1)
                             compared_list.append(list((id_1, id_0, title_1, title_0, brand, categ, tbl) + compare_output))
-                cnt += 1
                 
             else:
                 self.progress.emit(t)
@@ -600,83 +600,83 @@ class ThreadComparing(QtCore.QThread, QtCore.QObject):
 
 
 
-def update_map_tbl(user_name, password, db_name):
+# def update_map_tbl(user_name, password, db_name):
     
-    ''' update mapping table '''
-    db = access_db.AccessDataBase(user_name, password, db_name)
+#     ''' update mapping table '''
+#     db = access_db.AccessDataBase(user_name, password, db_name)
     
-    # get existing mapping table to db
-    map_tbl_ex = db.get_tbl(db_name, 'naver_glowpick_mapping_table', 'all') 
-    # get new mapping table to dir(tbl_cache)
-    map_tbl_new = pd.read_csv(tbl_cache + '/mapping_table.csv')
+#     # get existing mapping table to db
+#     map_tbl_ex = db.get_tbl(db_name, 'naver_glowpick_mapping_table', 'all') 
+#     # get new mapping table to dir(tbl_cache)
+#     map_tbl_new = pd.read_csv(tbl_cache + '/mapping_table.csv')
     
         
-    df_concat = pd.concat([map_tbl_ex, map_tbl_new]).reset_index(drop=True)
+#     df_concat = pd.concat([map_tbl_ex, map_tbl_new]).reset_index(drop=True)
 
-    # updated mapping table
-    map_tbl = pd.DataFrame(columns=map_tbl_new.columns)
+#     # updated mapping table
+#     map_tbl = pd.DataFrame(columns=map_tbl_new.columns)
 
-    for tbl in df_concat.table_name.unique():
-        df_tbl = df_concat[df_concat.table_name==tbl]
+#     for tbl in df_concat.table_name.unique():
+#         df_tbl = df_concat[df_concat.table_name==tbl]
         
-        for id_ in tqdm(df_tbl.glowpick_product_info_final_version_id.unique()):
-            mapped_id = df_tbl.loc[df_tbl.glowpick_product_info_final_version_id==id_, 'mapped_id']
+#         for id_ in tqdm(df_tbl.glowpick_product_info_final_version_id.unique()):
+#             mapped_id = df_tbl.loc[df_tbl.glowpick_product_info_final_version_id==id_, 'mapped_id']
             
-            mapped_ids = []
-            for ids in mapped_id:
-                if ids[0] == '[':
-                    ids = ast.literal_eval(ids)
-                    mapped_ids += ids
+#             mapped_ids = []
+#             for ids in mapped_id:
+#                 if ids[0] == '[':
+#                     ids = ast.literal_eval(ids)
+#                     mapped_ids += ids
                 
-                else:
-                    mapped_ids.append(int(ids))
+#                 else:
+#                     mapped_ids.append(int(ids))
             
-            mapped_ids = list(set(mapped_ids))
-            if len(mapped_ids) == 0:
-                print('wrn')
-                break
+#             mapped_ids = list(set(mapped_ids))
+#             if len(mapped_ids) == 0:
+#                 print('wrn')
+#                 break
             
-            elif len(mapped_ids) == 1:
-                mapped_ids = str(mapped_ids[0])
+#             elif len(mapped_ids) == 1:
+#                 mapped_ids = str(mapped_ids[0])
 
-            else:
-                mapped_ids = str(mapped_ids)
+#             else:
+#                 mapped_ids = str(mapped_ids)
 
                 
-            map_tbl.loc[len(map_tbl)] = int(id_), str(mapped_ids), str(tbl)
+#             map_tbl.loc[len(map_tbl)] = int(id_), str(mapped_ids), str(tbl)
             
-    map_tbl = map_tbl.sort_values(by=['glowpick_product_info_final_version_id', 'table_name']).reset_index(drop=True)
-    map_tbl.to_csv(tbl_cache + '/naver_glowpick_mapping_table.csv', index=False)
+#     map_tbl = map_tbl.sort_values(by=['glowpick_product_info_final_version_id', 'table_name']).reset_index(drop=True)
+#     map_tbl.to_csv(tbl_cache + '/naver_glowpick_mapping_table.csv', index=False)
 
-    # dup check
-    dup = map_tbl[map_tbl.duplicated(subset=['glowpick_product_info_final_version_id', 'table_name'], keep=False)]
-    if len(dup) == 0:
-        comment = 'Mapping table update complete!'
+#     # dup check
+#     dup = map_tbl[map_tbl.duplicated(subset=['glowpick_product_info_final_version_id', 'table_name'], keep=False)]
+#     if len(dup) == 0:
+#         comment = 'Mapping table update complete!'
     
-    else:
-        comment = 'Duplicate check required!'
+#     else:
+#         comment = 'Duplicate check required!'
     
-    unq_prd_0 = len(map_tbl.glowpick_product_info_final_version_id.unique())
-    unq_prd_1 = (map_tbl.mapped_id.str.count(',') + 1).sum()
+#     unq_prd_0 = len(map_tbl.glowpick_product_info_final_version_id.unique())
+#     unq_prd_1 = (map_tbl.mapped_id.str.count(',') + 1).sum()
     
-    return comment, unq_prd_0, unq_prd_1
+#     return comment, unq_prd_0, unq_prd_1
     
     
-def upload_map_tbl(user_name, password, db_name, table_name, columns):
+# def upload_map_tbl(user_name, password, db_name, table_name, columns):
     
-    ''' upload mapping table 
+#     ''' upload mapping table 
     
-    <업로드 조건> 
-    ** 기존 매핑 테이블 오늘 날짜로 백업 완료
-    ** db에서 매핑테이블 생성 및 컬럼명 일치 여부 확인 
+#     <업로드 조건> 
+#     ** 기존 매핑 테이블 오늘 날짜로 백업 완료
+#     ** db에서 매핑테이블 생성 및 컬럼명 일치 여부 확인 
      
-    '''
-    db = access_db.AccessDataBase(user_name, password, db_name)
+#     '''
+#     db = access_db.AccessDataBase(user_name, password, db_name)
     
-    map_tbl = pd.read_csv(tbl_cache + '/naver_glowpick_mapping_table.csv').loc[:, columns]
+#     map_tbl = pd.read_csv(tbl_cache + '/naver_glowpick_mapping_table.csv').loc[:, columns]
     
-    db.engine_upload(map_tbl, db_name, table_name)
+#     db.engine_upload(map_tbl, db_name, table_name)
     
-    comment = 'Mapping table upload is complete!'
+#     comment = 'Mapping table upload is complete!'
     
-    return comment
+#     return comment

@@ -20,7 +20,10 @@ tbl_cache/
 # Jupyter notebook
 .ipynb_checkpoints/
 
+# exe
+*.spec
 
-tests/*.spec
+# config
+config/
 
 

@@ -104,7 +104,7 @@ def get_nv_item_link_by_brd_new(input_data, product_id):
     search_result_url = f'https://search.shopping.naver.com/search/all?&frm=NVSHCAT&origQuery={input_keyword}%20%20%20-세트%20-리필%20-set%20-Set%20-SET%20-패키지%20-페키지%20-Package%20-PACKAGE&pagingIndex=1&pagingSize=40&productSet=model&query={input_keyword}&sort=rel&timestamp=&viewType=list&xq=세트%20리필%20set%20Set%20SET%20패키지%20페키지%20Package%20PACKAGE'       
     
     options = Options()
-    ua = UserAgent()
+    ua = UserAgent(verify_ssl=False, use_cache_server=False, cache=False)
     userAgent = ua.chrome 
     print(userAgent)
     options.add_argument('headless')

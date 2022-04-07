@@ -19,7 +19,7 @@ from mapping import mapping_product
 from mapping.mapping_product import ThreadComparing
 
 from gui.get_table import GetDialog
-from gui.gui_scrap import CrawlingWindow
+from gui.gui_scraping import CrawlingWindow
 
 
 import sys

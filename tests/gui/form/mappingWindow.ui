@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>684</width>
+    <width>750</width>
     <height>512</height>
    </rect>
   </property>
@@ -20,33 +20,33 @@
       <x>20</x>
       <y>370</y>
       <width>130</width>
-      <height>32</height>
+      <height>33</height>
      </rect>
     </property>
     <property name="text">
      <string>Mapping </string>
     </property>
    </widget>
-   <widget class="QPushButton" name="veiw_table_3">
+   <widget class="QPushButton" name="veiw_table_2">
     <property name="geometry">
      <rect>
       <x>500</x>
       <y>320</y>
       <width>112</width>
-      <height>32</height>
+      <height>33</height>
      </rect>
     </property>
     <property name="text">
      <string>View table </string>
     </property>
    </widget>
-   <widget class="QPushButton" name="veiw_table_2">
+   <widget class="QPushButton" name="veiw_table_1">
     <property name="geometry">
      <rect>
       <x>500</x>
       <y>270</y>
       <width>112</width>
-      <height>32</height>
+      <height>33</height>
      </rect>
     </property>
     <property name="text">
@@ -57,7 +57,7 @@
     <property name="geometry">
      <rect>
       <x>290</x>
-      <y>260</y>
+      <y>262</y>
       <width>200</width>
       <height>50</height>
      </rect>
@@ -72,7 +72,7 @@
       <x>20</x>
       <y>320</y>
       <width>130</width>
-      <height>32</height>
+      <height>33</height>
      </rect>
     </property>
     <property name="text">
@@ -83,7 +83,7 @@
     <property name="geometry">
      <rect>
       <x>290</x>
-      <y>360</y>
+      <y>362</y>
       <width>200</width>
       <height>50</height>
      </rect>
@@ -92,13 +92,13 @@
      <number>24</number>
     </property>
    </widget>
-   <widget class="QPushButton" name="veiw_table_4">
+   <widget class="QPushButton" name="veiw_table_3">
     <property name="geometry">
      <rect>
       <x>500</x>
       <y>370</y>
       <width>112</width>
-      <height>32</height>
+      <height>33</height>
      </rect>
     </property>
     <property name="text">
@@ -109,7 +109,7 @@
     <property name="geometry">
      <rect>
       <x>290</x>
-      <y>310</y>
+      <y>312</y>
       <width>200</width>
       <height>50</height>
      </rect>
@@ -124,7 +124,7 @@
       <x>20</x>
       <y>270</y>
       <width>130</width>
-      <height>32</height>
+      <height>33</height>
      </rect>
     </property>
     <property name="text">
@@ -135,9 +135,9 @@
     <property name="geometry">
      <rect>
       <x>310</x>
-      <y>205</y>
-      <width>110</width>
-      <height>40</height>
+      <y>210</y>
+      <width>112</width>
+      <height>33</height>
      </rect>
     </property>
     <property name="text">
@@ -148,22 +148,22 @@
     <property name="geometry">
      <rect>
       <x>25</x>
-      <y>13</y>
-      <width>140</width>
-      <height>45</height>
+      <y>20</y>
+      <width>138</width>
+      <height>33</height>
      </rect>
     </property>
     <property name="text">
      <string>View table name</string>
     </property>
    </widget>
-   <widget class="QPushButton" name="veiw_table_1">
+   <widget class="QPushButton" name="veiw_table_0">
     <property name="geometry">
      <rect>
-      <x>425</x>
+      <x>420</x>
       <y>210</y>
       <width>112</width>
-      <height>32</height>
+      <height>33</height>
      </rect>
     </property>
     <property name="text">
@@ -186,7 +186,7 @@
       <x>150</x>
       <y>270</y>
       <width>130</width>
-      <height>32</height>
+      <height>33</height>
      </rect>
     </property>
     <property name="text">
@@ -199,7 +199,7 @@
       <x>150</x>
       <y>320</y>
       <width>130</width>
-      <height>32</height>
+      <height>33</height>
      </rect>
     </property>
     <property name="text">
@@ -212,11 +212,63 @@
       <x>150</x>
       <y>370</y>
       <width>130</width>
-      <height>32</height>
+      <height>33</height>
      </rect>
     </property>
     <property name="text">
      <string>Stop</string>
+    </property>
+   </widget>
+   <widget class="QPushButton" name="save_1">
+    <property name="geometry">
+     <rect>
+      <x>610</x>
+      <y>270</y>
+      <width>112</width>
+      <height>33</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Save</string>
+    </property>
+   </widget>
+   <widget class="QPushButton" name="save_2">
+    <property name="geometry">
+     <rect>
+      <x>610</x>
+      <y>320</y>
+      <width>112</width>
+      <height>33</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Save</string>
+    </property>
+   </widget>
+   <widget class="QPushButton" name="save_0">
+    <property name="geometry">
+     <rect>
+      <x>530</x>
+      <y>210</y>
+      <width>112</width>
+      <height>33</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Save</string>
+    </property>
+   </widget>
+   <widget class="QPushButton" name="save_3">
+    <property name="geometry">
+     <rect>
+      <x>610</x>
+      <y>370</y>
+      <width>112</width>
+      <height>33</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Save</string>
     </property>
    </widget>
   </widget>
@@ -225,7 +277,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>684</width>
+     <width>750</width>
      <height>24</height>
     </rect>
    </property>
