@@ -1,14 +1,24 @@
-# file
-tests/*.spec
+# MacOS
+.DS_Store
+venv
 
-# directory
+
+# Python
+*.pyc
+__pycache__/
+dist/
+build/
+*.egg-info/
+
+# Experiments
+tmp/
 backup/
 tbl_cache/
-build/
-dist/
-py_env/lib/
+
+# Jupyter notebook
+.ipynb_checkpoints/
 
 
-
+tests/*.spec
 
 
