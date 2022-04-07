@@ -2,6 +2,8 @@
 .DS_Store
 venv
 
+# vscode
+.vscode/
 
 # Python
 *.pyc
