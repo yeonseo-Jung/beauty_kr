@@ -35,6 +35,8 @@ else:
     tbl_cache = os.path.join(root, 'tbl_cache')
 
 class DataFrameModel(QtCore.QAbstractTableModel):
+    ''' DataFrame을 pyqt5에서 출력 가능하도록 전처리 '''
+    
     DtypeRole = QtCore.Qt.UserRole + 1000
     ValueRole = QtCore.Qt.UserRole + 1001
 
@@ -99,6 +101,8 @@ class DataFrameModel(QtCore.QAbstractTableModel):
     
 
 class TableViewer(QWidget):
+    ''' Table Viewer '''
+    
     def __init__(self, parent=None):
         QWidget.__init__(self, parent=None)
         vLayout = QVBoxLayout(self)

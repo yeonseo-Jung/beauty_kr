@@ -286,7 +286,7 @@ def map_expand(mapping_table: pd.DataFrame) -> pd.DataFrame:
     mapping_ = pd.DataFrame(map_list, columns=['item_key', 'id', 'table_name'])
     return mapping_
 
-def prd_mapper_():
+def _prd_mapper():
     
     df_0 = pd.read_csv(tbl_cache + '/deprepro_0.csv')
     df_1 = pd.read_csv(tbl_cache + '/deprepro_1.csv')
@@ -371,7 +371,7 @@ def prd_mapper():
     
     '''
     
-    outputs = prd_mapper_()
+    outputs = _prd_mapper()
     input_data_0 = pd.read_csv(tbl_cache + '/deprepro_0.csv')
     input_data_1 = outputs[0]
     map_list = outputs[1]
@@ -517,7 +517,7 @@ class ThreadComparing(QtCore.QThread, QtCore.QObject):
     def run(self):
         ''' Run Thread '''
         
-        outputs = prd_mapper_()
+        outputs = _prd_mapper()
         input_data_0 = pd.read_csv(tbl_cache + '/deprepro_0.csv')
         input_data_1 = outputs[0]
         map_list = outputs[1]

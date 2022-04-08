@@ -43,12 +43,12 @@ from webdriver_manager.chrome import ChromeDriverManager
 
 # Error Handling
 import socket
-import urllib.request
-from urllib.request import urlopen
+# import urllib.request
+# from urllib.request import urlopen
 from urllib.parse import quote_plus
-from urllib.request import urlretrieve
-from urllib.error import HTTPError, URLError
-from selenium.common.exceptions import ElementClickInterceptedException, NoSuchElementException, ElementNotInteractableException
+# from urllib.request import urlretrieve
+# from urllib.error import HTTPError, URLError
+# from selenium.common.exceptions import ElementClickInterceptedException, NoSuchElementException, ElementNotInteractableException
 
 import warnings
 warnings.filterwarnings("ignore")
@@ -59,11 +59,11 @@ src = os.path.abspath(os.path.join(cur_dir, os.pardir))
 sys.path.append(root)
 sys.path.append(src)
 
-from PyQt5 import uic
+# from PyQt5 import uic
 from PyQt5 import QtCore
 from PyQt5.QtWidgets import *
 
-from access_database import access_db
+# from access_database import access_db
 from hangle import _distance
 
 
@@ -149,9 +149,8 @@ def get_nv_item_link_by_brd_new(input_data, product_id):
         # product name
         product_title = item_div.find('div',class_='basicList_title__3P9Q7').text 
 
-        # 문자열 유사도 스코어 확인 (jellyfish, levenshtein 활용)
+        # 문자열 유사도 스코어 확인 (levenshtein distance 활용)
         # input 값이 title과 50%이상 일치하면 수집 
-        # jaro_dist = jellyfish.jaro_distance(input_txt_, product_title)
         
         word_0 = input_txt_.replace(' ', '')
         word_1 = product_title.replace(' ', '')

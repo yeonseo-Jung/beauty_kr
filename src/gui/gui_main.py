@@ -26,7 +26,7 @@ from gui.gui_mapping import MappingWindow
 import sys
 # from PyQt5 import uic
 # from PyQt5 import QtCore
-from PyQt5.QtWidgets import QWidget, QGridLayout, QLabel, QLineEdit, QComboBox, QPushButton, QMessageBox, QApplication
+from PyQt5.QtWidgets import QWidget, QGridLayout, QLabel, QLineEdit, QComboBox, QPushButton, QMessageBox
 
 
 if getattr(sys, 'frozen', False) and hasattr(sys, '_MEIPASS'):
@@ -290,22 +290,21 @@ class MainWidget(QWidget):
                 
         except Exception as e:
             msg.setText(f'{e}')
-            menu_index = self.select_menu()
-            if menu_index == 0:
-                if self.w0 is None:
-                    self.w0 = MappingWindow()
-                self.w0.show()
-                
             msg.exec_()
+            # menu_index = self.select_menu()
+            # if menu_index == 0:
+            #     if self.w0 is None:
+            #         self.w0 = MappingWindow()
+            #     self.w0.show()
             
             
             
-def exec_gui():
-    ''' main gui execution '''
-    app = QApplication(sys.argv)
-    form = MainWidget()
-    form.show()
-    sys.exit(app.exec_())
+# def exec_gui():
+#     ''' main gui execution '''
+#     app = QApplication(sys.argv)
+#     form = MainWidget()
+#     form.show()
+#     sys.exit(app.exec_())
         
     
 # if __name__ == '__main__':

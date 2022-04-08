@@ -62,6 +62,12 @@ class GetDialog(QDialog, get_form):
         
 
     def table_toggled(self):
+        ''' db에 존재하는 naver_beauty_product table
+        
+        ** extended_v 테이블 업로드 할 때마다 실제 테이블 명으로 checkbox 생성 필요함 
+        
+        '''
+        
         tbls = []
         tbl_ = ""
         
@@ -83,15 +89,15 @@ class GetDialog(QDialog, get_form):
             
         if self.checkBox_5.isChecked():
             tbl = ""
-            tbls.append(tbl)
+            # tbls.append(tbl)
             
         if self.checkBox_6.isChecked():
             tbl = ""
-            tbls.append(tbl)
+            # tbls.append(tbl)
             
         if self.checkBox_7.isChecked():
             tbl = ""
-            tbls.append(tbl)
+            # tbls.append(tbl)
         
         
         for i in range(len(tbls)):
@@ -112,8 +118,6 @@ class GetDialog(QDialog, get_form):
         self.tables.emit(tbl_)
         self.close()
         
-    # def reject(self):
-    #     self.close()
         
         
         
