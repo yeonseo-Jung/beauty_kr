@@ -19,7 +19,7 @@ from access_database import access_db
 # from mapping.mapping_product import ThreadComparing
 
 # from gui.get_table import GetDialog
-from gui.gui_scraping import CrawlingWindow
+from gui.gui_scraping import ScrapingWindow
 from gui.gui_mapping import MappingWindow
 
 
@@ -281,10 +281,10 @@ class MainWidget(QWidget):
                 
             elif menu_index == 1:
                 if self.w1 is None:
-                    self.w1 = CrawlingWindow()
+                    self.w1 = ScrapingWindow()
                 else:
                     self.w1.close()
-                    self.w1 = CrawlingWindow()
+                    self.w1 = ScrapingWindow()
                 self.w1.show()
                 
                 

@@ -3,8 +3,6 @@ import sys
 from gui.gui_main import MainWidget
 from PyQt5.QtWidgets import QApplication
 
-cur_dir = os.path.dirname(os.path.realpath(__file__))
-root = os.path.abspath(os.path.join(cur_dir, os.pardir))
 
 # pyinstaller에 의한 패키징이 여부에 따른 경로 설정 
 if getattr(sys, 'frozen', False) and hasattr(sys, '_MEIPASS'):
@@ -12,6 +10,8 @@ if getattr(sys, 'frozen', False) and hasattr(sys, '_MEIPASS'):
     tbl_cache_dir = os.path.join(base_path, 'tbl_cache_')
     
 else:
+    cur_dir = os.path.dirname(os.path.realpath(__file__))
+    root = os.path.abspath(os.path.join(cur_dir, os.pardir))
     base_path = os.path.dirname(os.path.realpath(__file__))
     tbl_cache_dir = os.path.join(root, 'tbl_cache')
 
@@ -29,4 +29,4 @@ def _exec_gui():
     
 ''' Opne GUI '''
 if __name__ == '__main__':
-    _exec_gui()    
+    _exec_gui()

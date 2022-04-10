@@ -1,7 +1,7 @@
 # 
 import os
 import re
-import ast
+# import ast
 import sys
 import time
 import pickle
@@ -100,7 +100,7 @@ def get_nv_item_link_by_brd_new(input_data, product_id):
     
     input_keyword = input_txt_.replace(' ','%20') # 쿼리 내 인터벌
     
-    print(f'\n\n {input_txt_} \n {product_id}')
+    print(f'\n\n {input_txt_} \n {product_id} \n\n')
 
     search_result_url = f'https://search.shopping.naver.com/search/all?&frm=NVSHCAT&origQuery={input_keyword}%20%20%20-세트%20-리필%20-set%20-Set%20-SET%20-패키지%20-페키지%20-Package%20-PACKAGE&pagingIndex=1&pagingSize=40&productSet=model&query={input_keyword}&sort=rel&timestamp=&viewType=list&xq=세트%20리필%20set%20Set%20SET%20패키지%20페키지%20Package%20PACKAGE'       
     
@@ -258,36 +258,70 @@ def get_nv_item_link_by_brd_new(input_data, product_id):
     return scraps
 
 
-class ThreadCrawling(QtCore.QThread, QtCore.QObject):
+class ThreadScraping(QtCore.QThread, QtCore.QObject):
     ''' Thread scraping product info '''
     
     def __init__(self, parent=None):
         super().__init__()
+        self.power = True
         
     progress = QtCore.pyqtSignal(object)
     def run(self):
         ''' 브랜드명 + 상품명으로 상품정보 크롤링 해서 데이터프레임에 할당 '''
         
-        prds = pd.read_csv(tbl_cache + '/prds_scrap.csv')
-        columns = ['id','input_words','product_title','product_url','product_price','product_category','product_description','registered_date','product_reviews_count','product_rating','product_store','similarity']    
-        df_info_scrap = pd.DataFrame(columns=columns)
+        if os.path.isfile(tbl_cache + '/prds_scrap_.csv'):
+            prds = pd.read_csv(tbl_cache + '/prds_scrap_.csv')    
+        else:
+            prds = pd.read_csv(tbl_cache + '/prds_scrap.csv')
+        
+        if os.path.isfile(tbl_cache + '/df_info_scrap.csv'):
+            df_info_scrap = pd.read_csv(tbl_cache + '/df_info_scrap.csv')
+        else:
+            columns = ['id','input_words','product_title','product_url','product_price','product_category','product_description','registered_date','product_reviews_count','product_rating','product_store','similarity']    
+            df_info_scrap = pd.DataFrame(columns=columns)
+            
+        if os.path.isfile(tbl_cache + '/scrap_list.txt'):
+            with open(tbl_cache + '/scrap_list.txt', 'rb') as f:
+                scrap_list = pickle.load(f)
+        else:
+            scrap_list = []        
+        
         
         t = tqdm(range(len(prds)))
-        scrap_list = []
         for idx in t:
-            self.progress.emit(t)
+            if self.power == True:
+                self.progress.emit(t)
+                
+                search_words = prds.loc[idx, 'brand_name'] + ' ' + prds.loc[idx, 'product_name']
+                id_ = prds.loc[idx, 'id']
+
+                scrap_list += get_nv_item_link_by_brd_new(search_words, id_)
+
+                if len(scrap_list) % 100 == 0:
+                    df = pd.DataFrame(scrap_list, columns=columns)
+                    scrap_list = []
+                    df_info_scrap = pd.concat([df_info_scrap, df]).reset_index(drop=True)
+                    df_info_scrap.to_csv(tbl_cache + '/df_info_scrap.csv', index=False)
+
+            else:
+                prds_ = prds.loc[idx + 1:].reset_index(drop=True)
+                prds_.to_csv(tbl_cache + '/prds_scrap_.csv')
+                
+                with open(tbl_cache + '/scrap_list.txt', 'wb') as f:
+                    pickle.dump(scrap_list ,f)
+                    
+                self.progress.emit(t)
+                break
             
-            search_words = prds.loc[idx, 'brand_name'] + ' ' + prds.loc[idx, 'product_name']
-            id_ = prds.loc[idx, 'id']
-
-            scrap_list += get_nv_item_link_by_brd_new(search_words, id_)
-
-            if len(scrap_list) % 100 == 0:
-                df = pd.DataFrame(scrap_list, columns=columns)
-                scrap_list = []
-                df_info_scrap = pd.concat([df_info_scrap, df]).reset_index(drop=True)
-                df_info_scrap.to_csv(tbl_cache + '/df_info_scrap.csv', index=False)
-
-        df = pd.DataFrame(scrap_list, columns=columns)
-        df_info_scrap = pd.concat([df_info_scrap, df]).reset_index(drop=True)
-        df_info_scrap.to_csv(tbl_cache + '/df_info_scrap.csv', index=False)
+        if idx == len(prds) - 1:
+            df = pd.DataFrame(scrap_list, columns=columns)
+            df_info_scrap = pd.concat([df_info_scrap, df]).reset_index(drop=True)
+            df_info_scrap.to_csv(tbl_cache + '/df_info_scrap.csv', index=False)
+        
+        
+    def stop(self):
+        ''' Stop Thread '''
+        
+        self.power = False
+        self.quit()
+        self.wait(3000)
