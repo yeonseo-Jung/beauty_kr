@@ -8,7 +8,6 @@ import pandas as pd
 from tqdm.auto import tqdm
 
 # parsing 
-from urllib.parse import quote_plus
 from bs4 import BeautifulSoup
 from selenium import webdriver
 
@@ -23,7 +22,6 @@ from webdriver_manager.chrome import ChromeDriverManager
 
 # Error Handling
 import socket
-from urllib.parse import quote_plus
 import warnings
 warnings.filterwarnings("ignore")
 

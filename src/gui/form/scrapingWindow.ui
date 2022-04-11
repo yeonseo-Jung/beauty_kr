@@ -14,7 +14,7 @@
    <string>MainWindow</string>
   </property>
   <widget class="QWidget" name="centralwidget">
-   <widget class="QPushButton" name="accept">
+   <widget class="QPushButton" name="Accept">
     <property name="geometry">
      <rect>
       <x>190</x>
@@ -184,7 +184,7 @@
      <string>마스크/팩</string>
     </property>
    </widget>
-   <widget class="QPushButton" name="run">
+   <widget class="QPushButton" name="Run">
     <property name="geometry">
      <rect>
       <x>25</x>
@@ -297,10 +297,10 @@
      <enum>QLCDNumber::Flat</enum>
     </property>
    </widget>
-   <widget class="QPushButton" name="pause">
+   <widget class="QPushButton" name="Pause">
     <property name="geometry">
      <rect>
-      <x>130</x>
+      <x>135</x>
       <y>300</y>
       <width>100</width>
       <height>32</height>
@@ -313,6 +313,42 @@
     </property>
     <property name="text">
      <string>Pause</string>
+    </property>
+   </widget>
+   <widget class="QPushButton" name="Save">
+    <property name="geometry">
+     <rect>
+      <x>355</x>
+      <y>300</y>
+      <width>100</width>
+      <height>32</height>
+     </rect>
+    </property>
+    <property name="font">
+     <font>
+      <pointsize>13</pointsize>
+     </font>
+    </property>
+    <property name="text">
+     <string>Save</string>
+    </property>
+   </widget>
+   <widget class="QPushButton" name="View">
+    <property name="geometry">
+     <rect>
+      <x>245</x>
+      <y>300</y>
+      <width>100</width>
+      <height>32</height>
+     </rect>
+    </property>
+    <property name="font">
+     <font>
+      <pointsize>13</pointsize>
+     </font>
+    </property>
+    <property name="text">
+     <string>View</string>
     </property>
    </widget>
   </widget>

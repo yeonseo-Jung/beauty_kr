@@ -1,10 +1,7 @@
 import os
-# import re
 import sys
-# import time
 import pickle
 import pandas as pd
-# from tqdm.auto import tqdm
 
 cur_dir = os.path.dirname(os.path.realpath(__file__))
 root = os.path.abspath(os.path.join(cur_dir, os.pardir, os.pardir))
@@ -21,9 +18,7 @@ from mapping.mapping_product import ThreadComparing
 from gui.get_table import GetDialog
 from gui.table_view import TableViewer
 
-import sys
 from PyQt5 import uic
-from PyQt5 import QtCore
 from PyQt5.QtWidgets import QMainWindow, QMessageBox, QFileDialog
 
 

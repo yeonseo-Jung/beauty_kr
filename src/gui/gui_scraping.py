@@ -5,7 +5,7 @@ import pandas as pd
 # from tqdm.auto import tqdm
 
 from PyQt5 import uic
-from PyQt5.QtWidgets import QMainWindow, QMessageBox
+from PyQt5.QtWidgets import QMainWindow, QMessageBox, QFileDialog
 
 if getattr(sys, 'frozen', False) and hasattr(sys, '_MEIPASS'):
     base_path = sys._MEIPASS
@@ -25,6 +25,7 @@ form_path = os.path.join(base_path, 'form/scrapingWindow.ui')
 
 from access_database import access_db
 from scraping.scraper_naver import ThreadScraping
+from gui.table_view import TableViewer
 
 
 scraping_form = uic.loadUiType(form_path)[0]
@@ -35,7 +36,8 @@ class ScrapingWindow(QMainWindow, scraping_form):
     def __init__(self):
         super().__init__()    
         self.setupUi(self)
-        self.setWindowTitle('Crawling Product Info')
+        self.setWindowTitle('Scraping Product Info')
+        self.viewer = None
         
         
         # db 연결
@@ -60,12 +62,14 @@ class ScrapingWindow(QMainWindow, scraping_form):
         self.maskpack.setChecked(False)
         self.maskpack.toggled.connect(self.categ_toggled)
         
-        self.accept.clicked.connect(self.get_tbl)
+        self.Accept.clicked.connect(self._accept)
 
         self.thread_scrap = ThreadScraping()
         self.thread_scrap.progress.connect(self.update_progress)
-        self.run.clicked.connect(self._scraping)
-        self.pause.clicked.connect(self.thread_scrap.stop)
+        self.Run.clicked.connect(self._scraping)
+        self.Pause.clicked.connect(self.thread_scrap.stop)
+        self.View.clicked.connect(self._viewer)
+        self.Save.clicked.connect(self._save)
         
     def update_progress(self, progress):
         if os.path.isfile(tbl_cache + '/prg_dict.txt'):
@@ -151,9 +155,21 @@ class ScrapingWindow(QMainWindow, scraping_form):
             categs.append(categ)
             
         return categs
-        
+    
+    def msg_event(self):
+        info = QMessageBox.warning(
+            self, "Caution", "저장되지 않은 스크레이핑 데이터가 존재합니다",
+            QMessageBox.SaveAll | QMessageBox.Ignore, 
+            QMessageBox.SaveAll
+        )
+        if info == QMessageBox.SaveAll:
+            self._save()
+        elif info == QMessageBox.Ignore:
+            pass
+        else:
+            pass
             
-    def get_tbl(self):
+    def _accept(self):
         
         # table load
         table_name = 'glowpick_product_info_final_version'
@@ -174,13 +190,17 @@ class ScrapingWindow(QMainWindow, scraping_form):
             msg.exec_()
             
         else:
-            # 진행률 캐시데이터 삭제
+            # 진행률 캐시 삭제
             if os.path.isfile(tbl_cache + '/prg_dict.txt'):
                 os.remove(tbl_cache + '/prg_dict.txt')
-            # 스크랩 대상 상품 캐시데이터 삭제  
+            # 스크레이핑 대상 상품 캐시 삭제  
             if os.path.isfile(tbl_cache + '/prds_scrap_.csv'):
                 os.remove(tbl_cache + '/prds_scrap_.csv')
-                
+            # 스크레이핑 캐시 삭제
+            if os.path.isfile(tbl_cache + '/scrap_list.txt'):
+                self.msg_event()
+                os.remove(tbl_cache + '/scrap_list.txt')    
+            
             # 선택된 카테고리에 해당하는 상품만 크롤링 대상 테이블에 할당 
             index_list = []
             for categ in categs:
@@ -197,5 +217,41 @@ class ScrapingWindow(QMainWindow, scraping_form):
             prds.to_csv(tbl_cache + '/prds_scrap.csv', index=False)
         
     def _scraping(self):
+        msg = QMessageBox()
+        msg.setText("- 인터넷 연결 상태 확인 \n- VPN 연결 확인 \n- 자동 잠금 해제 확인")
+        msg.exec_()
         self.thread_scrap.power = True
         self.thread_scrap.start()
+        
+        
+    def save_file(self, file_name):
+        ''' 파일 저장하기 '''
+        
+        file_path = os.path.join(tbl_cache, file_name)
+        df = pd.read_csv(file_path)
+        
+        # save_path = os.path.join(root, file_name)
+        file_save = QFileDialog.getSaveFileName(self, "Save File", "", "csv file (*.csv)")
+        
+        if file_save[0] != "":
+            df.to_csv(file_save[0])
+            
+    def tbl_viewer(self, file_name):
+        
+        if self.viewer is None:
+            self.viewer = TableViewer()
+        else:
+            self.viewer.close()
+            self.viewer = TableViewer()
+            
+        self.viewer.show()
+        self.viewer._loadFile(file_name)
+        
+    def _save(self):
+        file_name = "df_info_scrap.csv"
+        self.save_file(file_name)
+    
+    def _viewer(self):
+        file_name = "df_info_scrap.csv"
+        self.tbl_viewer(file_name)
+        
