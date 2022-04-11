@@ -99,8 +99,6 @@ def get_nv_item_link_by_brd_new(input_data, product_id):
     input_txt_ = re.sub(r' +', ' ', input_txt).strip()
     
     input_keyword = input_txt_.replace(' ','%20') # 쿼리 내 인터벌
-    
-    print(f'\n\n {input_txt_} \n {product_id} \n\n')
 
     search_result_url = f'https://search.shopping.naver.com/search/all?&frm=NVSHCAT&origQuery={input_keyword}%20%20%20-세트%20-리필%20-set%20-Set%20-SET%20-패키지%20-페키지%20-Package%20-PACKAGE&pagingIndex=1&pagingSize=40&productSet=model&query={input_keyword}&sort=rel&timestamp=&viewType=list&xq=세트%20리필%20set%20Set%20SET%20패키지%20페키지%20Package%20PACKAGE'       
     
@@ -138,10 +136,8 @@ def get_nv_item_link_by_brd_new(input_data, product_id):
     scroll_down(wd)
     html = wd.page_source
     soup = BeautifulSoup(html,'lxml') 
-    item_divs = soup.find_all('div',class_='basicList_inner__eY_mq') # basicList_inner__eY_mq
-    # count_tags = soup.find_all('span',class_='subFilter_num__2x0jq')
-    # count_items = int(count_tags[1].text.replace(',',''))
-    
+    item_divs = soup.find_all('div',class_='basicList_inner__eY_mq')
+
     scraps = []
     cnt = 0
     for item_div in item_divs:
@@ -225,7 +221,7 @@ def get_nv_item_link_by_brd_new(input_data, product_id):
 
             # product_store
             if item_div.find_all('span',class_='basicList_mall_name__1XaKA') != []:
-                product_store = item_div.find_all('span',class_='basicList_mall_name__1XaKA')[0].text # 상위 1개 판매처
+                product_store = item_div.find_all('span',class_='basicList_mall_name__1XaKA')[0].text # 최저가 판매처
             else:
                 product_store = np.nan
             
@@ -237,24 +233,13 @@ def get_nv_item_link_by_brd_new(input_data, product_id):
         
         if cnt == 5:
             break
-        
-        
-
-        # try:
-        #     next_btn = wd.find_element_by_class_name("pagination_next__1ITTf") # next_btn이 있다면 마지막 페이지가 아님
-        #     next_btn.send_keys(Keys.ENTER)
-        #     time.sleep(2)
-        # except NoSuchElementException: # 다음 element가 없을 때 == 마지막 페이지일 때
-        #     break
     
-#     # 정상 수집 완료
-#     if len(df_info_scrap) > 0:
-#         df_info_scrap.loc[:, 'page_status'] = 100
-
-#     # 수집 안됨 (검색 결과가 안뜬경우)
-#     else: 
-#         df_info_scrap.loc[:, 'page_status'] = 0
-    
+    if len(scraps) == 0:
+        status = 0
+        print(f"\n\t 검색안됨\n\t{input_txt_}\n")
+    else:
+        status = 1
+        print(f"\n\t 검색됨\n\t{input_txt_}\n")
     return scraps
 
 
@@ -290,6 +275,7 @@ class ThreadScraping(QtCore.QThread, QtCore.QObject):
         t = tqdm(range(len(prds)))
         for idx in t:
             if self.power == True:
+                # Run: 작업 수행
                 self.progress.emit(t)
                 
                 search_words = prds.loc[idx, 'brand_name'] + ' ' + prds.loc[idx, 'product_name']
@@ -298,14 +284,16 @@ class ThreadScraping(QtCore.QThread, QtCore.QObject):
                 scrap_list += get_nv_item_link_by_brd_new(search_words, id_)
 
                 if len(scrap_list) % 100 == 0:
+                    columns = ['id','input_words','product_title','product_url','product_price','product_category','product_description','registered_date','product_reviews_count','product_rating','product_store','similarity']
                     df = pd.DataFrame(scrap_list, columns=columns)
                     scrap_list = []
                     df_info_scrap = pd.concat([df_info_scrap, df]).reset_index(drop=True)
                     df_info_scrap.to_csv(tbl_cache + '/df_info_scrap.csv', index=False)
 
             else:
-                prds_ = prds.loc[idx + 1:].reset_index(drop=True)
-                prds_.to_csv(tbl_cache + '/prds_scrap_.csv')
+                # Pause: 이어서 작업 수행 하기 위해 캐시데이터 저장 
+                prds_ = prds.loc[idx:].reset_index(drop=True)
+                prds_.to_csv(tbl_cache + '/prds_scrap_.csv', index=False)
                 
                 with open(tbl_cache + '/scrap_list.txt', 'wb') as f:
                     pickle.dump(scrap_list ,f)

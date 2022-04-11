@@ -99,7 +99,7 @@ class MappingWindow(QMainWindow, mapping_form):
         else:
             remain_time = 0
         
-        self.pbar_2.setValue(per)
+        self.pbar_0.setValue(per)
         
         message = f"{int(per)}% | Progress item: {itm}  Total: {tot} | Elapsed time: {elapsed}s < Remain time: {remain_time}s "
         self.statusbar.showMessage(message)
@@ -116,7 +116,7 @@ class MappingWindow(QMainWindow, mapping_form):
         else:
             remain_time = 0
         
-        self.pbar_3.setValue(per)
+        self.pbar_1.setValue(per)
         
         elapsed_h = int(elapsed // 3600)
         elapsed_m = int((elapsed % 3600) // 60)

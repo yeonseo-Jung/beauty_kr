@@ -168,14 +168,18 @@ class ScrapingWindow(QMainWindow, scraping_form):
         # 카테고리 선택
         categs = self.categ_toggled()
         
-        if categs == 0:
+        if len(categs) == 0:
             msg = QMessageBox()
             msg.setText('Please select one or more categories.')
             msg.exec_()
             
         else:
+            # 진행률 캐시데이터 삭제
             if os.path.isfile(tbl_cache + '/prg_dict.txt'):
                 os.remove(tbl_cache + '/prg_dict.txt')
+            # 스크랩 대상 상품 캐시데이터 삭제  
+            if os.path.isfile(tbl_cache + '/prds_scrap_.csv'):
+                os.remove(tbl_cache + '/prds_scrap_.csv')
                 
             # 선택된 카테고리에 해당하는 상품만 크롤링 대상 테이블에 할당 
             index_list = []

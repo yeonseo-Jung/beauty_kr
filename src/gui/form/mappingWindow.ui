@@ -17,7 +17,7 @@
    <widget class="QPushButton" name="mapping">
     <property name="geometry">
      <rect>
-      <x>380</x>
+      <x>30</x>
       <y>400</y>
       <width>130</width>
       <height>32</height>
@@ -53,7 +53,7 @@
      <string>View table </string>
     </property>
    </widget>
-   <widget class="QProgressBar" name="pbar_2">
+   <widget class="QProgressBar" name="pbar_0">
     <property name="geometry">
      <rect>
       <x>300</x>
@@ -92,7 +92,7 @@
      <string>View table </string>
     </property>
    </widget>
-   <widget class="QProgressBar" name="pbar_3">
+   <widget class="QProgressBar" name="pbar_1">
     <property name="geometry">
      <rect>
       <x>300</x>
@@ -263,7 +263,7 @@
    <widget class="QPushButton" name="mapping_table">
     <property name="geometry">
      <rect>
-      <x>380</x>
+      <x>30</x>
       <y>460</y>
       <width>130</width>
       <height>32</height>
@@ -297,6 +297,70 @@
     </property>
     <property name="text">
      <string>Save</string>
+    </property>
+   </widget>
+   <widget class="QPushButton" name="stop_mapping">
+    <property name="geometry">
+     <rect>
+      <x>160</x>
+      <y>400</y>
+      <width>130</width>
+      <height>32</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Stop</string>
+    </property>
+   </widget>
+   <widget class="QPushButton" name="stop_mapping_table">
+    <property name="geometry">
+     <rect>
+      <x>160</x>
+      <y>460</y>
+      <width>130</width>
+      <height>32</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Stop</string>
+    </property>
+   </widget>
+   <widget class="QProgressBar" name="pbar_2">
+    <property name="geometry">
+     <rect>
+      <x>300</x>
+      <y>390</y>
+      <width>200</width>
+      <height>50</height>
+     </rect>
+    </property>
+    <property name="value">
+     <number>0</number>
+    </property>
+    <property name="textVisible">
+     <bool>true</bool>
+    </property>
+    <property name="orientation">
+     <enum>Qt::Horizontal</enum>
+    </property>
+   </widget>
+   <widget class="QProgressBar" name="pbar_3">
+    <property name="geometry">
+     <rect>
+      <x>300</x>
+      <y>450</y>
+      <width>200</width>
+      <height>50</height>
+     </rect>
+    </property>
+    <property name="value">
+     <number>0</number>
+    </property>
+    <property name="textVisible">
+     <bool>true</bool>
+    </property>
+    <property name="orientation">
+     <enum>Qt::Horizontal</enum>
     </property>
    </widget>
   </widget>
