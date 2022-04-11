@@ -1,41 +1,21 @@
-# 
 import os
 import re
-# import ast
 import sys
 import time
 import pickle
 import numpy as np
 import pandas as pd
-
-# calculate string similarity (edit distance)
-# import jellyfish
-# from soynlp.hangle import jamo_levenshtein
+from tqdm.auto import tqdm
 
 # parsing 
 from urllib.parse import quote_plus
 from bs4 import BeautifulSoup
 from selenium import webdriver
 
-# visualizingcon
-# import seaborn as sns
-# import matplotlib.pyplot as plt
-
-
-from tqdm.auto import tqdm
-# from multiprocessing import Pool
-# import multiprocessing as mp
-# from functools import partial
-# from contextlib import contextmanager
-
 
 # Scrapping
 import selenium
 from selenium import webdriver
-# from selenium.webdriver.common.keys import Keys
-# from selenium.webdriver.support.ui import WebDriverWait
-# from selenium.webdriver.support import expected_conditions as EC
-# from selenium.webdriver.common.by import By
 from selenium.webdriver.chrome.options import Options
 from fake_useragent import UserAgent
 from webdriver_manager.chrome import ChromeDriverManager
@@ -43,13 +23,7 @@ from webdriver_manager.chrome import ChromeDriverManager
 
 # Error Handling
 import socket
-# import urllib.request
-# from urllib.request import urlopen
 from urllib.parse import quote_plus
-# from urllib.request import urlretrieve
-# from urllib.error import HTTPError, URLError
-# from selenium.common.exceptions import ElementClickInterceptedException, NoSuchElementException, ElementNotInteractableException
-
 import warnings
 warnings.filterwarnings("ignore")
 
@@ -128,10 +102,6 @@ def get_nv_item_link_by_brd_new(input_data, product_id):
             time.sleep(10)
             wd.close()
             wd.quit()
-    
-    
-    # columns = ['glowpick_id','input_words','product_title','product_url','product_price','product_category','product_description','registered_date','product_reviews_count','product_rating','product_store','jaro_distance'] 
-
 
     scroll_down(wd)
     html = wd.page_source
@@ -237,10 +207,11 @@ def get_nv_item_link_by_brd_new(input_data, product_id):
     if len(scraps) == 0:
         status = 0
         print(f"\n\t 검색안됨\n\t{input_txt_}\n")
+        print(search_result_url)
     else:
         status = 1
         print(f"\n\t 검색됨\n\t{input_txt_}\n")
-    return scraps
+    return scraps, status
 
 
 class ThreadScraping(QtCore.QThread, QtCore.QObject):
@@ -252,18 +223,12 @@ class ThreadScraping(QtCore.QThread, QtCore.QObject):
         
     progress = QtCore.pyqtSignal(object)
     def run(self):
-        ''' 브랜드명 + 상품명으로 상품정보 크롤링 해서 데이터프레임에 할당 '''
+        ''' 브랜드명 + 상품명으로 상품정보 스크래핑해서 데이터프레임에 할당 '''
         
         if os.path.isfile(tbl_cache + '/prds_scrap_.csv'):
             prds = pd.read_csv(tbl_cache + '/prds_scrap_.csv')    
         else:
             prds = pd.read_csv(tbl_cache + '/prds_scrap.csv')
-        
-        if os.path.isfile(tbl_cache + '/df_info_scrap.csv'):
-            df_info_scrap = pd.read_csv(tbl_cache + '/df_info_scrap.csv')
-        else:
-            columns = ['id','input_words','product_title','product_url','product_price','product_category','product_description','registered_date','product_reviews_count','product_rating','product_store','similarity']    
-            df_info_scrap = pd.DataFrame(columns=columns)
             
         if os.path.isfile(tbl_cache + '/scrap_list.txt'):
             with open(tbl_cache + '/scrap_list.txt', 'rb') as f:
@@ -284,11 +249,8 @@ class ThreadScraping(QtCore.QThread, QtCore.QObject):
                 scrap_list += get_nv_item_link_by_brd_new(search_words, id_)
 
                 if len(scrap_list) % 100 == 0:
-                    columns = ['id','input_words','product_title','product_url','product_price','product_category','product_description','registered_date','product_reviews_count','product_rating','product_store','similarity']
-                    df = pd.DataFrame(scrap_list, columns=columns)
-                    scrap_list = []
-                    df_info_scrap = pd.concat([df_info_scrap, df]).reset_index(drop=True)
-                    df_info_scrap.to_csv(tbl_cache + '/df_info_scrap.csv', index=False)
+                    with open(tbl_cache + '/scrap_list.txt', 'wb') as f:
+                        pickle.dump(scrap_list ,f)
 
             else:
                 # Pause: 이어서 작업 수행 하기 위해 캐시데이터 저장 
@@ -298,13 +260,17 @@ class ThreadScraping(QtCore.QThread, QtCore.QObject):
                 with open(tbl_cache + '/scrap_list.txt', 'wb') as f:
                     pickle.dump(scrap_list ,f)
                     
+                columns = ['id','input_words','product_title','product_url','product_price','product_category','product_description','registered_date','product_reviews_count','product_rating','product_store','similarity']
+                df = pd.DataFrame(scrap_list, columns=columns)
+                df.to_csv(tbl_cache + '/df_info_scrap.csv', index=False)
+                    
                 self.progress.emit(t)
                 break
             
         if idx == len(prds) - 1:
+            columns = ['id','input_words','product_title','product_url','product_price','product_category','product_description','registered_date','product_reviews_count','product_rating','product_store','similarity']
             df = pd.DataFrame(scrap_list, columns=columns)
-            df_info_scrap = pd.concat([df_info_scrap, df]).reset_index(drop=True)
-            df_info_scrap.to_csv(tbl_cache + '/df_info_scrap.csv', index=False)
+            df.to_csv(tbl_cache + '/df_info_scrap.csv', index=False)
         
         
     def stop(self):
