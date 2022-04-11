@@ -1,2 +1,2 @@
 # project_beauty_kr
-data scraping, preprocessing, mapping, database management
+Data scraping, Preprocessing, Product Mapping, Database Management
