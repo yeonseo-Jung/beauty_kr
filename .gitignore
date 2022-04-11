@@ -1,6 +1,5 @@
 # MacOS
 .DS_Store
-venv
 
 # vscode
 .vscode/
