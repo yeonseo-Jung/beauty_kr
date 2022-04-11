@@ -13,6 +13,7 @@ from selenium import webdriver
 
 
 # Scrapping
+import requests
 import selenium
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
@@ -92,15 +93,25 @@ def get_nv_item_link_by_brd_new(input_data, product_id):
             break
 
         except selenium.common.exceptions.WebDriverException:
-            time.sleep(10)
+            time.sleep(30)
             wd.close()
             wd.quit()
             
         except selenium.common.exceptions.TimeoutException:
-            time.sleep(10)
+            time.sleep(30)
             wd.close()
             wd.quit()
-
+            
+        except requests.exceptions.SSLError:
+            time.sleep(30)
+            wd.close()
+            wd.quit()
+            
+        except requests.exceptions.ConnectionError:
+            time.sleep(30)
+            wd.close()
+            wd.quit()
+            
     scroll_down(wd)
     html = wd.page_source
     soup = BeautifulSoup(html,'lxml') 
@@ -204,11 +215,9 @@ def get_nv_item_link_by_brd_new(input_data, product_id):
     
     if len(scraps) == 0:
         status = 0
-        print(f"\n\t 검색안됨\n\t{input_txt_}\n")
-        print(search_result_url)
+        print(f"\n\t <Not Found>\n\t{input_txt_}\n")
     else:
         status = 1
-        print(f"\n\t 검색됨\n\t{input_txt_}\n")
     return scraps, status
 
 
@@ -232,7 +241,13 @@ class ThreadScraping(QtCore.QThread, QtCore.QObject):
             with open(tbl_cache + '/scrap_list.txt', 'rb') as f:
                 scrap_list = pickle.load(f)
         else:
-            scrap_list = []        
+            scrap_list = []  
+            
+        if os.path.isfile(tbl_cache + '/status_dict.txt'):
+            with open(tbl_cache + '/status_dict.txt', 'rb') as f:
+                status_dict = pickle.load(f)
+        else:
+            status_dict = {}
         
         
         t = tqdm(range(len(prds)))
@@ -244,7 +259,11 @@ class ThreadScraping(QtCore.QThread, QtCore.QObject):
                 search_words = prds.loc[idx, 'brand_name'] + ' ' + prds.loc[idx, 'product_name']
                 id_ = prds.loc[idx, 'id']
 
-                scrap_list += get_nv_item_link_by_brd_new(search_words, id_)
+                outputs = get_nv_item_link_by_brd_new(search_words, id_)
+                scrap_list += outputs[0]
+                status = outputs[1]
+                
+                status_dict[id_] = status
 
                 if len(scrap_list) % 100 == 0:
                     with open(tbl_cache + '/scrap_list.txt', 'wb') as f:
@@ -261,6 +280,9 @@ class ThreadScraping(QtCore.QThread, QtCore.QObject):
                 columns = ['id','input_words','product_title','product_url','product_price','product_category','product_description','registered_date','product_reviews_count','product_rating','product_store','similarity']
                 df = pd.DataFrame(scrap_list, columns=columns)
                 df.to_csv(tbl_cache + '/df_info_scrap.csv', index=False)
+                
+                with open(tbl_cache + '/status_dict.txt', 'wb') as f:
+                    pickle.dump(status_dict, f)
                     
                 self.progress.emit(t)
                 break
@@ -269,6 +291,14 @@ class ThreadScraping(QtCore.QThread, QtCore.QObject):
             columns = ['id','input_words','product_title','product_url','product_price','product_category','product_description','registered_date','product_reviews_count','product_rating','product_store','similarity']
             df = pd.DataFrame(scrap_list, columns=columns)
             df.to_csv(tbl_cache + '/df_info_scrap.csv', index=False)
+            
+            ids = list(status_dict.keys())
+            sts = list(status_dict.values())
+            status_list = [ids, sts]
+            columns_ = ['id', 'status']
+            df_ = pd.DataFrame(status_list, columns=columns_)
+            df_.to_csv(tbl_cache + '/df_status.csv', index=False)
+            
         
         
     def stop(self):

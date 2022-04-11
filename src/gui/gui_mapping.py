@@ -202,7 +202,7 @@ class MappingWindow(QMainWindow, mapping_form):
         file_save = QFileDialog.getSaveFileName(self, "Save File", "", "csv file (*.csv)")
         
         if file_save[0] != "":
-            df.to_csv(file_save[0])
+            df.to_csv(file_save[0], index=False)
             
     def tbl_viewer(self, file_name):
         

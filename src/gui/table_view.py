@@ -1,10 +1,6 @@
 import os
-# import re
 import sys
-# import time
-import pickle
 import pandas as pd
-# from tqdm.auto import tqdm
 
 cur_dir = os.path.dirname(os.path.realpath(__file__))
 root = os.path.abspath(os.path.join(cur_dir, os.pardir, os.pardir))
@@ -12,19 +8,9 @@ src = os.path.abspath(os.path.join(cur_dir, os.pardir))
 sys.path.append(root)
 sys.path.append(src)
 
-# from access_database import access_db
-# from mapping import preprocessing
-# from mapping.preprocessing import ThreadTitlePreprocess
-# from mapping import mapping_product
-# from mapping.mapping_product import ThreadComparing
-
-# from gui.get_table import GetDialog
-
 import sys
-from PyQt5 import uic
 from PyQt5 import QtCore
 from PyQt5.QtWidgets import QFileDialog, QWidget, QHBoxLayout, QVBoxLayout, QPushButton, QTableView, QLineEdit
-
 
 if getattr(sys, 'frozen', False) and hasattr(sys, '_MEIPASS'):
     base_path = sys._MEIPASS
@@ -136,4 +122,3 @@ class TableViewer(QWidget):
         df = pd.read_csv(file_path)
         model = DataFrameModel(df)
         self.pandasTv.setModel(model)
-

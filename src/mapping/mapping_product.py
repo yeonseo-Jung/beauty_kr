@@ -1,24 +1,16 @@
 # necessary
-import pandas as pd
-import numpy as np
+import os
+import sys
+import ast
 import pickle
 from tqdm.auto import tqdm
-import os
-import ast
-import re
-import time
-import copy
-import difflib
-from itertools import chain, repeat
+
+import numpy as np
+import pandas as pd
 
 from PyQt5 import QtCore
 
-# from jellyfish import jaro_distance, jaro_winkler
-# from soynlp.hangle import jamo_levenshtein
-
-
-
-import sys
+# path setting
 cur_dir = os.path.dirname(os.path.realpath(__file__))
 root = os.path.abspath(os.path.join(cur_dir, os.pardir, os.pardir))
 src = os.path.abspath(os.path.join(cur_dir, os.pardir))
@@ -32,9 +24,7 @@ if getattr(sys, 'frozen', False) and hasattr(sys, '_MEIPASS'):
 else:
     base_path = os.path.dirname(os.path.realpath(__file__))
     tbl_cache = root + '/tbl_cache'
-
     
-from access_database import access_db
 from hangle import _distance
 
 # def title_comparison(word_0: str, word_1: str) -> tuple:
@@ -586,7 +576,7 @@ class ThreadComparing(QtCore.QThread, QtCore.QObject):
                     
             columns = ['id_1', 'id_0', 'title_1', 'title_0', 'brand_name', 'category', 'table_name', 'dependency_ratio', 'dependency_count', 'similarity', 'max_length', 'min_length']
             compared_df = pd.DataFrame(compared_list_, columns=columns).reset_index(drop=True)
-            compared_df.to_csv(tbl_cache + '/compared_prds', index=False)
+            compared_df.to_csv(tbl_cache + '/compared_prds.csv', index=False)
         
         
     def stop(self):

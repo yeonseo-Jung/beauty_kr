@@ -2,7 +2,6 @@ import os
 import sys
 import pickle
 import pandas as pd
-# from tqdm.auto import tqdm
 
 from PyQt5 import uic
 from PyQt5.QtWidgets import QMainWindow, QMessageBox, QFileDialog
@@ -170,6 +169,7 @@ class ScrapingWindow(QMainWindow, scraping_form):
             pass
             
     def _accept(self):
+        ''' accept category and get table '''
         
         # table load
         table_name = 'glowpick_product_info_final_version'
@@ -225,18 +225,18 @@ class ScrapingWindow(QMainWindow, scraping_form):
         
         
     def save_file(self, file_name):
-        ''' 파일 저장하기 '''
+        ''' save csv file '''
         
         file_path = os.path.join(tbl_cache, file_name)
         df = pd.read_csv(file_path)
         
-        # save_path = os.path.join(root, file_name)
         file_save = QFileDialog.getSaveFileName(self, "Save File", "", "csv file (*.csv)")
         
         if file_save[0] != "":
-            df.to_csv(file_save[0])
+            df.to_csv(file_save[0], index=False)
             
     def tbl_viewer(self, file_name):
+        ''' table viewer '''
         
         if self.viewer is None:
             self.viewer = TableViewer()
