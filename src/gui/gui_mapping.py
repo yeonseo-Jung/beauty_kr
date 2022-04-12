@@ -1,3 +1,4 @@
+import re
 import os
 import sys
 import pickle
@@ -19,7 +20,8 @@ from gui.get_table import GetDialog
 from gui.table_view import TableViewer
 
 from PyQt5 import uic
-from PyQt5.QtWidgets import QMainWindow, QMessageBox, QFileDialog
+from PyQt5.QtWidgets import QMainWindow, QMessageBox, QFileDialog, QListWidgetItem
+from PyQt5.QtCore import Qt
 
 
 if getattr(sys, 'frozen', False) and hasattr(sys, '_MEIPASS'):
@@ -41,8 +43,8 @@ class MappingWindow(QMainWindow, mapping_form):
     def __init__(self):
         super().__init__()    
         self.setupUi(self)
-        self.setWindowTitle('Mapping Product')
-        self.textBrowser.setOpenExternalLinks(True)
+        self.setWindowTitle('Mapping Products')
+        # self.textBrowser.setOpenExternalLinks(True)
         self.viewer = None
         
         # db 연결
@@ -51,8 +53,14 @@ class MappingWindow(QMainWindow, mapping_form):
         self.db = access_db.AccessDataBase(conn[0], conn[1], conn[2])
         
         # get table
-        self.view_table_name.clicked.connect(self.connect_dialog)
-        self.get_table.clicked.connect(self.get_tbl)
+        for table in self._get_tbl():
+            item = QListWidgetItem(table)
+            item.setCheckState(Qt.Unchecked)
+            self.TableList.addItem(item)
+            
+        # self.view_table_name.clicked.connect(self.connect_dialog)
+        
+        self.Import.clicked.connect(self._import_tbl)
         self.view_table_0.clicked.connect(self._viewer_0)
         self.save_0.clicked.connect(self._save_0)
         
@@ -124,18 +132,31 @@ class MappingWindow(QMainWindow, mapping_form):
         message = f"{int(per)}% | Progress item: {itm}  Total: {tot} | Elapsed time: {elapsed_h}:{elapsed_m}:{elapsed_s} < Remain time: {remain_h}:{remain_m}:{remain_s} "
         self.statusbar.showMessage(message)
         
-    def connect_dialog(self):
-        ''' Get.GetDialog connect '''    
+    # def connect_dialog(self):
+    #     ''' Get.GetDialog connect '''    
         
-        self.get = GetDialog()
-        self.get.tables.connect(self.append_text)
-        self.get.show()
+    #     self.get = GetDialog()
+    #     self.get.tables.connect(self.append_text)
+    #     self.get.show()
+            
+    # def append_text(self, tables):
+    #     self.textBrowser.clear()
+    #     self.textBrowser.append(tables)
+    
+    def _get_tbl(self):
+        ''' db에서 매핑 대상 테이블만 가져오기 '''
         
-    def append_text(self, tables):
-        self.textBrowser.clear()
-        self.textBrowser.append(tables)
+        tables = self.db.get_tbl_name()
+        reg = re.compile('naver_beauty_product_info_extended_v[0-9]+')
+        table_list = []
+        for tbl in tables:
+            tbl_ = re.match(reg, tbl)
+            if tbl_:
+                table_list.append(tbl_.group(0))
+        table_list = sorted(list(set(table_list)))
+        return table_list
         
-    def get_tbl(self):
+    def _import_tbl(self):
         ''' 데이터 베이스에서 테이블 가져와서 통합하기 '''
         
         # 상품 매핑에 필요한 컬럼
@@ -147,19 +168,20 @@ class MappingWindow(QMainWindow, mapping_form):
         tbl_0.to_csv(tbl_cache + '/tbl_0.csv', index=False)
         
         # 매핑 대상 테이블
-        tbl_ = self.textBrowser.toPlainText()
-        print(f'\n\n\n<tables>\n{tbl_}\n\n\n')
+        tbls = []
+        for idx in range(self.TableList.count()):
+            if self.TableList.item(idx).checkState() == Qt.Checked:
+                tbls.append(self.TableList.item(idx).text())
         
-        if tbl_ == "" or tbl_ == "No Table":
+        
+        if len(tbls) == 0:
             msg = QMessageBox()
             msg.setText(f'Please check the table')
             msg.exec_()
             
         else:
-            tbls = tbl_.split('\n')
             tbl_1 = preprocessing.integ_tbl(self.db, tbls, columns)
             tbl_1.to_csv(tbl_cache + '/tbl_1.csv', index=False)
-            
             msg = QMessageBox()
             msg.setText(f'Table import success')
             msg.exec_()
@@ -205,6 +227,7 @@ class MappingWindow(QMainWindow, mapping_form):
             df.to_csv(file_save[0], index=False)
             
     def tbl_viewer(self, file_name):
+        ''' csv file viewer '''
         
         if self.viewer is None:
             self.viewer = TableViewer()

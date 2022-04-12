@@ -16,7 +16,6 @@ class AccessDataBase():
         self.db_name = db_name
     
     def db_connect(self):
-
         ''' db connect '''
 
         host_url = "db.ds.mycelebs.com"
@@ -25,34 +24,66 @@ class AccessDataBase():
         curs = conn.cursor(pymysql.cursors.DictCursor)
         return curs
 
+    def get_tbl_name(self):
+        ''' db에 존재하는 모든 테이블 이름 가져오기 '''
+
+        curs = self.db_connect()
+
+        # get table name list
+        query = "SHOW TABLES;"
+        curs.execute(query)
+        tables = curs.fetchall()
+
+        table_list = []
+        for table in tables:
+            tbl = list(table.values())[0]
+            table_list.append(tbl)
+
+        return table_list
+
+    def get_tbl_columns(self, table_name):
+        ''' 선택한 테이블 컬럼 가져오기 '''
+
+        curs = self.db_connect()
+
+        # get table columns 
+        query = f"SHOW FULL COLUMNS FROM {table_name};"
+        curs.execute(query)
+        columns = curs.fetchall()
+
+        column_list = []
+        for column in columns:
+            field = column['Field']
+            column_list.append(field)
+
+        return column_list
 
     def get_tbl(self, table_name, columns):
-        
         ''' db에서 원하는 테이블, 컬럼 pd.DataFrame에 할당 '''
         
-        curs = AccessDataBase(self.user_name, self.password, self.db_name).db_connect()
+        curs = self.db_connect()
         
         if columns == 'all':
-            sql_query = f'SELECT * FROM {table_name};'
+            query = f'SELECT * FROM {table_name};'
             
         
         else:
             # SELECT columns
-            sql_query = 'SELECT '
+            query = 'SELECT '
             i = 0
             for col in columns:
                 if i == 0:
-                    sql_query += col
+                    query += col
 
                 else:
-                    sql_query += ', ' + col
+                    query += ', ' + col
 
                 i += 1
 
             # FROM table_name
-            sql_query += f' FROM {table_name};'
+            query += f' FROM {table_name};'
         
-        curs.execute(sql_query)
+        curs.execute(query)
         tbl = curs.fetchall()
         df = pd.DataFrame(tbl)
         curs.close()

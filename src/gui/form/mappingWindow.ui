@@ -37,7 +37,7 @@
      </rect>
     </property>
     <property name="text">
-     <string>View table </string>
+     <string>View</string>
     </property>
    </widget>
    <widget class="QPushButton" name="view_table_1">
@@ -50,7 +50,7 @@
      </rect>
     </property>
     <property name="text">
-     <string>View table </string>
+     <string>View</string>
     </property>
    </widget>
    <widget class="QProgressBar" name="pbar_0">
@@ -89,7 +89,7 @@
      </rect>
     </property>
     <property name="text">
-     <string>View table </string>
+     <string>View</string>
     </property>
    </widget>
    <widget class="QProgressBar" name="pbar_1">
@@ -124,62 +124,30 @@
      <string>Preprocess</string>
     </property>
    </widget>
-   <widget class="QPushButton" name="get_table">
+   <widget class="QPushButton" name="Import">
     <property name="geometry">
      <rect>
-      <x>210</x>
-      <y>230</y>
+      <x>250</x>
+      <y>220</y>
       <width>112</width>
       <height>32</height>
      </rect>
     </property>
     <property name="text">
-     <string>Get table</string>
-    </property>
-   </widget>
-   <widget class="QPushButton" name="view_table_name">
-    <property name="geometry">
-     <rect>
-      <x>210</x>
-      <y>20</y>
-      <width>138</width>
-      <height>32</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string>View table name</string>
-    </property>
-    <property name="autoDefault">
-     <bool>false</bool>
-    </property>
-    <property name="default">
-     <bool>false</bool>
-    </property>
-    <property name="flat">
-     <bool>false</bool>
+     <string>Import</string>
     </property>
    </widget>
    <widget class="QPushButton" name="view_table_0">
     <property name="geometry">
      <rect>
-      <x>320</x>
-      <y>230</y>
+      <x>360</x>
+      <y>220</y>
       <width>112</width>
       <height>32</height>
      </rect>
     </property>
     <property name="text">
-     <string>View table </string>
-    </property>
-   </widget>
-   <widget class="QTextBrowser" name="textBrowser">
-    <property name="geometry">
-     <rect>
-      <x>210</x>
-      <y>60</y>
-      <width>350</width>
-      <height>161</height>
-     </rect>
+     <string>View</string>
     </property>
    </widget>
    <widget class="QPushButton" name="stop_preprocess">
@@ -237,8 +205,8 @@
    <widget class="QPushButton" name="save_0">
     <property name="geometry">
      <rect>
-      <x>430</x>
-      <y>230</y>
+      <x>470</x>
+      <y>220</y>
       <width>112</width>
       <height>32</height>
      </rect>
@@ -283,7 +251,7 @@
      </rect>
     </property>
     <property name="text">
-     <string>View table </string>
+     <string>View</string>
     </property>
    </widget>
    <widget class="QPushButton" name="save_4">
@@ -361,6 +329,35 @@
     </property>
     <property name="orientation">
      <enum>Qt::Horizontal</enum>
+    </property>
+   </widget>
+   <widget class="QLabel" name="label">
+    <property name="geometry">
+     <rect>
+      <x>205</x>
+      <y>15</y>
+      <width>85</width>
+      <height>32</height>
+     </rect>
+    </property>
+    <property name="font">
+     <font>
+      <family>.AppleSystemUIFont</family>
+      <pointsize>17</pointsize>
+     </font>
+    </property>
+    <property name="text">
+     <string>Table List</string>
+    </property>
+   </widget>
+   <widget class="QListWidget" name="TableList">
+    <property name="geometry">
+     <rect>
+      <x>200</x>
+      <y>50</y>
+      <width>380</width>
+      <height>160</height>
+     </rect>
     </property>
    </widget>
   </widget>

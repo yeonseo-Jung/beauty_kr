@@ -12,6 +12,7 @@ sys.path.append(src)
 from access_database import access_db
 from gui.gui_scraping import ScrapingWindow
 from gui.gui_mapping import MappingWindow
+from gui.gui_get_table import GetTableWindow
 
 from PyQt5.QtWidgets import QWidget, QGridLayout, QLabel, QLineEdit, QComboBox, QPushButton, QMessageBox
 
@@ -33,6 +34,8 @@ class MainWidget(QWidget):
         super().__init__()
         self.w0 = None
         self.w1 = None
+        self.w2 = None
+        self.w3 = None
         self.setWindowTitle('Connect Database')
         self.resize(475, 250)
 
@@ -97,7 +100,7 @@ class MainWidget(QWidget):
         db = access_db.AccessDataBase(conn[0], conn[1], conn[2])
         try:
             db.db_connect()
-            msg.setText(f'Database Connection Successful! \n - {self.lineEdit_database.text()}')
+            msg.setText(f'Database Connection Successful \n - {self.lineEdit_database.text()}')
             msg.exec_()
             
             # save connect info 
@@ -121,6 +124,14 @@ class MainWidget(QWidget):
                     self.w1.close()
                     self.w1 = ScrapingWindow()
                 self.w1.show()
+                
+            elif menu_index == 2:
+                if self.w2 is None:
+                    self.w2 = GetTableWindow()
+                else:
+                    self.w2.close()
+                    self.w2 = GetTableWindow()
+                self.w2.show()
                 
                 
         except Exception as e:
