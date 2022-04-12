@@ -27,3 +27,6 @@ tbl_cache/
 config/
 
 
+# qatest
+tests/qatest.ipynb
+tests/qatest.xlsx
