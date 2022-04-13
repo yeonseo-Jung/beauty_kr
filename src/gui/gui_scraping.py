@@ -26,7 +26,6 @@ from access_database import access_db
 from scraping.scraper_naver import ThreadScraping
 from gui.table_view import TableViewer
 
-
 scraping_form = uic.loadUiType(form_path)[0]
 
 class ScrapingWindow(QMainWindow, scraping_form):
@@ -37,7 +36,6 @@ class ScrapingWindow(QMainWindow, scraping_form):
         self.setupUi(self)
         self.setWindowTitle('Scraping Product Info')
         self.viewer = None
-        
         
         # db 연결
         with open(conn_path, 'rb') as f:
@@ -116,7 +114,6 @@ class ScrapingWindow(QMainWindow, scraping_form):
             message = f"{int(per)}% | Progress item: {itm}  Total: {tot} | Elapsed time: {elapsed_h}:{elapsed_m}:{elapsed_s} < Remain time: {remain_h}:{remain_m}:{remain_s} **PAUSE**"
             self.statusbar.showMessage(message)
         
-    
     def categ_toggled(self):
         categs = []
         
@@ -218,11 +215,10 @@ class ScrapingWindow(QMainWindow, scraping_form):
         
     def _scraping(self):
         msg = QMessageBox()
-        msg.setText("- 인터넷 연결 상태 확인 \n- VPN 연결 확인 \n- 자동 잠금 해제 확인")
+        msg.setText("- 인터넷 연결 확인 \n- VPN 연결 확인 \n- 자동 잠금 해제 확인")
         msg.exec_()
         self.thread_scrap.power = True
         self.thread_scrap.start()
-        
         
     def save_file(self, file_name):
         ''' save csv file '''
