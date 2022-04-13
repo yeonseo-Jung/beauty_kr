@@ -5,7 +5,7 @@ from tqdm.auto import tqdm
 
 # db connection 
 import pymysql
-from sqlalchemy import create_engine
+import sqlalchemy
 
 
 class AccessDataBase():
@@ -89,14 +89,70 @@ class AccessDataBase():
         curs.close()
         
         return df
+    
+    def sqlcol(self, dfparam):    
+        ''' Convert DataFrame data type to sql data type '''
+        
+        dtypedict = {}
+        for i,j in zip(dfparam.columns, dfparam.dtypes):
+            
+            if "object" in str(j):
+                dtypedict.update({i: sqlalchemy.types.NVARCHAR(length=255)})
+                                    
+            if "datetime" in str(j):
+                dtypedict.update({i: sqlalchemy.types.DateTime()})
 
-    def engine_upload(self, upload_df, table_name):
+            if "float" in str(j):
+                dtypedict.update({i: sqlalchemy.types.Float(precision=3, asdecimal=True)})
+
+            if "int" in str(j):
+                dtypedict.update({i: sqlalchemy.types.INT()})
+
+        return dtypedict
+
+    def engine_upload(self, upload_df, table_name, if_exists_option, pk=None):
+        ''' Create Table '''
+        
         host_url = "db.ds.mycelebs.com"
         port_num = 3306
-        engine = create_engine(f'mysql+pymysql://{self.user_name}:{self.password}@{host_url}:{port_num}/{self.db_name}?charset=utf8mb4')
-        engine_conn = engine.connect()
-        upload_df.to_sql(table_name, engine_conn, if_exists='append', index=None)
-        engine_conn.close()
+        engine = sqlalchemy.create_engine(f'mysql+pymysql://{self.user_name}:{self.password}@{host_url}:{port_num}/{self.db_name}?charset=utf8mb4')
+                
+        # Convert to sql dtype
+        dtype = self.sqlcol(upload_df)
+            
+        # engine_conn = engine.connect()
+        upload_df.to_sql(table_name, engine, if_exists=if_exists_option, index=False, dtype=dtype)
+        
+        # # Setting pk 
+        # if pk != None:
+        #     engine.execute(f'ALTER TABLE {table_name} ADD PRIMARY KEY (`{pk}`);')
+        # else:
+        #     pass
         engine.dispose()
 
+    def table_update(self, table_name, pk, df):
+        ''' Table Update from Db
+        
+        table_name: table name from db
+        pk: primary key
+        df: dataframe to update 
+        
+        '''
+        try:
+            # get table from db
+            _df = self.get_tbl(table_name, 'all')
+                    
+            # 기존에 존재하는 status값 update
+            df_update = _df.loc[:, [pk]].merge(df, on=pk, how='inner')
 
+            # 새로운 status값 append
+            df_dedup = pd.concat([_df, df]).drop_duplicates(subset=pk, keep=False)
+            df_append = pd.concat([df_update, df_dedup]).sort_values(by=pk).reset_index(drop=True)
+            
+            self.engine_upload(df_append, table_name, "replace", pk=pk)
+            
+        except Exception as e:
+            # 신규 테이블 업로드
+            print(e)
+            df = df.sort_values(by=pk).reset_index(drop=True)
+            self.engine_upload(df, table_name, "replace", pk=pk)
