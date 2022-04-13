@@ -19,6 +19,7 @@ tbl_cache/
 # Jupyter notebook
 .ipynb_checkpoints
 .ipynb_checkpoints/
+*.ipynb
 
 # exe
 *.spec
