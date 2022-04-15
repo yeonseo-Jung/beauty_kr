@@ -7,25 +7,21 @@ import numpy as np
 import pandas as pd
 from tqdm.auto import tqdm
 
-# parsing 
+# Scrapping
 from bs4 import BeautifulSoup
 from selenium import webdriver
-
-
-# Scrapping
-import requests
-import selenium
-from selenium import webdriver
-from selenium.webdriver.chrome.options import Options
-import fake_useragent
 from fake_useragent import UserAgent
+from selenium.webdriver.chrome.options import Options
 from webdriver_manager.chrome import ChromeDriverManager
 
 
-# Error Handling
+# Exception Error Handling
 import socket
 import warnings
 warnings.filterwarnings("ignore")
+from selenium.common.exceptions import WebDriverException, TimeoutException
+from requests.exceptions import SSLError, ConnectionError, Timeout, ReadTimeout, RequestException
+from fake_useragent.errors import FakeUserAgentError
 
 cur_dir = os.path.dirname(os.path.realpath(__file__))
 root = os.path.abspath(os.path.join(cur_dir, os.pardir, os.pardir))
@@ -43,12 +39,12 @@ from access_database import access_db
 if getattr(sys, 'frozen', False) and hasattr(sys, '_MEIPASS'):
     base_path = sys._MEIPASS
     tbl_cache = os.path.join(base_path, 'tbl_cache_')
+    conn_path = os.path.join(base_path, 'conn.txt')
     
 else:
     base_path = os.path.dirname(os.path.realpath(__file__))
     tbl_cache = root + '/tbl_cache'
-    
-conn_path = os.path.join(base_path, 'conn.txt')
+    conn_path = os.path.join(src, 'gui/conn.txt')
 
 def scroll_down(wd):
     prev_height = wd.execute_script("return document.body.scrollHeight")
@@ -56,7 +52,7 @@ def scroll_down(wd):
     while True:
         wd.execute_script("window.scrollTo(0, document.body.scrollHeight);")
         wd.implicitly_wait(5)
-        time.sleep(1.5)
+        time.sleep(1)
         current_height = wd.execute_script("return document.body.scrollHeight")
 
         if prev_height == current_height:
@@ -74,58 +70,44 @@ def get_nv_item_link_by_brd_new(input_data, product_id):
     # 검색 url
     search_result_url = f'https://search.shopping.naver.com/search/all?&frm=NVSHCAT&origQuery={input_keyword}%20%20%20-세트%20-리필%20-set%20-Set%20-SET%20-패키지%20-페키지%20-Package%20-PACKAGE&pagingIndex=1&pagingSize=40&productSet=model&query={input_keyword}&sort=rel&timestamp=&viewType=list&xq=세트%20리필%20set%20Set%20SET%20패키지%20페키지%20Package%20PACKAGE'
     
+    socket.setdefaulttimeout(30)
     attempts, ck = 0, 0 # cnt: url 파싱 시도 횟수, ck: url 파싱 성공여부
     while True:
         if attempts == 10:
             print("\n\n** URL Parsing Failed **\n\n")
             break
+        
         try:  
             # user agent
-            options = Options()
+            options = Options() 
             ua = UserAgent(verify_ssl=False, use_cache_server=False, cache=False)
             userAgent = ua.chrome 
             print(userAgent)
             options.add_argument('headless')
             options.add_argument('window-size=1920x1080')
             options.add_argument("disable-gpu")
-            options.add_argument(f'user-agent={userAgent}')    
-            
+            options.add_argument(f'user-agent={userAgent}')
+                
+            # web driver 
             wd = webdriver.Chrome(ChromeDriverManager().install(), chrome_options=options)
-            socket.setdefaulttimeout(30)
             wd.get(search_result_url)
             time.sleep(1)
             ck = 1
             break
-
-        except selenium.common.exceptions.WebDriverException:
+        
+        except (WebDriverException, Timeout, ReadTimeout, ConnectionError, RequestException, TimeoutException, SSLError, FakeUserAgentError):
+            try:
+                wd.quit()
+            except:
+                pass
             time.sleep(30)
-            # wd.close()
-            wd.quit()
-            
-        except selenium.common.exceptions.TimeoutException:
-            time.sleep(30)
-            # wd.close()
-            wd.quit()
-            
-        except requests.exceptions.SSLError:
-            time.sleep(30)
-            # wd.close()
-            wd.quit()
-            
-        except requests.exceptions.ConnectionError:
-            time.sleep(30)
-            # wd.close()
-            wd.quit()
-            
-        except fake_useragent.errors.FakeUserAgentError:
-            time.sleep(300)
-            # wd.close()
-            wd.quit()
             
         except Exception as e:
+            try:
+                wd.quit()
+            except:
+                pass
             time.sleep(30)
-            # wd.close()
-            wd.quit()
             print(f'\n{e}\n')
             
         attempts += 1
@@ -241,7 +223,6 @@ def get_nv_item_link_by_brd_new(input_data, product_id):
     else:
         return [], -1
 
-
 class ThreadScraping(QtCore.QThread, QtCore.QObject):
     ''' Thread scraping product info '''
     
@@ -290,6 +271,7 @@ class ThreadScraping(QtCore.QThread, QtCore.QObject):
                 
                 status_dict[id_] = status
 
+                # length 100개 마다 캐시에 저장 
                 if len(scrap_list) % 100 == 0:
                     with open(tbl_cache + '/scrap_list.txt', 'wb') as f:
                         pickle.dump(scrap_list ,f)
@@ -299,7 +281,6 @@ class ThreadScraping(QtCore.QThread, QtCore.QObject):
                     
             else:
                 # Pause: 이어서 작업 수행 하기 위해 캐시데이터 저장 
-                self.progress.emit(t)
                 
                 prds_ = prds.loc[idx:].reset_index(drop=True)
                 prds_.to_csv(tbl_cache + '/prds_scrap_.csv', index=False)
@@ -314,13 +295,29 @@ class ThreadScraping(QtCore.QThread, QtCore.QObject):
                 with open(tbl_cache + '/status_dict.txt', 'wb') as f:
                     pickle.dump(status_dict, f)
                     
+                # status 데이터 할당 데이터프레임
+                ids = list(status_dict.keys())
+                sts = list(status_dict.values())
+                df_ = pd.DataFrame(columns=['id', 'status'])
+                df_.loc[:, 'id'] = ids
+                df_.loc[:, 'status'] = sts
+            
+                # table Update from db: glowpick_product_scrap_status 
+                table_name = "glowpick_product_scrap_status"
+                pk = "id"
+                self.db.table_update(table_name, pk, df_)
+                
+                self.progress.emit(t)
+                
                 break
             
         if idx == len(prds) - 1:
+            # 스크레이핑 데이터 할당 데이터프레임
             columns = ['id','input_words','product_name','product_url','price','category','product_description','registered_date','product_reviews_count','product_rating','product_store','similarity']
             df = pd.DataFrame(scrap_list, columns=columns)
             df.to_csv(tbl_cache + '/df_info_scrap.csv', index=False)
             
+            # status 데이터 할당 데이터프레임
             ids = list(status_dict.keys())
             sts = list(status_dict.values())
             df_ = pd.DataFrame(columns=['id', 'status'])
