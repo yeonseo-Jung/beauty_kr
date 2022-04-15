@@ -24,8 +24,6 @@ if getattr(sys, 'frozen', False) and hasattr(sys, '_MEIPASS'):
 else:
     base_path = os.path.dirname(os.path.realpath(__file__))
     tbl_cache = os.path.join(root, 'tbl_cache')
-    
-
 
 from PyQt5 import uic
 from PyQt5 import QtCore

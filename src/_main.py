@@ -19,7 +19,6 @@ else:
 if not os.path.exists(tbl_cache_dir):
     os.makedirs(tbl_cache_dir)
     
-    
 def _exec_gui():
     ''' main gui execution '''
     app = QApplication(sys.argv)
@@ -30,4 +29,3 @@ def _exec_gui():
 ''' Opne GUI '''
 if __name__ == '__main__':
     _exec_gui()
-
