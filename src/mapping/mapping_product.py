@@ -281,21 +281,23 @@ def _prd_mapper():
     df_0 = pd.read_csv(tbl_cache + '/deprepro_0.csv')
     df_1 = pd.read_csv(tbl_cache + '/deprepro_1.csv')
 
-    # concat, drop category null, length condition check
+    # concat, drop category null
     df_concat = pd.concat([df_0, df_1])
     df_concat_ = df_concat[df_concat.category.notnull()].reset_index(drop=True)
+    # edit brand, title
+    df_concat_.loc[:, 'brand_name_'] = df_concat_.brand_name.str.replace(' ', '').str.lower()
     df_concat_.loc[:, 'product_name_'] = df_concat_.product_name.str.replace(' ', '')
+    # length condition check
     df_concat_.loc[:, 'length'] = df_concat_.product_name_.str.len()
     df_len = df_concat_[df_concat_.length >= 6].reset_index(drop=True)
 
     # find duplicate
-    subset = ['brand_name', 'category', 'product_name_']
+    subset = ['brand_name_', 'category', 'product_name_']
     df_dup = df_len[df_len.duplicated(subset=subset, keep=False)]
 
     # grouping 
     df_grp = df_dup.groupby(subset)
     grp_index = df_grp.size().index
-
 
     # 브랜드, 카테고리, 상품명 모두 일치하는 상품들 그룹핑 후 매핑 
     map_list, map_list_ = [], []
@@ -309,7 +311,7 @@ def _prd_mapper():
             title = df.loc[0, 'product_name']
             brand = df.loc[0, 'brand_name']
             categ = df.loc[0, 'category']
-            length = len(title.replace(' ', ''))
+            length = df.loc[0, 'length']
 
             tbls = df.loc[df.table_name!='glowpick_product_info_final_version'].table_name.unique().tolist()
             for tbl in tbls:
@@ -372,12 +374,11 @@ def prd_mapper():
     df_notnull_1 = input_data_1[input_data_1.product_name.notnull()].reset_index(drop=True)
     df_notnull_1.loc[:, 'brand_name'] = df_notnull_1.brand_name.str.replace(' ', '').str.lower()
     
-    compared_list = []
-
     # group by brand_name
     brd_grp_0 = df_notnull_0.groupby('brand_name')
     brd_grp_1 = df_notnull_1.groupby('brand_name')
     brands = brd_grp_1.size().index.tolist()
+    compared_list = []
     for brand in tqdm(brands):
         df_brd_1 = brd_grp_1.get_group(brand).reset_index(drop=True)
         
@@ -396,11 +397,9 @@ def prd_mapper():
             
             try:
                 df_categ_0 = categ_grp_0.get_group(categ).reset_index(drop=True)
-
-
+                
             except KeyError: # 매핑 기준 테이블에 해당 카테고리가 존재하지 않는 경우 
                 continue
-            
             
             for idx_1 in range(len(df_categ_1)):
                 id_1, title_1, tbl = df_categ_1.loc[idx_1, ['id', 'product_name', 'table_name']]
