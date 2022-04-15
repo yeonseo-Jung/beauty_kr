@@ -57,8 +57,6 @@ class MappingWindow(QMainWindow, mapping_form):
             item = QListWidgetItem(table)
             item.setCheckState(Qt.Unchecked)
             self.TableList.addItem(item)
-            
-        # self.view_table_name.clicked.connect(self.connect_dialog)
         
         self.Import.clicked.connect(self._import_tbl)
         self.view_table_0.clicked.connect(self._viewer_0)
@@ -131,17 +129,6 @@ class MappingWindow(QMainWindow, mapping_form):
         
         message = f"{int(per)}% | Progress item: {itm}  Total: {tot} | Elapsed time: {elapsed_h}:{elapsed_m}:{elapsed_s} < Remain time: {remain_h}:{remain_m}:{remain_s} "
         self.statusbar.showMessage(message)
-        
-    # def connect_dialog(self):
-    #     ''' Get.GetDialog connect '''    
-        
-    #     self.get = GetDialog()
-    #     self.get.tables.connect(self.append_text)
-    #     self.get.show()
-            
-    # def append_text(self, tables):
-    #     self.textBrowser.clear()
-    #     self.textBrowser.append(tables)
     
     def _get_tbl(self):
         ''' db에서 매핑 대상 테이블만 가져오기 '''
@@ -215,66 +202,86 @@ class MappingWindow(QMainWindow, mapping_form):
         mapping_table.to_csv(tbl_cache + '/mapping_table.csv', index=False)
         
     def save_file(self, file_name):
-        ''' 파일 저장하기 '''
+        ''' save csv file '''
         
         file_path = os.path.join(tbl_cache, file_name)
-        df = pd.read_csv(file_path)
-        
-        # save_path = os.path.join(root, file_name)
-        file_save = QFileDialog.getSaveFileName(self, "Save File", "", "csv file (*.csv)")
-        
-        if file_save[0] != "":
-            df.to_csv(file_save[0], index=False)
+        # 캐시에 해당 파일이 존재할 때 저장
+        if os.path.isfile(file_path):
+            df = pd.read_csv(file_path)
+            file_save = QFileDialog.getSaveFileName(self, "Save File", "", "csv file (*.csv)")
+            
+            if file_save[0] != "":
+                df.to_csv(file_save[0], index=False)
+        else:
+            msg = QMessageBox()
+            msg.setText(self.msg)
+            msg.exec_()
             
     def tbl_viewer(self, file_name):
-        ''' csv file viewer '''
+        ''' table viewer '''
         
-        if self.viewer is None:
-            self.viewer = TableViewer()
+        # 캐시에 테이블이 존재할 때 open table viewer 
+        file_path = os.path.join(tbl_cache, file_name)
+        if os.path.isfile(file_path):
+            if self.viewer is None:
+                self.viewer = TableViewer()
+            else:
+                self.viewer.close()
+                self.viewer = TableViewer()
+                
+            self.viewer.show()
+            self.viewer._loadFile(file_name)
         else:
-            self.viewer.close()
-            self.viewer = TableViewer()
-            
-        self.viewer.show()
-        self.viewer._loadFile(file_name)    
+            msg = QMessageBox()
+            msg.setText(self.msg)
+            msg.exec_()    
             
     def _save_0(self):
         file_name = "tbl_1.csv"
+        self.msg = "테이블 가져오기 완료 후 시도하세요"
         self.save_file(file_name)
         
     def _save_1(self):
         file_name = "deprepro_1.csv"
+        self.msg = "전처리 완료 후 시도하세요"
         self.save_file(file_name)
 
     def _save_2(self):
         file_name = "compared_prds.csv"
+        self.msg = "상품 비교 완료 후 시도하세요"
         self.save_file(file_name)
         
     def _save_3(self):
         file_name = "mapped_prds.csv"
+        self.msg = "매핑 완료 후 시도하세요"
         self.save_file(file_name)
 
     def _save_4(self):
         file_name = "mapping_table.csv"
+        self.msg = "매핑테이블 제작 완료 후 시도하세요"
         self.save_file(file_name)
         
     def _viewer_0(self):
         file_name = "tbl_1.csv"
+        self.msg = "테이블 가져오기 완료 후 시도하세요"
         self.tbl_viewer(file_name)
         
     def _viewer_1(self):
         file_name = "deprepro_1.csv"
+        self.msg = "전처리 완료 후 시도하세요"
         self.tbl_viewer(file_name)
 
     def _viewer_2(self):
         file_name = "compared_prds.csv"
+        self.msg = "상품 비교 완료 후 시도하세요"
         self.tbl_viewer(file_name)
         
     def _viewer_3(self):
         file_name = "mapped_prds.csv"
+        self.msg = "매핑 완료 후 시도하세요"
         self.tbl_viewer(file_name)
 
     def _viewer_4(self):
         file_name = "mapping_table.csv"
+        self.msg = "매핑테이블 제작 완료 후 시도하세요"
         self.tbl_viewer(file_name)
-        

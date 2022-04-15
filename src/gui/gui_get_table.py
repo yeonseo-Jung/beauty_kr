@@ -115,30 +115,41 @@ class GetTableWindow(QMainWindow, mapping_form):
             msg = QMessageBox()
             msg.setText(f'Table import success')
             msg.exec_()
-            
+        
     def save_file(self, file_name):
-        ''' 파일 저장하기 '''
+        ''' save csv file '''
         
         file_path = os.path.join(tbl_cache, file_name)
-        df = pd.read_csv(file_path)
-        
-        table_name = self._select_table()
-        file_save = QFileDialog.getSaveFileName(self, "Save File", table_name, "csv file (*.csv)")
-        
-        if file_save[0] != "":
-            df.to_csv(file_save[0], index=False)
+        # 캐시에 해당 파일이 존재할 때 저장
+        if os.path.isfile(file_path):
+            df = pd.read_csv(file_path)
+            file_save = QFileDialog.getSaveFileName(self, "Save File", "", "csv file (*.csv)")
+            
+            if file_save[0] != "":
+                df.to_csv(file_save[0], index=False)
+        else:
+            msg = QMessageBox()
+            msg.setText('테이블 가져오기 완료 후 시도하세요')
+            msg.exec_()
             
     def tbl_viewer(self, file_name):
-        ''' csv file viewer ''' 
+        ''' table viewer '''
         
-        if self.viewer is None:
-            self.viewer = TableViewer()
+        # 캐시에 테이블이 존재할 때 open table viewer 
+        file_path = os.path.join(tbl_cache, file_name)
+        if os.path.isfile(file_path):
+            if self.viewer is None:
+                self.viewer = TableViewer()
+            else:
+                self.viewer.close()
+                self.viewer = TableViewer()
+                
+            self.viewer.show()
+            self.viewer._loadFile(file_name)
         else:
-            self.viewer.close()
-            self.viewer = TableViewer()
-            
-        self.viewer.show()
-        self.viewer._loadFile(file_name)
+            msg = QMessageBox()
+            msg.setText('테이블 가져오기 완료 후 시도하세요')
+            msg.exec_()
         
     def _save(self):
         file_name = self._select_table() + '.csv'

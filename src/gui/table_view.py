@@ -10,7 +10,7 @@ sys.path.append(src)
 
 import sys
 from PyQt5 import QtCore
-from PyQt5.QtWidgets import QFileDialog, QWidget, QHBoxLayout, QVBoxLayout, QPushButton, QTableView, QLineEdit
+from PyQt5.QtWidgets import QFileDialog, QWidget, QHBoxLayout, QVBoxLayout, QPushButton, QTableView, QLineEdit, QMessageBox
 
 if getattr(sys, 'frozen', False) and hasattr(sys, '_MEIPASS'):
     base_path = sys._MEIPASS
@@ -114,14 +114,13 @@ class TableViewer(QWidget):
             df = pd.read_csv(fileName)
             model = DataFrameModel(df)
             self.pandasTv.setModel(model)
-
-
+            
     def _loadFile(self, file_name):
-        
-        file_path = os.path.join(tbl_cache, file_name)
+        file_path = os.path.join(tbl_cache, file_name)        
         df = pd.read_csv(file_path)
         model = DataFrameModel(df)
         self.pandasTv.setModel(model)
+
         
         
     

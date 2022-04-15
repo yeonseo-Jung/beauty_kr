@@ -175,15 +175,15 @@ class ScrapingWindow(QMainWindow, scraping_form):
         map_tbl = self.db.get_tbl('naver_glowpick_mapping_table', 'all')
         
         # 미매핑 상품 추출하기 
-        map_id_uniq = map_tbl.loc[:, ['glowpick_product_info_final_version_id']].rename(columns={'glowpick_product_info_final_version_id': 'id'}).drop_duplicates(subset=['id'], keep='first').reset_index(drop=True)
-        prd_scrap = pd.concat([df, map_id_uniq]).drop_duplicates(subset=['id'], keep=False).reset_index(drop=True)
+        map_tbl_ = map_tbl.loc[:, ['glowpick_product_info_final_version_id']].rename(columns={'glowpick_product_info_final_version_id': 'id'})
+        prd_scrap = pd.concat([df, map_tbl_]).drop_duplicates(subset=['id'], keep=False).reset_index(drop=True)
         
         # 카테고리 선택
         categs = self.categ_toggled()
         
         if len(categs) == 0:
             msg = QMessageBox()
-            msg.setText('Please select one or more categories.')
+            msg.setText('한개 이상의 카테고리를 선택해주세요.')
             msg.exec_()
             
         else:
@@ -202,16 +202,20 @@ class ScrapingWindow(QMainWindow, scraping_form):
             index_list = []
             for categ in categs:
                 index_list += prd_scrap.loc[prd_scrap.selection==categ].index.tolist()
-                
             prds = prd_scrap.loc[index_list].reset_index(drop=True)
             
+            # db에서 scrap status table 가져와서 join -> status == -1 할당 
+            status_df = self.db.get_tbl("glowpick_product_scrap_status", "all")
+            prds_mer = prds.merge(status_df)
+            scrap_prds = prds_mer.loc[prds_mer.status==-1].reset_index(drop=True)
+            
             # 브랜드 수, 상품 수 표시 
-            brd_cnt = len(prds.brand_name.unique())
-            prd_cnt = len(prds)
+            brd_cnt = len(scrap_prds.brand_name.unique())
+            prd_cnt = len(scrap_prds)
             self.brand_count.display(brd_cnt)
             self.product_count.display(prd_cnt)
             
-            prds.to_csv(tbl_cache + '/prds_scrap.csv', index=False)
+            scrap_prds.to_csv(tbl_cache + '/prds_scrap.csv', index=False)
         
     def _scraping(self):
         msg = QMessageBox()
@@ -224,24 +228,36 @@ class ScrapingWindow(QMainWindow, scraping_form):
         ''' save csv file '''
         
         file_path = os.path.join(tbl_cache, file_name)
-        df = pd.read_csv(file_path)
-        
-        file_save = QFileDialog.getSaveFileName(self, "Save File", "", "csv file (*.csv)")
-        
-        if file_save[0] != "":
-            df.to_csv(file_save[0], index=False)
+        # 캐시에 해당 파일이 존재할 때 저장
+        if os.path.isfile(file_path):
+            df = pd.read_csv(file_path)
+            file_save = QFileDialog.getSaveFileName(self, "Save File", "", "csv file (*.csv)")
+            
+            if file_save[0] != "":
+                df.to_csv(file_save[0], index=False)
+        else:
+            msg = QMessageBox()
+            msg.setText('일시정지 후 다시 시도해주세요')
+            msg.exec_()
             
     def tbl_viewer(self, file_name):
         ''' table viewer '''
         
-        if self.viewer is None:
-            self.viewer = TableViewer()
+        # 캐시에 테이블이 존재할 때 open table viewer 
+        file_path = os.path.join(tbl_cache, file_name)
+        if os.path.isfile(file_path):
+            if self.viewer is None:
+                self.viewer = TableViewer()
+            else:
+                self.viewer.close()
+                self.viewer = TableViewer()
+                
+            self.viewer.show()
+            self.viewer._loadFile(file_name)
         else:
-            self.viewer.close()
-            self.viewer = TableViewer()
-            
-        self.viewer.show()
-        self.viewer._loadFile(file_name)
+            msg = QMessageBox()
+            msg.setText('일시정지 후 다시 시도해주세요')
+            msg.exec_()
         
     def _save(self):
         file_name = "df_info_scrap.csv"
