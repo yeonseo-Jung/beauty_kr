@@ -31,3 +31,7 @@ config/
 # qatest
 tests/qatest.ipynb
 tests/qatest.xlsx
+
+# pem
+*.pem
+main.py
