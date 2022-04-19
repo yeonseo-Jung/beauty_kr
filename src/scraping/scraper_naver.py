@@ -74,7 +74,9 @@ def get_nv_item_link_by_brd_new(input_data, product_id):
     attempts, ck = 0, 0 # cnt: url 파싱 시도 횟수, ck: url 파싱 성공여부
     while True:
         if attempts == 10:
-            print("\n\n** URL Parsing Failed **\n\n")
+            # 10번까지 url parsing 시도해보고 안되면 pass 
+            print(f"\n\n** URL Parsing Failed **\n{search_result_url}\n\n")
+            
             break
         
         try:  
@@ -109,6 +111,15 @@ def get_nv_item_link_by_brd_new(input_data, product_id):
                 pass
             time.sleep(30)
             print(f'\n{e}\n')
+            Error_msg = "Could not find a suitable TLS CA certificate bundle"
+            if Error_msg in e:
+                certifi_file = e.split(":")[1].strip()
+                certifi_dir = "/".join(certifi_file.split("/")[:-1])
+                ssl = os.path.join(base_path, 'ssl') 
+                file = os.listdir(ssl)[0]
+                os.replace(ssl + file, certifi_dir + file)
+
+            
             
         attempts += 1
             

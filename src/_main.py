@@ -14,6 +14,12 @@ else:
     root = os.path.abspath(os.path.join(cur_dir, os.pardir))
     base_path = os.path.dirname(os.path.realpath(__file__))
     tbl_cache_dir = os.path.join(root, 'tbl_cache')
+    
+print(f'\n\nroot: {base_path}\n\n')
+ssl = os.path.join(base_path, 'ssl') 
+if os.path.isdir(ssl):
+    file = os.listdir(ssl)
+    print(file, '\n\n')
 
 # 테이블 캐시 데이터 저장 디렉토리
 if not os.path.exists(tbl_cache_dir):

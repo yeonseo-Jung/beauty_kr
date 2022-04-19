@@ -243,7 +243,7 @@ class ScrapingWindow(QMainWindow, scraping_form):
     def tbl_viewer(self, file_name):
         ''' table viewer '''
         
-        # 캐시에 테이블이 존재할 때 open table viewer 
+        # 캐시에 테이블이 존재할 때 open table viewer
         file_path = os.path.join(tbl_cache, file_name)
         if os.path.isfile(file_path):
             if self.viewer is None:

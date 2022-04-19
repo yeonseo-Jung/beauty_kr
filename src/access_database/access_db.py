@@ -7,7 +7,6 @@ from tqdm.auto import tqdm
 import pymysql
 import sqlalchemy
 
-
 class AccessDataBase():
     
     def __init__(self, user_name, password, db_name):
@@ -131,7 +130,7 @@ class AccessDataBase():
         engine.dispose()
 
     def table_update(self, table_name, pk, df):
-        ''' Table Update from Db
+        ''' Table Update from DB
         
         table_name: table name from db
         pk: primary key
