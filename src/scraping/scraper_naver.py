@@ -110,17 +110,16 @@ def get_nv_item_link_by_brd_new(input_data, product_id):
             except:
                 pass
             time.sleep(30)
-            print(f'\n{e}\n')
+            print(f'\n\n{e}\n\n')
             Error_msg = "Could not find a suitable TLS CA certificate bundle"
+            e = str(e)
             if Error_msg in e:
                 certifi_file = e.split(":")[1].strip()
                 certifi_dir = "/".join(certifi_file.split("/")[:-1])
-                ssl = os.path.join(base_path, 'ssl') 
-                file = os.listdir(ssl)[0]
-                os.replace(ssl + file, certifi_dir + file)
-
-            
-            
+                ssl = os.path.join(base_path, 'ssl')
+                if os.path.isdir(ssl): 
+                    file = os.listdir(ssl)[0]
+                    os.replace(ssl + file, certifi_dir + file)
         attempts += 1
             
     if ck == 1:   
