@@ -480,7 +480,6 @@ def md_map_tbl(input_data: pd.DataFrame) -> pd.DataFrame:
 
                 if len(ids) == 1:
                     ids = str(ids[0])
-
                 else:
                     ids = str(ids)
                 map_list.append([int(id_0), ids, tbl])

@@ -66,7 +66,6 @@ class MappingWindow(QMainWindow, mapping_form):
         self.thread_preprocess = ThreadTitlePreprocess()
         self.thread_preprocess.progress.connect(self.update_progress)
         self.preprocess.clicked.connect(self._preprocess)
-        self.stop_preprocess.clicked.connect(self.thread_preprocess.stop)
         self.view_table_1.clicked.connect(self._viewer_1)
         self.save_1.clicked.connect(self._save_1)
         
@@ -74,7 +73,6 @@ class MappingWindow(QMainWindow, mapping_form):
         self.thread_compare = ThreadComparing()
         self.thread_compare.progress.connect(self._update_progress)
         self.compare.clicked.connect(self._comparing)
-        self.stop_compare.clicked.connect(self.thread_compare.stop)
         self.view_table_2.clicked.connect(self._viewer_2)
         self.save_2.clicked.connect(self._save_2)
         
@@ -84,9 +82,12 @@ class MappingWindow(QMainWindow, mapping_form):
         self.save_3.clicked.connect(self._save_3)
         
         # mapping table
-        self.mapping_table.clicked.connect(self._mapping_table)
-        self.view_table_4.clicked.connect(self._viewer_4)
-        self.save_4.clicked.connect(self._save_4)
+        # self.mapping_table.clicked.connect(self._mapping_table)
+        # self.view_table_4.clicked.connect(self._viewer_4)
+        # self.save_4.clicked.connect(self._save_4)
+        
+        # mapping status
+        self.status.clicked.connect(self._status)
         
     def update_progress(self, progress):
         
@@ -191,15 +192,15 @@ class MappingWindow(QMainWindow, mapping_form):
         compared_prds = pd.read_csv(tbl_cache + '/compared_prds.csv')
         mapped_prds = mapping_product.select_mapped_prd(compared_prds)
         mapped_prds.to_csv(tbl_cache + '/mapped_prds.csv', index=False)
-        
         mapping_table = mapping_product.md_map_tbl(mapped_prds)
         mapping_table.to_csv(tbl_cache + '/mapping_table.csv', index=False)
         
-    def _mapping_table(self):
-        ''' Create mapping table'''
-        mapped_prds = pd.read_csv(tbl_cache + '/mapped_prds.csv')
-        mapping_table = mapping_product.md_map_tbl(mapped_prds)
-        mapping_table.to_csv(tbl_cache + '/mapping_table.csv', index=False)
+    # def _mapping_table(self):
+    #     ''' Create mapping table'''
+        
+    #     mapped_prds = pd.read_csv(tbl_cache + '/mapped_prds.csv')
+    #     mapping_table = mapping_product.md_map_tbl(mapped_prds)
+    #     mapping_table.to_csv(tbl_cache + '/mapping_table.csv', index=False)
         
     def save_file(self, file_name):
         ''' save csv file '''
@@ -285,3 +286,36 @@ class MappingWindow(QMainWindow, mapping_form):
         file_name = "mapping_table.csv"
         self.msg = "매핑테이블 제작 완료 후 시도하세요"
         self.tbl_viewer(file_name)
+        
+    def _status(self):
+        file_name = "mapped_prds.csv"
+        file_path = os.path.join(tbl_cache, file_name)
+        if os.path.isfile(file_path):
+            df = pd.read_csv(file_path)
+            prd_0 = len(df.id_0.unique())
+            prd_1 = len(df)
+                
+            df_0 = df.loc[df.similarity==1]
+            prd_0_0 = len(df_0.id_0.unique())
+            # prd_0_1 = len(df_0.drop_duplicates(subset=['id_1', 'table_name'], keep='first'))
+            # print(prd_0_0, prd_0_1)
+
+            df_1 = df.loc[(df.similarity!=1) & (df.dependency_ratio==1)]
+            prd_1_0 = len(df_1.id_0.unique())
+            # prd_1_1 = len(df_1.drop_duplicates(subset=['id_1', 'table_name'], keep='first'))
+            # print(prd_1_0, prd_1_1)
+
+            df_2 = df.loc[(df.similarity!=1) & (df.dependency_ratio!=1)]
+            prd_2_0 = len(df_2.id_0.unique())
+            # prd_2_1 = len(df_2.drop_duplicates(subset=['id_1', 'table_name'], keep='first'))
+            # print(prd_2_0, prd_2_1)
+            QMessageBox.about(self,
+                            'Mapping Status',
+                            f"- 매핑 기준 상품 수(글로우픽): {prd_0}\n- 매핑 대상 상품 수: {prd_1}\n\n\
+                            - 상품명 완전일치: {prd_0_0}\n\
+                            - 상품명 완전종속: {prd_1_0}\n\
+                            - 유사도 조건충족: {prd_2_0}")
+        else:
+            msg = QMessageBox()
+            msg.setText("매핑 완료 후 시도하세요")
+            msg.exec_() 
