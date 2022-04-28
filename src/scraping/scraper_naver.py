@@ -160,3 +160,4 @@ class ThreadScraping(QtCore.QThread, QtCore.QObject):
         self.power = False
         self.quit()
         self.wait(3000)
+        
