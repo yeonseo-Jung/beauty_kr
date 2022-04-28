@@ -90,6 +90,12 @@ class GetTableWindow(QMainWindow, mapping_form):
         
         column_list = self._select_columns()
         
+        
+        """
+        test
+        """
+        print(f"\n\n{column_list}\n\n")
+        
         # 컬럼을 선택하지 않으면 모든 컬럼이 선택되거나 import를 취소
         if len(column_list) == 0:
             msg = QMessageBox.question(
@@ -116,14 +122,14 @@ class GetTableWindow(QMainWindow, mapping_form):
             msg.setText(f'Table import success')
             msg.exec_()
         
-    def save_file(self, file_name):
+    def save_file(self, table_name):
         ''' save csv file '''
-        
+        file_name = table_name + ".csv"
         file_path = os.path.join(tbl_cache, file_name)
         # 캐시에 해당 파일이 존재할 때 저장
         if os.path.isfile(file_path):
             df = pd.read_csv(file_path)
-            file_save = QFileDialog.getSaveFileName(self, "Save File", "", "csv file (*.csv)")
+            file_save = QFileDialog.getSaveFileName(self, "Save File", table_name, "csv file (*.csv)")
             
             if file_save[0] != "":
                 df.to_csv(file_save[0], index=False)
@@ -152,9 +158,9 @@ class GetTableWindow(QMainWindow, mapping_form):
             msg.exec_()
         
     def _save(self):
-        file_name = self._select_table() + '.csv'
-        self.save_file(file_name)
+        table_name = self._select_table()
+        self.save_file(table_name)
         
     def _viewer(self):
-        file_name = self._select_table() + '.csv'
+        file_name = self._select_table() + ".csv"
         self.tbl_viewer(file_name)

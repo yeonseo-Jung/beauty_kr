@@ -15,8 +15,6 @@ from mapping import preprocessing
 from mapping.preprocessing import ThreadTitlePreprocess
 from mapping import mapping_product
 from mapping.mapping_product import ThreadComparing
-
-from gui.get_table import GetDialog
 from gui.table_view import TableViewer
 
 from PyQt5 import uic

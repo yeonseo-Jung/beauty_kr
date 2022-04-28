@@ -176,6 +176,7 @@ class ScrapingWindow(QMainWindow, scraping_form):
         
         # 미매핑 상품 추출하기 
         map_tbl_ = map_tbl.loc[:, ['glowpick_product_info_final_version_id']].rename(columns={'glowpick_product_info_final_version_id': 'id'})
+        # 차집합 구하기 : {df} - {map_tbl_}
         prd_scrap = pd.concat([df, map_tbl_]).drop_duplicates(subset=['id'], keep=False).reset_index(drop=True)
         
         # 카테고리 선택

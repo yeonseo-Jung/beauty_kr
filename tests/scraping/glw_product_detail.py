@@ -56,7 +56,7 @@ def glw_product_detail_info_crw(product_code) :
     userAgent = ua.random
     print(userAgent)
 
-    options.add_argument('headless')
+    # options.add_argument('headless')
     options.add_argument('window-size=1920x1080')
     options.add_argument("disable-gpu")
     options.add_argument(f'user-agent={userAgent}')
@@ -78,7 +78,7 @@ def glw_product_detail_info_crw(product_code) :
     #remove_button.click()
 
     # 사이트 로딩 시간 고려 및 봇감지 방지
-    time.sleep(2)
+    time.sleep(5)
     
     #브랜드 이름 찾기
     find_brd = driver.find_element_by_xpath('/html/body/div/div/div/div/main/div/section/div[2]/p[1]/button')
@@ -214,7 +214,6 @@ def glw_product_detail_info_crw(product_code) :
                 pass
             
             
-            
             time.sleep(2)
             driver.find_element_by_class_name('details__contents__h1__button').click()#제품 설명 닫기
             time.sleep(3)
@@ -323,10 +322,7 @@ def glw_product_detail_info_crw(product_code) :
             w = w.replace('\n','')
             all_award_ranks.append(w)
             
-            
-            
-            
-            
+    
     elif award == []:
         html = driver.page_source
         soup = BeautifulSoup(html,"html.parser")

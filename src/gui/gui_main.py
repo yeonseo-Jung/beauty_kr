@@ -77,6 +77,9 @@ class MainWidget(QWidget):
         btn_conn.clicked.connect(self.check_info)
         layout.addWidget(btn_conn, 5, 0, 1, 2)
         layout.setRowMinimumHeight(3, 75)
+        
+        version = QLabel('<font size="2"> version 0.0.1.1 </font>')
+        layout.addWidget(version, 6, 0)
 
         self.setLayout(layout)
         
@@ -132,7 +135,6 @@ class MainWidget(QWidget):
                     self.w2.close()
                     self.w2 = GetTableWindow()
                 self.w2.show()
-                
                 
         except Exception as e:
             msg.setText(f'{e}')

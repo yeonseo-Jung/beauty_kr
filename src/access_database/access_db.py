@@ -64,19 +64,15 @@ class AccessDataBase():
         
         if columns == 'all':
             query = f'SELECT * FROM {table_name};'
-            
-        
         else:
             # SELECT columns
             query = 'SELECT '
             i = 0
             for col in columns:
                 if i == 0:
-                    query += col
-
+                    query += f"`{col}`"
                 else:
-                    query += ', ' + col
-
+                    query += ', ' + f"`{col}`"
                 i += 1
 
             # FROM table_name
