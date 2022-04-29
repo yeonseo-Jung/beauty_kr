@@ -10,6 +10,7 @@ __pycache__/
 dist/
 build/
 *.egg-info/
+_exec.py
 
 # Experiments
 tmp/
@@ -29,9 +30,15 @@ config/
 
 
 # qatest
-tests/qatest.ipynb
-tests/qatest.xlsx
+*.ipynb
+*.xlsx
+*.csv
 
 # pem
 *.pem
 main.py
+
+# image
+*.png
+*.PIL
+*.ico
