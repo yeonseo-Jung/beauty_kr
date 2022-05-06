@@ -85,6 +85,20 @@ class AccessDataBase():
         
         return df
     
+    def integ_tbl(self, table_name_list, columns):
+        ''' 
+        db에서 컬럼이 같은 여러개 테이블 가져오기
+        db에서 테이블 가져온 후 데이터 프레임 통합 (concat)
+        '''
+
+        df = pd.DataFrame()
+        for tbl in table_name_list:
+            df_ = self.get_tbl(tbl, columns)
+            df_.loc[:, 'table_name'] = tbl
+            df = pd.concat([df, df_])
+        df = df.reset_index(drop=True)
+        return df
+
     def sqlcol(self, dfparam):    
         ''' Convert DataFrame data type to sql data type '''
         
@@ -111,18 +125,15 @@ class AccessDataBase():
         host_url = "db.ds.mycelebs.com"
         port_num = 3306
         engine = sqlalchemy.create_engine(f'mysql+pymysql://{self.user_name}:{self.password}@{host_url}:{port_num}/{self.db_name}?charset=utf8mb4')
-                
-        # Convert to sql dtype
-        dtype = self.sqlcol(upload_df)
-            
-        # engine_conn = engine.connect()
-        upload_df.to_sql(table_name, engine, if_exists=if_exists_option, index=False, dtype=dtype)
         
-        # # Setting pk 
-        # if pk != None:
-        #     engine.execute(f'ALTER TABLE {table_name} ADD PRIMARY KEY (`{pk}`);')
-        # else:
-        #     pass
+        # Create table or Replace table 
+        upload_df.to_sql(table_name, engine, if_exists=if_exists_option, index=False)
+        
+        # Setting pk 
+        if pk != None:
+            engine.execute(f'ALTER TABLE {table_name} ADD PRIMARY KEY (`{pk}`);')
+        else:
+            pass
         engine.dispose()
 
     def table_update(self, table_name, pk, df):
