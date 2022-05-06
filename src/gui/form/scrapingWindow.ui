@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>656</width>
-    <height>418</height>
+    <height>428</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -17,10 +17,10 @@
    <widget class="QPushButton" name="Accept">
     <property name="geometry">
      <rect>
-      <x>190</x>
-      <y>190</y>
-      <width>100</width>
-      <height>30</height>
+      <x>200</x>
+      <y>230</y>
+      <width>85</width>
+      <height>32</height>
      </rect>
     </property>
     <property name="font">
@@ -108,7 +108,7 @@
      <string>헤어케어</string>
     </property>
    </widget>
-   <widget class="QCheckBox" name="manscare">
+   <widget class="QCheckBox" name="menscare">
     <property name="geometry">
      <rect>
       <x>200</x>
@@ -188,7 +188,7 @@
     <property name="geometry">
      <rect>
       <x>25</x>
-      <y>300</y>
+      <y>310</y>
       <width>100</width>
       <height>32</height>
      </rect>
@@ -244,7 +244,7 @@
     <property name="geometry">
      <rect>
       <x>30</x>
-      <y>330</y>
+      <y>340</y>
       <width>600</width>
       <height>30</height>
      </rect>
@@ -301,7 +301,7 @@
     <property name="geometry">
      <rect>
       <x>135</x>
-      <y>300</y>
+      <y>310</y>
       <width>100</width>
       <height>32</height>
      </rect>
@@ -319,7 +319,7 @@
     <property name="geometry">
      <rect>
       <x>355</x>
-      <y>300</y>
+      <y>310</y>
       <width>100</width>
       <height>32</height>
      </rect>
@@ -337,7 +337,7 @@
     <property name="geometry">
      <rect>
       <x>245</x>
-      <y>300</y>
+      <y>310</y>
       <width>100</width>
       <height>32</height>
      </rect>
@@ -349,6 +349,44 @@
     </property>
     <property name="text">
      <string>View</string>
+    </property>
+   </widget>
+   <widget class="QCheckBox" name="beauty_tool">
+    <property name="geometry">
+     <rect>
+      <x>80</x>
+      <y>200</y>
+      <width>87</width>
+      <height>20</height>
+     </rect>
+    </property>
+    <property name="font">
+     <font>
+      <family>.Apple SD Gothic NeoI</family>
+      <pointsize>13</pointsize>
+     </font>
+    </property>
+    <property name="text">
+     <string>뷰티툴</string>
+    </property>
+   </widget>
+   <widget class="QCheckBox" name="fragrance">
+    <property name="geometry">
+     <rect>
+      <x>200</x>
+      <y>200</y>
+      <width>87</width>
+      <height>20</height>
+     </rect>
+    </property>
+    <property name="font">
+     <font>
+      <family>.Apple SD Gothic NeoI</family>
+      <pointsize>13</pointsize>
+     </font>
+    </property>
+    <property name="text">
+     <string>프래그런스</string>
     </property>
    </widget>
   </widget>

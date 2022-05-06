@@ -52,8 +52,8 @@ class ScrapingWindow(QMainWindow, scraping_form):
         self.haircare.toggled.connect(self.categ_toggled)
         self.cleansing.setChecked(False)
         self.cleansing.toggled.connect(self.categ_toggled)
-        self.manscare.setChecked(False)
-        self.manscare.toggled.connect(self.categ_toggled)
+        self.menscare.setChecked(False)
+        self.menscare.toggled.connect(self.categ_toggled)
         self.suncare.setChecked(False)
         self.suncare.toggled.connect(self.categ_toggled)
         self.maskpack.setChecked(False)
@@ -76,7 +76,7 @@ class ScrapingWindow(QMainWindow, scraping_form):
             elapsed_ = round(prg_dict_['elapsed'], 0)
             
         else:
-            itm_, elapsed_ = 0, 0
+            itm_, elapsed_ = 1, 0
         
         prg_dict = progress.format_dict
         itm = prg_dict['n'] + itm_
@@ -138,7 +138,7 @@ class ScrapingWindow(QMainWindow, scraping_form):
             categ = "클렌징"
             categs.append(categ)
             
-        if self.manscare.isChecked():
+        if self.menscare.isChecked():
             categ = "남성화장품"
             categs.append(categ)
             
@@ -148,6 +148,14 @@ class ScrapingWindow(QMainWindow, scraping_form):
             
         if self.maskpack.isChecked():
             categ = "마스크/팩"
+            categs.append(categ)
+            
+        if self.beauty_tool.isChecked():
+            categ = "뷰티툴"
+            categs.append(categ)
+            
+        if self.fragrance.isChecked():
+            categ = "프래그런스"
             categs.append(categ)
             
         return categs
@@ -169,9 +177,15 @@ class ScrapingWindow(QMainWindow, scraping_form):
         ''' accept category and get table '''
         
         # table load
-        table_name = 'glowpick_product_info_final_version'
-        columns = ['id', 'brand_name', 'product_name', 'selection', 'division', 'groups']
-        df = self.db.get_tbl(table_name, columns)
+        file_path = os.path.join(tbl_cache, 'glowpick_product_info_final_version_for_scraping.csv')
+        if os.path.isfile(file_path):
+            df = pd.read_csv(file_path)
+        else:
+            table_name = 'glowpick_product_info_final_version'
+            columns = ['id', 'brand_name', 'product_name', 'selection']
+            df = self.db.get_tbl(table_name, columns)
+            df.to_csv(file_path)
+        
         map_tbl = self.db.get_tbl('naver_glowpick_mapping_table', 'all')
         
         # 미매핑 상품 추출하기 

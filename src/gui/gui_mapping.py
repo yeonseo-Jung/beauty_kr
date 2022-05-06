@@ -42,9 +42,14 @@ class MappingWindow(QMainWindow, mapping_form):
         super().__init__()    
         self.setupUi(self)
         self.setWindowTitle('Mapping Products')
-        # self.textBrowser.setOpenExternalLinks(True)
         self.viewer = None
-        
+        self.getter = False
+        self.prepro = False
+        self._prepro = False
+        self.comp = False
+        self._comp = False
+        self.mapped = False
+    
         # db 연결
         with open(conn_path, 'rb') as f:
             conn = pickle.load(f)
@@ -146,10 +151,10 @@ class MappingWindow(QMainWindow, mapping_form):
         ''' 데이터 베이스에서 테이블 가져와서 통합하기 '''
         
         # 상품 매핑에 필요한 컬럼
-        columns = ['id', 'brand_name', 'product_name', 'selection', 'division', 'groups']
+        columns_0 = ['id', 'brand_name', 'product_name', 'selection', 'division', 'groups', 'dup_check']
         
         # 매핑 기준 테이블 
-        tbl_0 = self.db.get_tbl('glowpick_product_info_final_version', columns)
+        tbl_0 = self.db.get_tbl('glowpick_product_info_final_version', columns_0)
         tbl_0.loc[:, 'table_name'] = 'glowpick_product_info_final_version'
         tbl_0.to_csv(tbl_cache + '/tbl_0.csv', index=False)
         
@@ -162,44 +167,57 @@ class MappingWindow(QMainWindow, mapping_form):
         
         if len(tbls) == 0:
             msg = QMessageBox()
-            msg.setText(f'Please check the table')
+            msg.setText(f'매핑 대상 테이블을 선택하세요')
             msg.exec_()
             
         else:
-            tbl_1 = preprocessing.integ_tbl(self.db, tbls, columns)
+            columns_1 = ['id', 'brand_name', 'product_name', 'selection', 'division', 'groups']
+            tbl_1 = preprocessing.integ_tbl(self.db, tbls, columns_1)
             tbl_1.to_csv(tbl_cache + '/tbl_1.csv', index=False)
             msg = QMessageBox()
             msg.setText(f'Table import success')
             msg.exec_()
+            self.getter = True
             
     def _preprocess(self):
         ''' 쓰레드 연결 및 전처리 수행 ''' 
-        
-        self.thread_preprocess.power = True
-        self.thread_preprocess.start()
-        
+        if self.getter:    
+            self.thread_preprocess.power = True
+            self.thread_preprocess.start()
+            self.prepro = True
+            self.getter = False
+        else:
+            msg = QMessageBox()
+            msg.setText(f'매핑 대상 테이블 임포트 완료 후 시도하세요')
+            msg.exec_()
+            
     def _comparing(self):
         ''' 쓰레드 연결 및 상품정보 비교 수행 '''
-        
-        self.thread_compare.power = True
-        self.thread_compare.start()
+        if self.prepro:
+            self.thread_compare.power = True
+            self.thread_compare.start()
+            self.prepro = False
+            self.comp = True
+        else:
+            msg = QMessageBox()
+            msg.setText(f'매핑 대상 테이블 전처리 완료 후 시도하세요')
+            msg.exec_()
         
     def _mapping(self):
         ''' Select mapped product '''
-        
-        compared_prds = pd.read_csv(tbl_cache + '/compared_prds.csv')
-        mapped_prds = mapping_product.select_mapped_prd(compared_prds)
-        mapped_prds.to_csv(tbl_cache + '/mapped_prds.csv', index=False)
-        mapping_table = mapping_product.md_map_tbl(mapped_prds)
-        mapping_table.to_csv(tbl_cache + '/mapping_table.csv', index=False)
-        
-    # def _mapping_table(self):
-    #     ''' Create mapping table'''
-        
-    #     mapped_prds = pd.read_csv(tbl_cache + '/mapped_prds.csv')
-    #     mapping_table = mapping_product.md_map_tbl(mapped_prds)
-    #     mapping_table.to_csv(tbl_cache + '/mapping_table.csv', index=False)
-        
+        if self.comp:
+            compared_prds = pd.read_csv(tbl_cache + '/compared_prds.csv')
+            mapped_prds = mapping_product.select_mapped_prd(compared_prds)
+            mapped_prds.to_csv(tbl_cache + '/mapped_prds.csv', index=False)
+            mapping_table = mapping_product.md_map_tbl(mapped_prds)
+            mapping_table.to_csv(tbl_cache + '/mapping_table.csv', index=False)
+            self.compare = False
+            self.mapped = True
+        else:
+            msg = QMessageBox()
+            msg.setText(f'Compare 완료 후 시도하세요')
+            msg.exec_()
+            
     def save_file(self, file_name):
         ''' save csv file '''
         

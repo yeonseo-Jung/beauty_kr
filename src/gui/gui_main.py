@@ -13,6 +13,7 @@ from access_database import access_db
 from gui.gui_scraping import ScrapingWindow
 from gui.gui_mapping import MappingWindow
 from gui.gui_get_table import GetTableWindow
+from gui.gui_review import ReviewWindow
 
 from PyQt5.QtWidgets import QWidget, QGridLayout, QLabel, QLineEdit, QComboBox, QPushButton, QMessageBox
 
@@ -54,7 +55,6 @@ class MainWidget(QWidget):
         self.lineEdit_password.setPlaceholderText('Please enter your password')
         layout.addWidget(label_password, 1, 0)
         layout.addWidget(self.lineEdit_password, 1, 1)
-
 
         #
         label_database = QLabel('<font size="4"> Database </font>')
@@ -135,6 +135,14 @@ class MainWidget(QWidget):
                     self.w2.close()
                     self.w2 = GetTableWindow()
                 self.w2.show()
+                
+            elif menu_index == 3:
+                if self.w3 is None:
+                    self.w3 = ReviewWindow()
+                else:
+                    self.w3.close()
+                    self.w3 = ReviewWindow()
+                self.w3.show()
                 
         except Exception as e:
             msg.setText(f'{e}')
