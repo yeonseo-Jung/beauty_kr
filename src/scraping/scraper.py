@@ -2,14 +2,13 @@ import os
 import re
 import sys
 import time
-import shutil
-import certifi
+import pickle
 import numpy as np
 import pandas as pd
-from tqdm.auto import tqdm
 
 # Scrapping
 from bs4 import BeautifulSoup
+# from user_agents import parse
 # from fake_useragent import UserAgent
 from user_agent import generate_user_agent
 from selenium import webdriver
@@ -47,6 +46,7 @@ def get_url(url):
     
     wd = None
     socket.setdefaulttimeout(30)
+    error = []
     attempts = 0 # url parsing 시도횟수
     # 10번 이상 parsing 실패시 pass
     while attempts < 10:
@@ -54,13 +54,11 @@ def get_url(url):
             attempts += 1
             # user agent
             options = Options() 
-            # ua = UserAgent(verify_ssl=False)
-            # userAgent = ua.chrome
             userAgent = generate_user_agent(os=('mac', 'linux'), navigator='chrome', device_type='desktop')
-            print(f'\nUserAgent: {userAgent}')
+            print(f'\n\nUserAgent: {userAgent}')
             options.add_argument('headless')
             options.add_argument('window-size=1920x1080')
-            options.add_argument("disable-gpu")
+            options.add_argument("--disable-gpu")
             options.add_argument('--disable-extensions')
             options.add_argument('--blink-settings=imagesEnabled=false')
             options.add_argument(f'user-agent={userAgent}')
@@ -73,12 +71,15 @@ def get_url(url):
 
         # 예외처리
         except Exception as e:
+            time.sleep(300)
             try:
                 wd.quit()
             except:
                 pass
-            print(f'\n<Error>\n{e}')
-            time.sleep(30)
+            print(f'\n\n<Error>\n{e}\n\n')
+            error.append([url, str(e)])
+            with open(f'{tbl_cache}/scraping_error_msg.txt', 'wb') as f:
+                pickle.dump(error, f)
     print(f'\nAttempts: {attempts}')
     return wd
 
@@ -98,9 +99,6 @@ def scroll_down(wd):
         if prev_height == current_height:
             break
         prev_height = current_height
-
-
-
 
 def scraper_nv(product_id, search_word):
     ''' 네이버 뷰티윈도 가격비교탭에서 검색어 입력해서 상품 정보 스크레이핑
@@ -127,7 +125,7 @@ def scraper_nv(product_id, search_word):
         scraps = []
         status = -1 # status when parsing url fails
         end = time.time()
-        print("Pasing Fail")
+        print("\n\n\t<Parsing Fail>\n\n")
         pass
     
     else:
@@ -137,7 +135,7 @@ def scraper_nv(product_id, search_word):
         soup = BeautifulSoup(html,'lxml') 
         item_divs = soup.find_all('div',class_='basicList_inner__eY_mq')
         end = time.time()
-        print(f'Pasing time: {round(end - start, 1)}s')
+        print(f'Parsing time: {round(end - start, 1)}s')
         scraps = []
         
         st = time.time()
@@ -241,12 +239,12 @@ def scraper_nv(product_id, search_word):
             
         wd.quit()
         ed = time.time()
-        print(f'Get time: {round(ed - st, 1)}s')
+        print(f'Scraping time: {round(ed - st, 1)}s')
         if len(scraps) == 0:
             status = 0
             print(f"\n<Not Found>\n{input_txt_}\n\n")
         else:
-            print(f'\nScraping product count: {len(scraps)}\n\n')
+            print(f'Scraping product count: {len(scraps)}\n\n')
             status = 1
             
     return scraps, status

@@ -8,20 +8,17 @@ import pandas as pd
 from tqdm.auto import tqdm
 
 # Scrapping
-from bs4 import BeautifulSoup
-from selenium import webdriver
-from fake_useragent import UserAgent
-from selenium.webdriver.chrome.options import Options
-from webdriver_manager.chrome import ChromeDriverManager
+# from bs4 import BeautifulSoup
+# from selenium import webdriver
+# from fake_useragent import UserAgent
+# from selenium.webdriver.chrome.options import Options
+# from webdriver_manager.chrome import ChromeDriverManager
 
 
 # Exception Error Handling
 import socket
 import warnings
 warnings.filterwarnings("ignore")
-from selenium.common.exceptions import WebDriverException, TimeoutException
-from requests.exceptions import SSLError, ConnectionError, Timeout, ReadTimeout, RequestException
-from fake_useragent.errors import FakeUserAgentError
 
 cur_dir = os.path.dirname(os.path.realpath(__file__))
 root = os.path.abspath(os.path.join(cur_dir, os.pardir, os.pardir))
@@ -35,7 +32,6 @@ from PyQt5.QtWidgets import *
 from hangle import _distance
 from access_database import access_db
 from scraping import scraper
-
 
 if getattr(sys, 'frozen', False) and hasattr(sys, '_MEIPASS'):
     base_path = sys._MEIPASS
@@ -106,7 +102,6 @@ class ThreadScraping(QtCore.QThread, QtCore.QObject):
                     
             else:
                 # Pause: 이어서 작업 수행 하기 위해 캐시데이터 저장 
-                
                 prds_ = prds.loc[idx:].reset_index(drop=True)
                 prds_.to_csv(tbl_cache + '/prds_scrap_.csv', index=False)
                 

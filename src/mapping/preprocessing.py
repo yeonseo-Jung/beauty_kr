@@ -39,8 +39,7 @@ def integ_tbl(db_access, table_name_list, columns):
         df_.loc[:, 'table_name'] = tbl
         df = pd.concat([df, df_])
         
-    # # sort
-    # df = df.sort_values(by='id').reset_index(drop=True)
+    df = df.reset_index(drop=True)
     
     return df
     
@@ -568,6 +567,8 @@ class ThreadTitlePreprocess(QtCore.QThread, QtCore.QObject):
     def run(self):
             
         df_0 = pd.read_csv(tbl_cache + '/tbl_0.csv')
+        # 글로우픽 내부 중복 제거
+        df_0 = df_0[df_0.dup_check != -1].reset_index(drop=True)
         df_1 = pd.read_csv(tbl_cache + '/tbl_1.csv')
         
         df_0 = self.preprocess.categ_reclassifier(df_0, 0)

@@ -22,17 +22,18 @@ tbl_cache/
 .ipynb_checkpoints/
 *.ipynb
 
-# exe
+# exec
 *.spec
 
 # config
 config/
 
 
-# qatest
+# ipynb, csv, text
 *.ipynb
 *.xlsx
 *.csv
+*.txt
 
 # pem
 *.pem
@@ -42,3 +43,4 @@ main.py
 *.png
 *.PIL
 *.ico
+*.icns
