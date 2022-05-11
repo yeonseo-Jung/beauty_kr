@@ -128,7 +128,7 @@ class GetTableWindow(QMainWindow, mapping_form):
         file_path = os.path.join(tbl_cache, file_name)
         # 캐시에 해당 파일이 존재할 때 저장
         if os.path.isfile(file_path):
-            df = pd.read_csv(file_path)
+            df = pd.read_csv(file_path, lineterminator='\n')
             file_save = QFileDialog.getSaveFileName(self, "Save File", table_name, "csv file (*.csv)")
             
             if file_save[0] != "":

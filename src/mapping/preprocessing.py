@@ -58,7 +58,7 @@ class TitlePreProcess:
         # 유지해야 할 단어 정규식 
         num_0 = re.compile('[a-z]*\s*[0-9]+\s*호')
         num_1 = re.compile('#\s*[a-z]*\s*[0-9]+')
-        num_2 = re.compile('[n]+[oO]+[.]?\s*[0-9]+')
+        num_2 = re.compile('[n]+[o]+[.]?\s*[0-9]+')
         n_in_one = re.compile('[0-9]+\s?in\s?[0-9]+')
         spf = re.compile('spf\s*[0-9]*[+]*')
         pa = re.compile('pa\s*[0-9]*[+]+')
@@ -138,9 +138,8 @@ class TitlePreProcess:
         for pattern in self.stp_pattern_reg:
             title = pattern.sub(' ', title)
 
-            
-        '''상품명에서 한글만 추출'''
-        title = re.sub('[^가-힣]', ' ', title)
+        # '''상품명에서 한글만 추출'''
+        # title = re.sub('[^가-힣]', ' ', title)
         title = re.sub(' +', ' ', title)
         title = title.strip()
         
@@ -169,7 +168,6 @@ class TitlePreProcess:
             
         return title_dedup
 
-
     def insert_keep_wd(self, title, keep_wd_dict):
         '''유지 할 문자 삽입'''
         
@@ -193,8 +191,7 @@ class TitlePreProcess:
         
         title = str(title).lower()
         brand = str(brand).lower()
-        title_ = title.replace('해외', '').replace('단종', '')
-        title_ = title_.replace(brand, '')
+        title_ = title.replace('해외', ' ').replace('단종', ' ').replace(brand, ' ')
         title_ = re.sub(' +', ' ', title_).strip()
 
         '''상품명에서 상품 정보 추출'''
@@ -382,7 +379,6 @@ class TitlePreProcess:
         #     '목욕비누' : '바디클렌저','입욕제' : '바디클렌저','바디슬리밍' : '바디슬리밍','제모제' : '제모용품'}]
         
         # Category Segmentation 2
-        # #글로우픽
         # categ_list_0 = [
         #         {'립메이크업': '립메이크업',
         #         '컨투어링': '컨투어링',
@@ -429,8 +425,6 @@ class TitlePreProcess:
                 
         #         {'여성향수': '프래그런스', '유니섹스향수': '프래그런스', '남성향수': '프래그런스'}]
 
-
-        # #네이버
         # categ_list_1 = [
         #     {},
         #     {'선케어': '선케어',
@@ -492,6 +486,7 @@ class TitlePreProcess:
                 '선케어': '선케어',
                 '마스크/팩': '마스크/팩',
                 '뷰티툴': '뷰티툴',
+                '베이비': '베이비'
              },
             {
                 }, 
@@ -500,6 +495,7 @@ class TitlePreProcess:
         ]
         categ_list_1 = [
             {
+                '출산/육아': '베이비'
                 },
             {
                 '스킨케어': '스킨케어',

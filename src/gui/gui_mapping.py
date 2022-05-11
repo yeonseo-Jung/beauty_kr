@@ -84,11 +84,6 @@ class MappingWindow(QMainWindow, mapping_form):
         self.view_table_3.clicked.connect(self._viewer_3)
         self.save_3.clicked.connect(self._save_3)
         
-        # mapping table
-        # self.mapping_table.clicked.connect(self._mapping_table)
-        # self.view_table_4.clicked.connect(self._viewer_4)
-        # self.save_4.clicked.connect(self._save_4)
-        
         # mapping status
         self.status.clicked.connect(self._status)
         
@@ -172,7 +167,7 @@ class MappingWindow(QMainWindow, mapping_form):
             
         else:
             columns_1 = ['id', 'brand_name', 'product_name', 'selection', 'division', 'groups']
-            tbl_1 = preprocessing.integ_tbl(self.db, tbls, columns_1)
+            tbl_1 = self.db.integ_tbl(tbls, columns_1)
             tbl_1.to_csv(tbl_cache + '/tbl_1.csv', index=False)
             msg = QMessageBox()
             msg.setText(f'Table import success')
@@ -224,7 +219,7 @@ class MappingWindow(QMainWindow, mapping_form):
         file_path = os.path.join(tbl_cache, file_name)
         # 캐시에 해당 파일이 존재할 때 저장
         if os.path.isfile(file_path):
-            df = pd.read_csv(file_path)
+            df = pd.read_csv(file_path, lineterminator='\n')
             file_save = QFileDialog.getSaveFileName(self, "Save File", "", "csv file (*.csv)")
             
             if file_save[0] != "":
