@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>808</width>
-    <height>453</height>
+    <height>414</height>
    </rect>
   </property>
   <property name="minimumSize">
@@ -24,7 +24,7 @@
     <property name="geometry">
      <rect>
       <x>460</x>
-      <y>330</y>
+      <y>310</y>
       <width>72</width>
       <height>32</height>
      </rect>
@@ -37,7 +37,7 @@
     <property name="geometry">
      <rect>
       <x>380</x>
-      <y>330</y>
+      <y>310</y>
       <width>72</width>
       <height>32</height>
      </rect>
@@ -240,24 +240,6 @@
      <string>헤어케어</string>
     </property>
    </widget>
-   <widget class="QPushButton" name="Accept">
-    <property name="geometry">
-     <rect>
-      <x>630</x>
-      <y>240</y>
-      <width>85</width>
-      <height>32</height>
-     </rect>
-    </property>
-    <property name="font">
-     <font>
-      <family>.AppleSystemUIFont</family>
-     </font>
-    </property>
-    <property name="text">
-     <string>Accept</string>
-    </property>
-   </widget>
    <widget class="QCheckBox" name="suncare">
     <property name="geometry">
      <rect>
@@ -296,11 +278,11 @@
      <string>마스크/팩</string>
     </property>
    </widget>
-   <widget class="QPushButton" name="dup_ck">
+   <widget class="QPushButton" name="Dup_check">
     <property name="geometry">
      <rect>
-      <x>230</x>
-      <y>330</y>
+      <x>580</x>
+      <y>250</y>
       <width>142</width>
       <height>32</height>
      </rect>
@@ -314,11 +296,11 @@
      <string>Duplicate Check</string>
     </property>
    </widget>
-   <widget class="QPushButton" name="status">
+   <widget class="QPushButton" name="Status">
     <property name="geometry">
      <rect>
       <x>540</x>
-      <y>330</y>
+      <y>310</y>
       <width>81</width>
       <height>32</height>
      </rect>
@@ -332,11 +314,11 @@
      <string>Status</string>
     </property>
    </widget>
-   <widget class="QPushButton" name="upload">
+   <widget class="QPushButton" name="Upload">
     <property name="geometry">
      <rect>
       <x>630</x>
-      <y>330</y>
+      <y>310</y>
       <width>86</width>
       <height>32</height>
      </rect>
