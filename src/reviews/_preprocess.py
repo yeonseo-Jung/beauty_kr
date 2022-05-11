@@ -1,23 +1,12 @@
 import os
 import re
 import sys
-import time
 import pickle
+from datetime import datetime
 import numpy as np
 import pandas as pd
 
-# Scrapping
-from bs4 import BeautifulSoup
-# from user_agents import parse
-# from fake_useragent import UserAgent
-from user_agent import generate_user_agent
-from selenium import webdriver
-# from selenium.webdriver.common.keys import Keys
-from selenium.webdriver.chrome.options import Options
-from webdriver_manager.chrome import ChromeDriverManager
-
 # Exception Error Handling
-import socket
 import warnings
 warnings.filterwarnings("ignore")
 
@@ -75,10 +64,7 @@ class ReviewMapping:
         map_tbl_.loc[:, 'table_name'] = map_tbl_.table_name + "_review"
         review_1_mapped = map_tbl_.merge(review_1, left_on=['id', 'table_name'], right_on=['id', 'table_name'], how='inner').drop(columns='id')
 
-        # 매핑 기준 리뷰 매핑
-        unique_item_keys = pd.DataFrame(map_tbl_.item_key.unique().tolist(), columns=['item_key'])
-        df_concat = pd.concat([review_0.rename(columns={'id': 'item_key'}), unique_item_keys]).reset_index(drop=True)
-        review_0_mapped = df_concat[df_concat.duplicated(subset='item_key', keep='last')].reset_index(drop=True)
+        review_0_mapped = review_0.rename(columns={'id': 'item_key'})
         
         return review_0_mapped, review_1_mapped
     
@@ -93,12 +79,45 @@ class ReviewMapping:
 
         # merge & rename
         rev_info = review_concat.merge(info_0_categ_.loc[:, ['id', 'category']], left_on='item_key', right_on='id', how='inner').drop(columns='id')
-        rev_info_ = rev_info.rename(columns={'product_review': 'txt_data', 'review_date': 'write_date', 'user_id': 'user_info'})
+        rev_info_ = rev_info.rename(columns={'product_review': 'txt_data', 'review_date': 'write_date', 'user_id': 'user_info', 'table_name': 'source'})
         
         return rev_info_
 
-
-
-
-
-
+    def dup_check(self, rev_info):
+        ''' 동일 상품 리뷰 중복 제거 '''
+        
+        dup_columns = ['user_info', 'write_date', 'txt_data']
+        # dedup & sorting 
+        rev_info = rev_info[rev_info.txt_data.notnull()]
+        rev_info_dedup = rev_info.drop_duplicates(subset=dup_columns, keep='first').sort_values(by=['item_key', 'source']).reset_index(drop=True)
+        return rev_info_dedup
+    
+    def upload_review_table(self, rev_info_dedup):
+        ''' 리뷰 테이블 업로드 형식으로 수정 '''
+        
+        # columns sorting & drop null
+        rev_info_dedup.loc[:, 'write_date'] = rev_info_dedup.write_date.astype('str')
+        rev_info_dedup.loc[:, 'write_date'] = rev_info_dedup.write_date.str.replace('.', '-')
+        reg_date = re.compile('[0-9]+[-]+[0-9]+[-]+[0-9]+')
+        idx = rev_info_dedup.index.tolist()
+        _idx = rev_info_dedup[rev_info_dedup.write_date.str.fullmatch(reg_date, na=False)].index.tolist()
+        df_idx = pd.DataFrame(idx + _idx, columns=['idx'])
+        idx_ = df_idx.drop_duplicates('idx', keep=False).idx.tolist()
+        rev_info_dedup.loc[idx_, 'write_date'] = np.nan
+        rev_info_dedup = rev_info_dedup[rev_info_dedup.txt_data.notnull()]
+        
+        year = str(datetime.today().year)
+        month = str(datetime.today().month)
+        day = str(datetime.today().day)
+        if len(month) == 1:
+            month = "0" + month
+        if len(day) == 1:
+            day = "0" + day
+        date = year + "-" + month + "-" + day
+        
+        rev_info_dedup.loc[:, 'regist_date'] = date
+        rev_info_dedup.loc[:, 'pk'] = range(len(rev_info_dedup))
+        columns = ['pk', 'item_key', 'txt_data', 'write_date', 'regist_date', 'source']
+        
+        upload_df = rev_info_dedup.loc[:, columns]
+        return upload_df
