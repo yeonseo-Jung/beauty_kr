@@ -29,11 +29,12 @@ tbl_cache/
 config/
 
 
-# ipynb, csv, text
+# ipynb, csv, text, zip
 *.ipynb
 *.xlsx
 *.csv
 *.txt
+*.zip
 
 # pem
 *.pem
