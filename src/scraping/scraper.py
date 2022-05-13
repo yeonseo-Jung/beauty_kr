@@ -8,13 +8,18 @@ import pandas as pd
 
 # Scrapping
 from bs4 import BeautifulSoup
-# from user_agents import parse
-# from fake_useragent import UserAgent
-from user_agent import generate_user_agent
 from selenium import webdriver
-# from selenium.webdriver.common.keys import Keys
+from user_agent import generate_user_agent
+from selenium.webdriver.common.by import By
+from selenium.webdriver.common.keys import Keys
+from selenium.webdriver.common.alert import Alert
 from selenium.webdriver.chrome.options import Options
+from selenium.webdriver.support.ui import WebDriverWait
 from webdriver_manager.chrome import ChromeDriverManager
+from selenium.webdriver.common.action_chains import ActionChains
+from selenium.webdriver.support import expected_conditions as EC
+from selenium.common.exceptions import UnexpectedAlertPresentException, NoAlertPresentException, NoSuchElementException, TimeoutException
+
 
 # Exception Error Handling
 import socket
@@ -66,7 +71,7 @@ def get_url(url):
             # web driver 
             wd = webdriver.Chrome(ChromeDriverManager().install(), chrome_options=options)
             wd.get(url)
-            time.sleep(1.5)
+            wd.implicitly_wait(5)
             break
 
         # 예외처리
@@ -80,7 +85,7 @@ def get_url(url):
             error.append([url, str(e)])
             with open(f'{tbl_cache}/scraping_error_msg.txt', 'wb') as f:
                 pickle.dump(error, f)
-    print(f'\nAttempts: {attempts}')
+    print(f'\nParsing Attempts: {attempts}')
     return wd
 
 def scroll_down(wd):
@@ -126,7 +131,6 @@ def scraper_nv(product_id, search_word):
         status = -1 # status when parsing url fails
         end = time.time()
         print("\n\n\t<Parsing Fail>\n\n")
-        pass
     
     else:
         # scroll down
@@ -248,3 +252,175 @@ def scraper_nv(product_id, search_word):
             status = 1
             
     return scraps, status
+
+
+class ReviewScrapeNv:
+    # __init__(self):
+    
+    def parsing(self, driver):
+        ''' html parsing '''
+        
+        html = driver.page_source
+        soup = BeautifulSoup(html, 'lxml')
+        review_area = soup.find('div', {'class': 'review_section_review__1hTZD'})
+        return review_area
+    
+    def review_scraping(self, driver, rating, review_info, review_text):
+        ''' Scraping review data '''
+        
+        review_soup = self.parsing(driver)
+        if review_soup == None:
+            status = 0
+        else:
+            status = 1
+            for i in range(len(review_soup.find_all("div", {"class":"reviewItems_etc_area__2P8i3"}))):
+                rating.append(int(review_soup.find_all("span", {"class":"reviewItems_average__16Ya-"})[i].text[-1]))
+                review_info.append(str([x.text.strip() for x in review_soup.find_all("div", {"class":"reviewItems_etc_area__2P8i3"})[i].find_all("span", {"class":"reviewItems_etc__1YqVF"})]))
+                review_text.append(review_soup.find_all("div", {"class":"reviewItems_review__1eF8A"})[i].find("p", {"class":"reviewItems_text__XIsTc"}).text.strip())
+            
+        return rating, review_info, review_text, status
+    
+    def click_each_rating(self, driver, i):
+        
+        rating_tab = driver.find_element_by_css_selector("#section_review > div.filter_sort_group__Y8HA1")
+        actions = ActionChains(driver)
+        actions.move_to_element(rating_tab).perform() #scroll to rating tab list to click each rating tab
+        time.sleep(1)
+        driver.find_element_by_xpath(f'//*[@id="section_review"]/div[2]/div[2]/ul/li[{i+2}]/a').click()
+        time.sleep(1)
+        return driver
+    
+    def pagination(self, driver):
+        ''' Scraping reviews as turning pages '''
+    
+        rating, review_info, review_text = [], [], []
+        try:
+            element = driver.find_element_by_xpath('//*[@id="section_review"]/div[3]')
+            page = BeautifulSoup(element.get_attribute('innerHTML'), 'lxml')
+            page_list = page.find_all('a')
+            page_num = len(page_list)
+            
+            rating, review_info, review_text, status = self.review_scraping(driver, rating, review_info, review_text)
+            for i in range(2, page_num + 1):
+                driver.find_element_by_xpath(f'//*[@id="section_review"]/div[3]/a[{i}]').click()
+                time.sleep(1)
+                rating, review_info, review_text, status = self.review_scraping(driver, rating, review_info, review_text)
+                
+            if page_num == 11:
+                page_num += 1
+            
+            # page 10 초과    
+            cnt = 1
+            break_ck = 0
+            while page_num == 12 and break_ck == 0:
+                element = driver.find_element_by_xpath('//*[@id="section_review"]/div[3]')
+                page = BeautifulSoup(element.get_attribute('innerHTML'), 'lxml')
+                page_list = page.find_all('a')
+                page_num = len(page_list)
+                
+                for i in range(3, page_num + 1):
+                    if i == 12:
+                        cnt += 1
+                        
+                    # 최대 수집 가능 리뷰 수 2000개 초과시 break (page 100)
+                    if cnt == 10:
+                        break_ck = 1
+                        break
+                    else:
+                        driver.find_element_by_xpath(f'//*[@id="section_review"]/div[3]/a[{i}]').click()
+                        time.sleep(1)
+                        rating, review_info, review_text, status = self.review_scraping(driver, rating, review_info, review_text)
+
+        except NoSuchElementException:
+            # 리뷰 페이지가 한개만 존재할 때
+            rating, review_info, review_text, status = self.review_scraping(driver, rating, review_info, review_text)
+    
+        return rating, review_info, review_text, driver
+
+    def review_crw(self, url):
+        ''' Crawl reviews by rating '''
+        
+        # try:
+        #     # 리뷰 섹션 파싱 완료 될 때까지 wait
+        #     rank_xpath = '//*[@id="section_review"]/div[2]/div[1]/div[1]/a[1]'
+        #     WebDriverWait(driver, 10).until(EC.presence_of_element_located((By.XPATH, rank_xpath)))
+        #     # 리뷰 섹션 클릭
+        #     driver.find_element_by_xpath(rank_xpath).click() 
+        #     time.sleep(1)
+        #     html = driver.page_source
+        #     soup = BeautifulSoup(html, 'lxml')
+            
+        # except (NoSuchElementException, TimeoutException):
+        #     # review does not exist
+        #     driver.close()
+        #     driver.quit()
+            
+        # if 'msearch' in url:
+        #     url = url.replace('msearch', 'search')
+        #     driver.close()
+        #     driver.quit()
+        #     driver.get(url)
+        
+        review_ratings, review_infos, review_texts = [], [], []
+        
+        driver = get_url(url)
+        if driver == None:
+            status = 0
+            print("\n\n\t<Parsing Fail>\n\n")
+            return [np.nan], [np.nan], [np.nan], status
+            
+        else:
+            html = driver.page_source
+            soup = BeautifulSoup(html, 'lxml')
+            
+            # if page does not exist
+            if soup.find("div", {"class":"style_content_error__3Wxxj"}) != None:
+                status = -1
+                driver.close()
+                driver.quit()
+                return [np.nan], [np.nan], [np.nan], status
+
+            # if review does not exist 
+            elif soup.find("div", {"class":"review_section_review__1hTZD"}) == None:
+                status = -2
+                driver.close()
+                driver.quit()
+                return [np.nan], [np.nan], [np.nan], status
+
+            else:
+                # # 최신순으로 변경 -> 리뷰 업데이트 시에 사용 
+                # driver.find_element_by_xpath('//*[@id="section_review"]/div[2]/div[1]/div[1]/a[2]').click() #sort on recent time
+                # time.sleep(1)
+
+                ratings = soup.find('ul', 'filter_top_list__3rOdK')
+                review_cnt = [int(x.text[1:-1].replace(',', '')) for x in ratings.find_all("em")][1:] #review count for each rating
+                
+                for i in range(len(review_cnt)): #scrap reviews for each rating by using tablist
+                    if review_cnt[i] == 0:
+                        print(f'\nRating: {5-i}\nReviews Count: 0')
+                        pass
+                    else:
+                        # 평점 선택
+                        driver = self.click_each_rating(driver, i)
+                        # 리뷰 데이터 스크레이핑
+                        review_rating, review_info, review_text, driver = self.pagination(driver)
+                        print(f'\nRating: {5-i}\nReviews Count: {len(review_text)}')
+                        # extend
+                        review_ratings.extend(review_rating)
+                        review_infos.extend(review_info)
+                        review_texts.extend(review_text)
+                        
+                driver.close()
+                driver.quit()
+            
+                try:
+                    if len(review_text) != len(review_rating) or len(review_text) != len(review_info):
+                        raise Exception("Review data format error>")                    
+                    else:
+                        status = 1
+                        print(f'\n\nTotal Reviews Count: {len(review_texts)}')
+                        return review_ratings, review_infos, review_texts, status
+                except Exception as e:
+                    print(f"\n\n<Error: {e}")
+                    status = -3
+                    return [np.nan], [np.nan], [np.nan], status
