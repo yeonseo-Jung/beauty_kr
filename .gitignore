@@ -45,3 +45,6 @@ main.py
 *.PIL
 *.ico
 *.icns
+
+# .py
+scraper_naver.py
