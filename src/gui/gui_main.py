@@ -34,6 +34,7 @@ class MainWidget(QWidget):
     
     def __init__(self):
         super().__init__()
+        self.version = "0.0.1.2"
         self.w0 = None
         self.w1 = None
         self.w2 = None
@@ -79,7 +80,7 @@ class MainWidget(QWidget):
         layout.addWidget(btn_conn, 5, 0, 1, 2)
         layout.setRowMinimumHeight(3, 75)
         
-        version = QLabel('<font size="2"> version 0.0.1.1 </font>')
+        version = QLabel(f'<font size="2"> version {self.version} </font>')
         layout.addWidget(version, 6, 0)
 
         self.setLayout(layout)

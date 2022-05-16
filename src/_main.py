@@ -2,6 +2,7 @@ import os
 import sys
 from gui.gui_main import MainWidget
 from PyQt5.QtWidgets import QApplication
+from PyQt5.QtCore import QCoreApplication
 
 
 # pyinstaller에 의한 패키징이 여부에 따른 경로 설정 
@@ -22,16 +23,13 @@ if not os.path.exists(tbl_cache_dir):
 # base_path
 print(f'\n\nroot: {base_path}\n\n')
 
-# certifi
-print()
-    
-# def _exec_gui():
-#     ''' main gui execution '''
-#     app = QApplication(sys.argv)
-#     form = MainWidget()
-#     form.show()
-#     sys.exit(app.exec_())
+def _exec_gui():
+    ''' main gui execution '''
+    app = QApplication(sys.argv)
+    form = MainWidget()
+    form.show()
+    sys.exit(app.exec_())
     
 ''' Opne GUI '''
 if __name__ == '__main__':
-    MainWidget().show()
+    _exec_gui()

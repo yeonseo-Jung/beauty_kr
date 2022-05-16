@@ -2,7 +2,6 @@ import os
 import re
 import sys
 import pickle
-from tqdm.auto import tqdm
 import pandas as pd
 
 from PyQt5 import uic
@@ -77,7 +76,6 @@ class CrawlingNvRevWindow(QMainWindow, form):
                 table_list.append(tbl_.group(0))
         table_list = sorted(list(set(table_list)))
         return table_list
-        
         
     def _accept(self):
         ''' 선택된 테이블 가져오기 '''
@@ -166,7 +164,7 @@ class CrawlingNvRevWindow(QMainWindow, form):
         self.statusbar.showMessage(message)
         
         # pause 시에 현재까지 진행률 저장
-        if self.thread_scrap.power == False:
+        if self.thread_crw.power == False:
             with open(tbl_cache + '/prg_dict.txt', 'wb') as f:
                 pickle.dump(prg_dict_, f)
                 
@@ -174,11 +172,16 @@ class CrawlingNvRevWindow(QMainWindow, form):
             self.statusbar.showMessage(message)
     
     def _run(self):
-        msg = QMessageBox()
-        msg.setText("- 인터넷 연결 확인 \n- VPN 연결 확인 \n- 자동 잠금 해제 확인")
-        msg.exec_()
-        self.thread_crw.power = True
-        self.thread_crw.start()
+        if os.path.isfile(self.file_path):            
+            msg = QMessageBox()
+            msg.setText("- 인터넷 연결 확인 \n- VPN 연결 확인 \n- 자동 잠금 해제 확인")
+            msg.exec_()
+            self.thread_crw.power = True
+            self.thread_crw.start()
+        else:
+            msg = QMessageBox()
+            msg.setText("Accept 완료 후 시도하세요")
+            msg.exec_()
         
     def save_file(self):
         ''' save csv file '''
@@ -212,4 +215,3 @@ class CrawlingNvRevWindow(QMainWindow, form):
             msg = QMessageBox()
             msg.setText('일시정지 후 다시 시도해주세요')
             msg.exec_()
-        

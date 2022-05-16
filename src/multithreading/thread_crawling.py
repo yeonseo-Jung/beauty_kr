@@ -35,6 +35,8 @@ else:
     tbl_cache = root + '/tbl_cache'
     conn_path = os.path.join(src, 'gui/conn.txt')
     
+from scraping.scraper import ReviewScrapeNv
+    
     
 class CrawlingNvRev(QtCore.QThread, QtCore.QObject):
     ''' Thread scraping product info '''
@@ -46,6 +48,7 @@ class CrawlingNvRev(QtCore.QThread, QtCore.QObject):
         self.path_scrape_lst = os.path.join(tbl_cache, 'scrape_list.txt')
         self.path_scrape_df = os.path.join(tbl_cache, 'scrape_df.csv')
         self.path_status = os.path.join(tbl_cache, 'status_dict.txt')
+        self.rs = ReviewScrapeNv()
         
         # db 연결
         with open(conn_path, 'rb') as f:
@@ -56,10 +59,20 @@ class CrawlingNvRev(QtCore.QThread, QtCore.QObject):
     def run(self):
         ''' Run Thread '''
         
+        # load data for crawling
         df_for_rev_crw = pd.read_csv(self.path_crw)
-        
-        df_list = []
-        status_dict = {}
+        if os.path.isfile(self.path_scrape_lst):
+            with open(self.path_scrape_lst, 'rb') as f:
+                df_list = pickle.load(f)
+        else:
+            df_list = []
+            
+        if os.path.isfile(self.path_status):
+            with open(self.path_status, 'rb') as f:
+                status_dict = pickle.load(f)
+        else:
+            status_dict = {}
+            
         t = tqdm(range(len(df_for_rev_crw)))
         for idx in t:
             if self.power == True:
@@ -69,7 +82,7 @@ class CrawlingNvRev(QtCore.QThread, QtCore.QObject):
                 # Naver price tab review crawling
                 id_ = df_for_rev_crw.loc[idx, 'id']
                 url = df_for_rev_crw.loc[idx, 'product_url']
-                ratings, review_infos, review_texts, status = self.rs.review_crw(url)
+                ratings, review_infos, review_texts, status = self.rs.review_crawler(url)
                 _df = pd.DataFrame({"id" : id_, "rating": ratings, "review_infos": review_infos, "review_texts": review_texts, "status": status})
                 # append DataFrame
                 df_list.append(_df)
@@ -94,7 +107,7 @@ class CrawlingNvRev(QtCore.QThread, QtCore.QObject):
             with open(self.path_status, 'wb') as f:
                 pickle.dump(status_dict, f)
                 
-            # 크롤링 완료 
+            # Crawl completed
             if idx == len(df_for_rev_crw) - 1:
                 
                 # assign DataFrame 
@@ -116,5 +129,3 @@ class CrawlingNvRev(QtCore.QThread, QtCore.QObject):
         self.power = False
         self.quit()
         self.wait(3000)
-        
-        
