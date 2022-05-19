@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>808</width>
+    <width>800</width>
     <height>414</height>
    </rect>
   </property>
@@ -85,7 +85,7 @@
      </rect>
     </property>
     <property name="text">
-     <string>Import</string>
+     <string>Select</string>
     </property>
    </widget>
    <widget class="QCheckBox" name="bodycare">
@@ -338,7 +338,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>808</width>
+     <width>800</width>
      <height>24</height>
     </rect>
    </property>

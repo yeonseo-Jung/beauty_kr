@@ -116,7 +116,7 @@ class ReviewWindow(QMainWindow, review_form):
             
         else:
             msg = QMessageBox()
-            msg.setText(f'** 대용량 리뷰 데이터 임포트: 10분 이상 소요 예상됩니다 **')
+            msg.setText(f'** 대용량 리뷰 데이터 SELECT: 10분 이상 소요됩니다 **')
             msg.exec_()
             
             st = time.time()
@@ -125,12 +125,14 @@ class ReviewWindow(QMainWindow, review_form):
             ed = time.time()
             print(f'\n\nImport Time: {round(ed-st, 1)}sec\n\n')
             # mapping review
-            review_0_mapped, review_1_mapped = self.review._mapping(map_tbl, review_0, review_1)
+            review_concat = self.review._mapping(map_tbl, review_0, review_1)
             # integration table
-            self.rev_info = self.review._integ(info_0, review_0_mapped, review_1_mapped)
+            outputs = self.review._integ(info_0, review_concat)
+            self.rev_info = outputs[0]
+            self.info_df = outputs[1]
             
             msg = QMessageBox()
-            msg.setText(f'Table import success')
+            msg.setText(f'Table SELECT success')
             msg.exec_()
         
     def categ_toggled(self):
@@ -186,31 +188,33 @@ class ReviewWindow(QMainWindow, review_form):
             msg.setText('한개 이상의 카테고리를 선택해주세요')
             msg.exec_()
         
-        if str(type(self.rev_info)) == "<class 'pandas.core.frame.DataFrame'>":
-            # integration selected category 
-            index_list = []
-            for categ in categs:    
-                index_list += self.rev_info.loc[self.rev_info.category==categ].index.tolist()
-            self.rev_info_categ = self.rev_info.loc[index_list].reset_index(drop=True)
-            
-            # dup check & sorting 
-            self.dedup = self.review.dup_check(self.rev_info_categ)
-            self.upload_df = self.review.upload_review_table(self.dedup) 
-            
-            # save table to cache dir
-            category = "_".join(categs_en)
-            self.table_name = f"beauty_kr_{category}_reviews_all"
-            self.file_name = f"{self.table_name}.csv"
-            self.file_path = os.path.join(tbl_cache, self.file_name)
-            self.upload_df.to_csv(self.file_path, index=False)
-            
-            msg = QMessageBox()
-            msg.setText(f'Completion Deduplication\n\ncategory: {category}')
-            msg.exec_()
         else:
-            msg = QMessageBox()
-            msg.setText(f'테이블 임포트 완료 후 시도하세요')
-            msg.exec_()
+            if str(type(self.rev_info)) == "<class 'pandas.core.frame.DataFrame'>":
+                # integration selected category 
+                rev_index_list = []
+                for categ in categs:    
+                    rev_index_list += self.rev_info.loc[self.rev_info.category==categ].index.tolist()
+                self.rev_info_categ = self.rev_info.loc[rev_index_list].reset_index(drop=True)
+                
+                # dup check & sorting 
+                self.dedup = self.review.dup_check(self.rev_info_categ)
+                self.upload_df = self.review.md_review_table(self.dedup)
+                self.info_df_all = self.review.md_info_table(self.info_df, categs)
+                
+                # save table to cache dir
+                self.category = "_".join(categs_en)
+                self.table_name = f"beauty_kr_{self.category}_reviews_all"
+                self.file_name = f"{self.table_name}.csv"
+                self.file_path = os.path.join(tbl_cache, self.file_name)
+                self.upload_df.to_csv(self.file_path, index=False)
+                
+                msg = QMessageBox()
+                msg.setText(f'Completion Deduplication\n\ncategory: {self.category}')
+                msg.exec_()
+            else:
+                msg = QMessageBox()
+                msg.setText(f'테이블 SELECT 완료 후 시도하세요')
+                msg.exec_()
         
     def tbl_viewer(self, msg_txt):
         ''' table viewer '''
@@ -278,7 +282,8 @@ class ReviewWindow(QMainWindow, review_form):
         msg.setText(msg_txt)
         msg.exec_()
         self.db.engine_upload(upload_df=self.upload_df, table_name=self.table_name, if_exists_option='replace', pk='pk')
+        self.db.engine_upload(upload_df=self.info_df_all, table_name=f'glowpick_product_info_{self.category}', if_exists_option='replace', pk='id')
         msg = QMessageBox()
-        msg_txt = f"테이블 업로드 완료\n테이블 명: {self.table_name}"
+        msg_txt = f"<테이블 업로드 완료>\n\n리뷰 테이블 명: {self.table_name}\n개체 테이블 명: glowpick_product_info_{self.category}"
         msg.setText(msg_txt)
         msg.exec_()
