@@ -2,6 +2,7 @@
 import numpy as np
 import pandas as pd
 from tqdm.auto import tqdm
+import time
 
 # db connection 
 import pymysql
@@ -37,7 +38,8 @@ class AccessDataBase():
         for table in tables:
             tbl = list(table.values())[0]
             table_list.append(tbl)
-
+        curs.close()
+        
         return table_list
 
     def get_tbl_columns(self, table_name):
@@ -54,12 +56,14 @@ class AccessDataBase():
         for column in columns:
             field = column['Field']
             column_list.append(field)
-
+        curs.close()
+        
         return column_list
 
     def get_tbl(self, table_name, columns):
         ''' db에서 원하는 테이블, 컬럼 pd.DataFrame에 할당 '''
         
+        st = time.time()
         curs = self.db_connect()
         
         if columns == 'all':
@@ -77,11 +81,13 @@ class AccessDataBase():
 
             # FROM table_name
             query += f' FROM {table_name};'
-        
         curs.execute(query)
         tbl = curs.fetchall()
         df = pd.DataFrame(tbl)
         curs.close()
+        
+        ed = time.time()
+        print(f'`{table_name}` Import Time: {round(ed-st, 0)}sec\n\n')
         
         return df
     
