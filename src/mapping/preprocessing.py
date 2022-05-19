@@ -65,7 +65,6 @@ class TitlePreProcess:
         self.keep_wd_reg = [num_0, num_1, num_2, n_in_one, spf, pa]
         self.keep_wd_list = ['num_0', 'num_1', 'num_2', 'n_in_one', 'spf', 'pa']
 
-
         # 불용어 패턴 정규식
         stp_pattern = [
         '[총x]*\s*[0-9]*[.]?[0-9]+\s*[eaEA]+\s*[0-9]*\s*[씩]?\s*[더]?',
@@ -139,7 +138,7 @@ class TitlePreProcess:
             title = pattern.sub(' ', title)
 
         # '''상품명에서 한글만 추출'''
-        # title = re.sub('[^가-힣]', ' ', title)
+        title = re.sub('[^가-힣]', ' ', title)
         title = re.sub(' +', ' ', title)
         title = title.strip()
         
@@ -147,7 +146,6 @@ class TitlePreProcess:
             title = np.nan
 
         return title
-
 
     def remove_dup_words(self, title):
         '''타이틀 중복 토큰 제거'''
