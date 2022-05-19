@@ -2,6 +2,7 @@
 ### Data Crawling & Scraping | Preprocessing | Product Mapping | Database Management
   
 [Datamanager Tutorial](https://olivine-wasabi-3fc.notion.site/DataManager-Tutorial-f093d41ef86748399f377d6359e18714)
+
 <a href="https://olivine-wasabi-3fc.notion.site/DataManager-Tutorial-f093d41ef86748399f377d6359e18714" target="_blank">Datamanager Tutorial</a>
 
   
