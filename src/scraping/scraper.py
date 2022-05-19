@@ -44,9 +44,12 @@ else:
     conn_path = os.path.join(src, 'gui', 'conn.txt')
 
 # import module inside package
-from hangle import _distance
+try:
+    from hangle import _distance
+except:
+    pass
 
-def get_url(url):
+def get_url(url, window=0, image=0):
     ''' Set up webdriver, useragent & Get url '''
     
     wd = None
@@ -61,11 +64,13 @@ def get_url(url):
             options = Options() 
             userAgent = generate_user_agent(os=('mac', 'linux'), navigator='chrome', device_type='desktop')
             print(f'\n\nUserAgent: {userAgent}')
-            options.add_argument('headless')
             options.add_argument('window-size=1920x1080')
             options.add_argument("--disable-gpu")
             options.add_argument('--disable-extensions')
-            options.add_argument('--blink-settings=imagesEnabled=false')
+            if window == 0:
+                options.add_argument('headless')
+            if image == 0:
+                options.add_argument('--blink-settings=imagesEnabled=false')
             options.add_argument(f'user-agent={userAgent}')
 
             # web driver 
@@ -83,8 +88,13 @@ def get_url(url):
                 pass
             print(f'\n\n<Error>\n{e}\n\n')
             error.append([url, str(e)])
-            with open(f'{tbl_cache}/scraping_error_msg.txt', 'wb') as f:
-                pickle.dump(error, f)
+            try:
+                with open(f'{tbl_cache}/scraping_error_msg.txt', 'wb') as f:
+                    pickle.dump(error, f)
+            except:
+                with open('./scraping_error_msg.txt', 'wb') as f:
+                    pickle.dump(error, f)
+            
     print(f'\nParsing Attempts: {attempts}')
     return wd
 
@@ -424,3 +434,7 @@ class ReviewScrapeNv:
                     print(f"\n\n<Error: {e}")
                     status = -3
                     return [np.nan], [np.nan], [np.nan], status
+                
+                
+                
+                
