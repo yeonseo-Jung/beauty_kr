@@ -194,7 +194,7 @@
      </font>
     </property>
     <property name="text">
-     <string>Accept</string>
+     <string>Select</string>
     </property>
    </widget>
    <widget class="QLabel" name="label_2">

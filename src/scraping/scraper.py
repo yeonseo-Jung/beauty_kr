@@ -365,7 +365,7 @@ class ReviewScrapeNv:
         
         driver = get_url(url)
         if driver == None:
-            status = 0
+            status = -1
             print("\n\n\t<Parsing Fail>\n\n")
             return [np.nan], [np.nan], [np.nan], status
             
@@ -375,14 +375,14 @@ class ReviewScrapeNv:
             
             # if page does not exist
             if soup.find("div", {"class":"style_content_error__3Wxxj"}) != None:
-                status = -1
+                status = -2
                 driver.close()
                 driver.quit()
                 return [np.nan], [np.nan], [np.nan], status
 
             # if review does not exist 
             elif soup.find("div", {"class":"review_section_review__1hTZD"}) == None:
-                status = -2
+                status = 0
                 driver.close()
                 driver.quit()
                 return [np.nan], [np.nan], [np.nan], status
