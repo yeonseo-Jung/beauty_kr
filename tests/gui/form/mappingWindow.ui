@@ -6,7 +6,11 @@
    <rect>
     <x>0</x>
     <y>0</y>
+<<<<<<< HEAD
     <width>750</width>
+=======
+    <width>684</width>
+>>>>>>> 4f00999e (test_version)
     <height>512</height>
    </rect>
   </property>
@@ -17,16 +21,24 @@
    <widget class="QPushButton" name="mapping">
     <property name="geometry">
      <rect>
+<<<<<<< HEAD
       <x>20</x>
       <y>370</y>
       <width>130</width>
       <height>33</height>
+=======
+      <x>70</x>
+      <y>370</y>
+      <width>163</width>
+      <height>32</height>
+>>>>>>> 4f00999e (test_version)
      </rect>
     </property>
     <property name="text">
      <string>Mapping </string>
     </property>
    </widget>
+<<<<<<< HEAD
    <widget class="QPushButton" name="veiw_table_2">
     <property name="geometry">
      <rect>
@@ -34,12 +46,22 @@
       <y>320</y>
       <width>112</width>
       <height>33</height>
+=======
+   <widget class="QPushButton" name="veiw_table_3">
+    <property name="geometry">
+     <rect>
+      <x>460</x>
+      <y>320</y>
+      <width>112</width>
+      <height>32</height>
+>>>>>>> 4f00999e (test_version)
      </rect>
     </property>
     <property name="text">
      <string>View table </string>
     </property>
    </widget>
+<<<<<<< HEAD
    <widget class="QPushButton" name="veiw_table_1">
     <property name="geometry">
      <rect>
@@ -47,6 +69,15 @@
       <y>270</y>
       <width>112</width>
       <height>33</height>
+=======
+   <widget class="QPushButton" name="veiw_table_2">
+    <property name="geometry">
+     <rect>
+      <x>460</x>
+      <y>270</y>
+      <width>112</width>
+      <height>32</height>
+>>>>>>> 4f00999e (test_version)
      </rect>
     </property>
     <property name="text">
@@ -56,8 +87,13 @@
    <widget class="QProgressBar" name="pbar_2">
     <property name="geometry">
      <rect>
+<<<<<<< HEAD
       <x>290</x>
       <y>262</y>
+=======
+      <x>250</x>
+      <y>260</y>
+>>>>>>> 4f00999e (test_version)
       <width>200</width>
       <height>50</height>
      </rect>
@@ -69,10 +105,17 @@
    <widget class="QPushButton" name="compare">
     <property name="geometry">
      <rect>
+<<<<<<< HEAD
       <x>20</x>
       <y>320</y>
       <width>130</width>
       <height>33</height>
+=======
+      <x>70</x>
+      <y>320</y>
+      <width>163</width>
+      <height>32</height>
+>>>>>>> 4f00999e (test_version)
      </rect>
     </property>
     <property name="text">
@@ -82,8 +125,13 @@
    <widget class="QProgressBar" name="pbar_4">
     <property name="geometry">
      <rect>
+<<<<<<< HEAD
       <x>290</x>
       <y>362</y>
+=======
+      <x>250</x>
+      <y>360</y>
+>>>>>>> 4f00999e (test_version)
       <width>200</width>
       <height>50</height>
      </rect>
@@ -92,6 +140,7 @@
      <number>24</number>
     </property>
    </widget>
+<<<<<<< HEAD
    <widget class="QPushButton" name="veiw_table_3">
     <property name="geometry">
      <rect>
@@ -99,6 +148,15 @@
       <y>370</y>
       <width>112</width>
       <height>33</height>
+=======
+   <widget class="QPushButton" name="veiw_table_4">
+    <property name="geometry">
+     <rect>
+      <x>460</x>
+      <y>370</y>
+      <width>112</width>
+      <height>32</height>
+>>>>>>> 4f00999e (test_version)
      </rect>
     </property>
     <property name="text">
@@ -108,8 +166,13 @@
    <widget class="QProgressBar" name="pbar_3">
     <property name="geometry">
      <rect>
+<<<<<<< HEAD
       <x>290</x>
       <y>312</y>
+=======
+      <x>250</x>
+      <y>310</y>
+>>>>>>> 4f00999e (test_version)
       <width>200</width>
       <height>50</height>
      </rect>
@@ -121,10 +184,17 @@
    <widget class="QPushButton" name="preprocess">
     <property name="geometry">
      <rect>
+<<<<<<< HEAD
       <x>20</x>
       <y>270</y>
       <width>130</width>
       <height>33</height>
+=======
+      <x>70</x>
+      <y>270</y>
+      <width>163</width>
+      <height>32</height>
+>>>>>>> 4f00999e (test_version)
      </rect>
     </property>
     <property name="text">
@@ -134,16 +204,24 @@
    <widget class="QPushButton" name="get_table">
     <property name="geometry">
      <rect>
+<<<<<<< HEAD
       <x>310</x>
       <y>210</y>
       <width>112</width>
       <height>33</height>
+=======
+      <x>290</x>
+      <y>160</y>
+      <width>110</width>
+      <height>40</height>
+>>>>>>> 4f00999e (test_version)
      </rect>
     </property>
     <property name="text">
      <string>Get table</string>
     </property>
    </widget>
+<<<<<<< HEAD
    <widget class="QPushButton" name="view_table_name">
     <property name="geometry">
      <rect>
@@ -151,12 +229,35 @@
       <y>20</y>
       <width>138</width>
       <height>33</height>
+=======
+   <widget class="QProgressBar" name="pbar_1">
+    <property name="geometry">
+     <rect>
+      <x>300</x>
+      <y>190</y>
+      <width>200</width>
+      <height>50</height>
+     </rect>
+    </property>
+    <property name="value">
+     <number>24</number>
+    </property>
+   </widget>
+   <widget class="QPushButton" name="view_table_name">
+    <property name="geometry">
+     <rect>
+      <x>10</x>
+      <y>7</y>
+      <width>140</width>
+      <height>45</height>
+>>>>>>> 4f00999e (test_version)
      </rect>
     </property>
     <property name="text">
      <string>View table name</string>
     </property>
    </widget>
+<<<<<<< HEAD
    <widget class="QPushButton" name="veiw_table_0">
     <property name="geometry">
      <rect>
@@ -164,6 +265,15 @@
       <y>210</y>
       <width>112</width>
       <height>33</height>
+=======
+   <widget class="QPushButton" name="veiw_table_1">
+    <property name="geometry">
+     <rect>
+      <x>510</x>
+      <y>200</y>
+      <width>112</width>
+      <height>32</height>
+>>>>>>> 4f00999e (test_version)
      </rect>
     </property>
     <property name="text">
@@ -173,13 +283,19 @@
    <widget class="QTextBrowser" name="textBrowser">
     <property name="geometry">
      <rect>
+<<<<<<< HEAD
       <x>30</x>
       <y>60</y>
+=======
+      <x>15</x>
+      <y>50</y>
+>>>>>>> 4f00999e (test_version)
       <width>270</width>
       <height>180</height>
      </rect>
     </property>
    </widget>
+<<<<<<< HEAD
    <widget class="QPushButton" name="stop_preprocess">
     <property name="geometry">
      <rect>
@@ -271,13 +387,19 @@
      <string>Save</string>
     </property>
    </widget>
+=======
+>>>>>>> 4f00999e (test_version)
   </widget>
   <widget class="QMenuBar" name="menubar">
    <property name="geometry">
     <rect>
      <x>0</x>
      <y>0</y>
+<<<<<<< HEAD
      <width>750</width>
+=======
+     <width>684</width>
+>>>>>>> 4f00999e (test_version)
      <height>24</height>
     </rect>
    </property>

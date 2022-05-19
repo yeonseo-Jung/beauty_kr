@@ -11,17 +11,24 @@ import copy
 import difflib
 from itertools import chain, repeat
 
+<<<<<<< HEAD
 from PyQt5 import QtCore
 
 # from jellyfish import jaro_distance, jaro_winkler
 # from soynlp.hangle import jamo_levenshtein
 
+=======
+
+from jellyfish import jaro_distance, jaro_winkler
+from soynlp.hangle import jamo_levenshtein
+>>>>>>> 4f00999e (test_version)
 
 
 import sys
 cur_dir = os.path.dirname(os.path.realpath(__file__))
 root = os.path.abspath(os.path.join(cur_dir, os.pardir, os.pardir))
 src = os.path.abspath(os.path.join(cur_dir, os.pardir))
+<<<<<<< HEAD
 sys.path.append(root)
 sys.path.append(src)
 
@@ -36,6 +43,14 @@ else:
     
 from access_database import access_db
 from hangle import _distance
+=======
+cache = root + '/tbl_cache'
+sys.path.append(root)
+sys.path.append(src)
+sys.path.append(cache)
+    
+from access_database import access_db
+>>>>>>> 4f00999e (test_version)
 
 # def title_comparison(word_0: str, word_1: str) -> tuple:
     
@@ -258,7 +273,11 @@ def title_comparison(word_0: str, word_1: str) -> tuple:
         dep_ratio = dep_cnt / leng
 
         # calculate similarity
+<<<<<<< HEAD
         cost = _distance.jamo_levenshtein(non_sp_0, non_sp_1)
+=======
+        cost = jamo_levenshtein(non_sp_0, non_sp_1)
+>>>>>>> 4f00999e (test_version)
         sim = (max_len - cost) / max_len
 
     return round(dep_ratio, 4), dep_cnt, round(sim, 4), max_len, min_len
@@ -288,8 +307,13 @@ def map_expand(mapping_table: pd.DataFrame) -> pd.DataFrame:
 
 def prd_mapper_():
     
+<<<<<<< HEAD
     df_0 = pd.read_csv(tbl_cache + '/deprepro_0.csv')
     df_1 = pd.read_csv(tbl_cache + '/deprepro_1.csv')
+=======
+    df_0 = pd.read_csv(cache + '/deprepro_0.csv')
+    df_1 = pd.read_csv(cache + '/deprepro_1.csv')
+>>>>>>> 4f00999e (test_version)
 
     # concat, drop category null, length condition check
     df_concat = pd.concat([df_0, df_1])
@@ -370,9 +394,24 @@ def prd_mapper():
     - compared_df: Product name comparison table 
     
     '''
+<<<<<<< HEAD
     
     outputs = prd_mapper_()
     input_data_0 = pd.read_csv(tbl_cache + '/deprepro_0.csv')
+=======
+    # params = {
+    #     'min_length': 6, # product name minimum length
+    #     'min_token': 3, # product name token minimum length
+    #     'levenshtein_similarity': round(5/6, 4) # similarity minimum value
+    # }
+
+    # min_len = params['min_length']
+    # min_tk = params['min_token']
+    # min_sim = params['levenshtein_similarity']
+    
+    outputs = prd_mapper_()
+    input_data_0 = pd.read_csv(cache + '/deprepro_0.csv')
+>>>>>>> 4f00999e (test_version)
     input_data_1 = outputs[0]
     map_list = outputs[1]
     
@@ -423,12 +462,19 @@ def prd_mapper():
                     compared_list.append(list((id_1, id_0, title_1, title_0, brand, categ, tbl) + compare_output))
                     
     compared_list_ = map_list + compared_list                         
+<<<<<<< HEAD
     with open(tbl_cache + '/compared_list.txt', 'wb') as f:
+=======
+    with open(cache + '/compared_list.txt', 'wb') as f:
+>>>>>>> 4f00999e (test_version)
             pickle.dump(compared_list_, f)
             
     columns = ['id_1', 'id_0', 'title_1', 'title_0', 'brand_name', 'category', 'table_name', 'dependency_ratio', 'dependency_count', 'similarity', 'max_length', 'min_length']
     compared_df = pd.DataFrame(compared_list_, columns=columns).reset_index(drop=True)
+<<<<<<< HEAD
     
+=======
+>>>>>>> 4f00999e (test_version)
     return compared_df
 
 
@@ -440,7 +486,11 @@ def select_mapped_prd(input_data: pd.DataFrame) -> pd.DataFrame:
     Input Data 
     - input_data: Product name comparison table
     
+<<<<<<< HEAD
     ** necessary columns = ['id_1', 'table_name', 'dependency_ratio', 'dependency_count', 'similarity', 'max_length', 'min_length']
+=======
+    ** necessary columns = ['id_1', 'id_0', 'title_1', 'title_0', 'brand_name', 'category', 'table_name', 'dependency_ratio', 'dependency_count', 'similarity', 'max_length', 'min_length']
+>>>>>>> 4f00999e (test_version)
     
     Output Data 
     - mapped_df: Product Name Mapping Complete Table
@@ -505,6 +555,7 @@ def md_map_tbl(input_data: pd.DataFrame) -> pd.DataFrame:
     return mapping_table
 
 
+<<<<<<< HEAD
 
 class ThreadComparing(QtCore.QThread, QtCore.QObject):
     ''' Thread comparing product info '''
@@ -598,6 +649,22 @@ class ThreadComparing(QtCore.QThread, QtCore.QObject):
 
 
 
+=======
+# def concat_map_tbl():
+#     ''' new mapping table concat '''
+
+#     mapping_table = pd.DataFrame()
+    
+#     files = [f for f in os.listdir(cache) if re.match(r'mapping_table_[0-9].csv', f)]
+#     for table in files:
+#         tbl = pd.read_csv(cache + f'/{table}')
+#         mapping_table = pd.concat([mapping_table, tbl])
+#     mapping_table = mapping_table.reset_index(drop=True)
+    
+#     mapping_table.to_csv(cache + '/mapping_table.csv', index=False)
+    
+#     return None
+>>>>>>> 4f00999e (test_version)
 
 
 def update_map_tbl(user_name, password, db_name):
@@ -607,8 +674,13 @@ def update_map_tbl(user_name, password, db_name):
     
     # get existing mapping table to db
     map_tbl_ex = db.get_tbl(db_name, 'naver_glowpick_mapping_table', 'all') 
+<<<<<<< HEAD
     # get new mapping table to dir(tbl_cache)
     map_tbl_new = pd.read_csv(tbl_cache + '/mapping_table.csv')
+=======
+    # get new mapping table to dir(cache)
+    map_tbl_new = pd.read_csv(cache + '/mapping_table.csv')
+>>>>>>> 4f00999e (test_version)
     
         
     df_concat = pd.concat([map_tbl_ex, map_tbl_new]).reset_index(drop=True)
@@ -646,7 +718,11 @@ def update_map_tbl(user_name, password, db_name):
             map_tbl.loc[len(map_tbl)] = int(id_), str(mapped_ids), str(tbl)
             
     map_tbl = map_tbl.sort_values(by=['glowpick_product_info_final_version_id', 'table_name']).reset_index(drop=True)
+<<<<<<< HEAD
     map_tbl.to_csv(tbl_cache + '/naver_glowpick_mapping_table.csv', index=False)
+=======
+    map_tbl.to_csv(cache + '/naver_glowpick_mapping_table.csv', index=False)
+>>>>>>> 4f00999e (test_version)
 
     # dup check
     dup = map_tbl[map_tbl.duplicated(subset=['glowpick_product_info_final_version_id', 'table_name'], keep=False)]
@@ -673,7 +749,11 @@ def upload_map_tbl(user_name, password, db_name, table_name, columns):
     '''
     db = access_db.AccessDataBase(user_name, password, db_name)
     
+<<<<<<< HEAD
     map_tbl = pd.read_csv(tbl_cache + '/naver_glowpick_mapping_table.csv').loc[:, columns]
+=======
+    map_tbl = pd.read_csv(cache + '/naver_glowpick_mapping_table.csv').loc[:, columns]
+>>>>>>> 4f00999e (test_version)
     
     db.engine_upload(map_tbl, db_name, table_name)
     

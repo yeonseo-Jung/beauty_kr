@@ -13,6 +13,7 @@ import pandas as pd
 cur_dir = os.path.dirname(os.path.realpath(__file__))
 root = os.path.abspath(os.path.join(cur_dir, os.pardir, os.pardir))
 src = os.path.abspath(os.path.join(cur_dir, os.pardir))
+<<<<<<< HEAD
 sys.path.append(root)
 sys.path.append(src)
 
@@ -26,6 +27,12 @@ else:
     tbl_cache = os.path.join(root, 'tbl_cache')
     
 
+=======
+tbl_cache = root + '/tbl_cache'
+sys.path.append(root)
+sys.path.append(src)
+sys.path.append(tbl_cache)
+>>>>>>> 4f00999e (test_version)
 
 from PyQt5 import uic
 from PyQt5 import QtCore
@@ -75,7 +82,11 @@ def integ_tbl(db_access, table_name_list, columns):
         df = pd.concat([df, df_])
         
     # sort
+<<<<<<< HEAD
     df = df.sort_values(by='id').reset_index(drop=True)
+=======
+    df = df.sort_values(by='brand_name').reset_index(drop=True)
+>>>>>>> 4f00999e (test_version)
     
     return df
     
@@ -526,12 +537,18 @@ class ThreadTitlePreprocess(QtCore.QThread, QtCore.QObject):
     def __init__(self, parent=None):
         super().__init__()
         self.preprocess = TitlePreProcess()
+<<<<<<< HEAD
         self.power = True
+=======
+>>>>>>> 4f00999e (test_version)
         
         
     progress = QtCore.pyqtSignal(object)
     def run(self):
+<<<<<<< HEAD
             
+=======
+>>>>>>> 4f00999e (test_version)
         df_0 = pd.read_csv(tbl_cache + '/tbl_0.csv')
         df_1 = pd.read_csv(tbl_cache + '/tbl_1.csv')
         
@@ -542,6 +559,7 @@ class ThreadTitlePreprocess(QtCore.QThread, QtCore.QObject):
         t = tqdm(range(len(df_concat)))
         idx = 0
         for i in t:
+<<<<<<< HEAD
             if self.power == True:
                 self.progress.emit(t)
                 
@@ -574,6 +592,27 @@ class ThreadTitlePreprocess(QtCore.QThread, QtCore.QObject):
         self.power = False
         self.quit()
         self.wait(3000)
+=======
+            self.progress.emit(t)
+            
+            if idx >= len(df_0):
+                idx_ = idx - len(df_0) 
+                title = df_1.loc[idx_, 'product_name']
+                brand = df_1.loc[idx_, 'brand_name']
+                title_ = self.preprocess.title_preprocessor(title, brand)
+                df_1.loc[idx_, 'product_name'] = str(title_)
+            
+            else:
+                title = df_0.loc[idx, 'product_name']
+                brand = df_0.loc[idx, 'brand_name']
+                title_ = self.preprocess.title_preprocessor(title, brand)
+                df_0.loc[idx, 'product_name'] = str(title_)
+            
+            idx += 1
+            
+        df_0.to_csv(tbl_cache + '/deprepro_0.csv', index=False)
+        df_1.to_csv(tbl_cache + '/deprepro_1.csv', index=False)
+>>>>>>> 4f00999e (test_version)
         
         
     

@@ -9,10 +9,17 @@ from tqdm.auto import tqdm
 cur_dir = os.path.dirname(os.path.realpath(__file__))
 root = os.path.abspath(os.path.join(cur_dir, os.pardir, os.pardir))
 src = os.path.abspath(os.path.join(cur_dir, os.pardir))
+<<<<<<< HEAD
 # tbl_cache = root + '/tbl_cache'
 sys.path.append(root)
 sys.path.append(src)
 # sys.path.append(tbl_cache)
+=======
+tbl_cache = root + '/tbl_cache'
+sys.path.append(root)
+sys.path.append(src)
+sys.path.append(tbl_cache)
+>>>>>>> 4f00999e (test_version)
 
 from access_database import access_db
 from mapping import preprocessing
@@ -27,6 +34,7 @@ from PyQt5 import uic
 from PyQt5 import QtCore
 from PyQt5.QtWidgets import *
 
+<<<<<<< HEAD
 if getattr(sys, 'frozen', False) and hasattr(sys, '_MEIPASS'):
     base_path = sys._MEIPASS
     tbl_cache = os.path.join(base_path, 'tbl_cache_')
@@ -37,6 +45,9 @@ else:
 
 form_path = os.path.join(base_path, 'form/get_table.ui')
 get_form = uic.loadUiType(form_path)[0]
+=======
+get_form = uic.loadUiType(cur_dir + '/form/get_table.ui')[0]
+>>>>>>> 4f00999e (test_version)
 
 class GetDialog(QDialog, get_form):
     

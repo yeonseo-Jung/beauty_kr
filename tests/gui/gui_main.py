@@ -9,17 +9,30 @@ from tqdm.auto import tqdm
 cur_dir = os.path.dirname(os.path.realpath(__file__))
 root = os.path.abspath(os.path.join(cur_dir, os.pardir, os.pardir))
 src = os.path.abspath(os.path.join(cur_dir, os.pardir))
+<<<<<<< HEAD
 sys.path.append(root)
 sys.path.append(src)
+=======
+tbl_cache = root + '/tbl_cache'
+sys.path.append(root)
+sys.path.append(src)
+sys.path.append(tbl_cache)
+>>>>>>> 4f00999e (test_version)
 
 from access_database import access_db
 from mapping import preprocessing
 from mapping.preprocessing import ThreadTitlePreprocess
 from mapping import mapping_product
+<<<<<<< HEAD
 from mapping.mapping_product import ThreadComparing
 
 from gui.get_table import GetDialog
 from gui.gui_scraping import CrawlingWindow
+=======
+
+from gui.get_table import GetDialog
+from gui.scraping import CrawlingWindow
+>>>>>>> 4f00999e (test_version)
 
 
 import sys
@@ -27,6 +40,7 @@ from PyQt5 import uic
 from PyQt5 import QtCore
 from PyQt5.QtWidgets import *
 
+<<<<<<< HEAD
 
 if getattr(sys, 'frozen', False) and hasattr(sys, '_MEIPASS'):
     base_path = sys._MEIPASS
@@ -40,6 +54,9 @@ conn_path = os.path.join(base_path, 'conn.txt')
 form_path = os.path.join(base_path, 'form/mappingWindow.ui')
 
 mapping_form = uic.loadUiType(form_path)[0]
+=======
+mapping_form = uic.loadUiType(cur_dir + '/form/mappingWindow.ui')[0]
+>>>>>>> 4f00999e (test_version)
 
 class MappingWindow(QMainWindow, mapping_form):
     ''' Product Mapping Window '''
@@ -52,6 +69,7 @@ class MappingWindow(QMainWindow, mapping_form):
         self.textBrowser.setOpenExternalLinks(True)
         
         # db 연결
+<<<<<<< HEAD
         with open(conn_path, 'rb') as f:
             conn = pickle.load(f)
         self.db = access_db.AccessDataBase(conn[0], conn[1], conn[2])
@@ -76,6 +94,22 @@ class MappingWindow(QMainWindow, mapping_form):
         # mapping
         self.mapping.clicked.connect(self.select_mapped_prd)
         
+=======
+        with open(cur_dir + '/conn.txt', 'rb') as f:
+            conn = pickle.load(f)
+        self.db = access_db.AccessDataBase(conn[0], conn[1], conn[2])
+        
+        
+        
+        self.view_table_name.clicked.connect(self.connect_dialog)
+        self.get_table.clicked.connect(self.get_tbl)
+        self.preprocess.clicked.connect(self.preprocess_)
+
+        self.compare.clicked.connect(self.mapping_prd)
+        self.mapping.clicked.connect(self.select_mapped_prd)
+        
+
+>>>>>>> 4f00999e (test_version)
         
     def update_progress(self, progress):
         
@@ -83,6 +117,7 @@ class MappingWindow(QMainWindow, mapping_form):
         itm = prg_dict['n'] 
         tot = prg_dict['total']
         per = round((itm / tot) * 100, 0)
+<<<<<<< HEAD
         elapsed = int(round(prg_dict['elapsed'], 0))
         if itm >= 1:
             remain_time = int(round((elapsed * tot / itm) - elapsed, 0))
@@ -100,12 +135,15 @@ class MappingWindow(QMainWindow, mapping_form):
         itm = prg_dict['n'] 
         tot = prg_dict['total']
         per = round((itm / tot) * 100, 0)
+=======
+>>>>>>> 4f00999e (test_version)
         elapsed = round(prg_dict['elapsed'], 0)
         if itm >= 1:
             remain_time = round((elapsed * tot / itm) - elapsed, 0)
         else:
             remain_time = 0
         
+<<<<<<< HEAD
         self.pbar_3.setValue(per)
         
         elapsed_h = int(elapsed // 3600)
@@ -117,6 +155,11 @@ class MappingWindow(QMainWindow, mapping_form):
         remain_s = int(remain_time - (remain_h * 3600 + remain_m * 60))
         
         message = f"{int(per)}% | Progress item: {itm}  Total: {tot} | Elapsed time: {elapsed_h}:{elapsed_m}:{elapsed_s} < Remain time: {remain_h}:{remain_m}:{remain_s} "
+=======
+        self.pbar_2.setValue(per)
+        
+        message = f"{int(per)}% | Progress item: {itm}  Total: {tot} | Elapsed time: {elapsed}s < Remain time: {remain_time}s "
+>>>>>>> 4f00999e (test_version)
         self.statusbar.showMessage(message)
         
     def connect_dialog(self):
@@ -144,6 +187,7 @@ class MappingWindow(QMainWindow, mapping_form):
         
         # 매핑 대상 테이블
         tbl_ = self.textBrowser.toPlainText()
+<<<<<<< HEAD
         print(f'\n\n\n<tables>\n{tbl_}\n\n\n')
         
         if tbl_ == '':
@@ -181,6 +225,28 @@ class MappingWindow(QMainWindow, mapping_form):
 
         
         
+=======
+        tbls = tbl_.split('\n')
+        
+        print(f'\n\n\n{tbls}\n\n\n')
+        tbl_1 = preprocessing.integ_tbl(self.db, tbls, columns)
+        tbl_1.to_csv(tbl_cache + '/tbl_1.csv', index=False)
+        
+        msg = QMessageBox()
+        msg.setText(f'Table import success!')
+        msg.exec_()
+        
+        
+    def preprocess_(self):
+        ''' 쓰레드 연결 및 함수 수행 ''' 
+        
+        self.thread = ThreadTitlePreprocess()
+        self.thread.progress.connect(self.update_progress)
+        self.thread.start()
+        
+        
+        
+>>>>>>> 4f00999e (test_version)
     # def get_tbl(self):
     #     ''' 데이터 베이스에서 테이블 가져와서 통합하기 '''
         
@@ -225,6 +291,7 @@ class MappingWindow(QMainWindow, mapping_form):
     #     deprepro_categ_1 = preprocessing.reclassifier(deprepro_1, 1)
     #     deprepro_categ_1.to_csv(tbl_cache + '/deprepro_categ_1.csv', index=False)
         
+<<<<<<< HEAD
     # def mapping_prd(self):
     #     ''' 상품 군집화 및 타이틀 유사도 계산 '''
         
@@ -237,6 +304,20 @@ class MappingWindow(QMainWindow, mapping_form):
         
     #     # compared_prds = mapping_product.prd_mapper(deprepro_categ_0, deprepro_categ_1)
     #     # compared_prds.to_csv(tbl_cache + '/compared_prds.csv', index=False)
+=======
+    def mapping_prd(self):
+        ''' 상품 군집화 및 타이틀 유사도 계산 '''
+        
+        # deprepro_categ_0 = pd.read_csv(tbl_cache + '/deprepro_0.csv')
+        # deprepro_categ_1 = pd.read_csv(tbl_cache + '/deprepro_1.csv')
+        # mapping_product.prd_mapper(deprepro_categ_0, deprepro_categ_1)
+        
+        compared_prds = mapping_product.prd_mapper()
+        compared_prds.to_csv(tbl_cache + '/compared_prds.csv', index=False)
+        
+        # compared_prds = mapping_product.prd_mapper(deprepro_categ_0, deprepro_categ_1)
+        # compared_prds.to_csv(tbl_cache + '/compared_prds.csv', index=False)
+>>>>>>> 4f00999e (test_version)
         
         
     def select_mapped_prd(self):
@@ -250,6 +331,26 @@ class MappingWindow(QMainWindow, mapping_form):
         mapping_table = mapping_product.md_map_tbl(mapped_prds)
         mapping_table.to_csv(tbl_cache + '/mapping_table.csv', index=False)
         
+<<<<<<< HEAD
+=======
+    
+
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+
+        
+        
+        
+        
+>>>>>>> 4f00999e (test_version)
         
 class MainWidget(QWidget):
     ''' Database Connect Form '''
@@ -326,7 +427,11 @@ class MainWidget(QWidget):
             msg.exec_()
             
             # save connect info 
+<<<<<<< HEAD
             with open(conn_path, 'wb') as f:
+=======
+            with open(cur_dir + '/conn.txt', 'wb') as f:
+>>>>>>> 4f00999e (test_version)
                 pickle.dump(conn, f)
             
             menu_index = self.select_menu()
@@ -368,8 +473,16 @@ def exec_gui():
     sys.exit(app.exec_())
         
     
+<<<<<<< HEAD
 # if __name__ == '__main__':
 #     app = QApplication(sys.argv)
 #     form = MainWidget()
 #     form.show()
 #     sys.exit(app.exec_())
+=======
+if __name__ == '__main__':
+    app = QApplication(sys.argv)
+    form = MainWidget()
+    form.show()
+    sys.exit(app.exec_())
+>>>>>>> 4f00999e (test_version)
