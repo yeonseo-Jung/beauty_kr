@@ -6,6 +6,7 @@ import pickle
 import numpy as np
 import pandas as pd
 from tqdm.auto import tqdm
+from datetime import datetime
 
 # Exception Error Handling
 import socket
@@ -19,11 +20,12 @@ sys.path.append(root)
 sys.path.append(src)
 
 from PyQt5 import QtCore
-from PyQt5.QtWidgets import *
+# from PyQt5.QtWidgets import 
 
-from hangle import _distance
 from access_database import access_db
-from scraping import scraper
+from scraping.scraper import get_url
+from scraping.scraper import ReviewScrapeNv
+from scraping.scraper import CrawlInfoRevGl
 
 if getattr(sys, 'frozen', False) and hasattr(sys, '_MEIPASS'):
     base_path = sys._MEIPASS
@@ -35,10 +37,9 @@ else:
     tbl_cache = root + '/tbl_cache'
     conn_path = os.path.join(src, 'gui/conn.txt')
     
-from scraping.scraper import ReviewScrapeNv
+
     
-    
-class CrawlingNvRev(QtCore.QThread, QtCore.QObject):
+class ThreadCrawlingNvRev(QtCore.QThread, QtCore.QObject):
     ''' Thread scraping product info '''
     
     def __init__(self, parent=None):
@@ -90,23 +91,22 @@ class CrawlingNvRev(QtCore.QThread, QtCore.QObject):
                 status_dict[id_] = status
                 
             else:
-                # Pause: 일시정지
+                # 이어서 작업 수행 하기 위해 캐시데이터 저장 
+                # save df_for_rev_crw
+                df_for_rev_crw.loc[idx:].reset_index(drop=True).to_csv(self.path_crw, index=False)
+                
+                # save scraping data
+                with open(self.path_scrape_lst, 'wb') as f:
+                    pickle.dump(df_list, f)
+                pd.concat(df_list).reset_index(drop=True).to_csv(self.path_scrape_df, index=False)
+                    
+                # save status dict
+                with open(self.path_status, 'wb') as f:
+                    pickle.dump(status_dict, f)
+                
+                # Pause: 일시정지    
                 self.progress.emit(t)
                 break
-                
-            # 이어서 작업 수행 하기 위해 캐시데이터 저장 
-            # save df_for_rev_crw
-            df_for_rev_crw.loc[idx:].reset_index(drop=True).to_csv(self.path_crw, index=False)
-            
-            # save scraping data
-            with open(self.path_scrape_lst, 'wb') as f:
-                pickle.dump(df_list, f)
-            pd.concat(df_list).reset_index(drop=True).to_csv(self.path_scrape_df, index=False)
-                
-            # save status dict
-            with open(self.path_status, 'wb') as f:
-                pickle.dump(status_dict, f)
-                
             # Crawl completed
             if idx == len(df_for_rev_crw) - 1:
                 
@@ -129,3 +129,217 @@ class CrawlingNvRev(QtCore.QThread, QtCore.QObject):
         self.power = False
         self.quit()
         self.wait(3000)
+        
+        
+        
+crw = CrawlInfoRevGl()
+class ThreadCrawlingGl(QtCore.QThread, QtCore.QObject):
+    ''' Thread Crawling glowpick products '''
+    
+    def __init__(self, parent=None):
+        super().__init__()
+        self.power = True
+        self.check = 0
+        self.file_path = os.path.join(tbl_cache, 'product_codes.txt')
+        
+        # db 연결
+        with open(conn_path, 'rb') as f:
+            conn = pickle.load(f)
+        self.db = access_db.AccessDataBase(conn[0], conn[1], conn[2])
+        
+        today = datetime.today()
+        year = str(today.year)
+        month = str(today.month)
+        day = str(today.day)
+        if len(month) == 1:
+            month = "0" + month
+        if len(day) == 1:
+            day = "0" + day
+        self.date = year + "-" + month + "-" + day
+        date = year[2:4] + month + day
+        self.table_name_info = f"glowpick_product_info_update_{date}"
+        self.table_name_rev = f"glowpick_product_info_update_review_{date}"
+        self.table_name_status = f"glowpick_product_info_update_status_{date}"
+        
+    def upload_df(self):
+        ''' Upload Table to Database '''
+        
+        if (len(self.scrape_infos) != 0) & (len(self.scrape_reviews) != 0):
+            # info table
+            columns = ['product_code', 'product_name', 'brand_code', 'brand_name', 'product_url',
+                            'selection', 'division', 'groups', 
+                            'descriptions', 'product_keywords', 'color_type', 'volume', 'image_source', 
+                            'ingredients_all_kor', 'ingredients_all_eng', 'ingredients_all_desc',
+                            'ranks', 'product_awards', 'product_awards_sector', 'product_awards_rank',
+                            'price', 'product_stores']
+            df_info = pd.DataFrame(self.scrape_infos, columns=columns)
+            df_info.loc[:, 'regist_date'] = self.date
+            
+            # reivew table
+            df_rev = pd.DataFrame()
+            df_rev.loc[:, 'product_code'] = self.scrape_reviews[0]
+            df_rev.loc[:, 'product_review'] = self.scrape_reviews[1]
+            df_rev.loc[:, 'user_id'] = self.scrape_reviews[2]
+            df_rev.loc[:, 'product_rating'] = self.scrape_reviews[3]
+            df_rev.loc[:, 'review_date'] = self.scrape_reviews[4]
+            df_rev.loc[:, 'regist_date'] = self.date
+            
+            # status table
+            df_status = pd.DataFrame(self.status_list, columns=['product_code', 'status'])
+            
+            # Upload Database
+            try:
+                self.db.engine_upload(df_info, self.table_name_info, 'append')
+                self.db.engine_upload(df_rev, self.table_name_rev, 'append')
+                self.db.engine_upload(self.table_name_status, 'append')
+            except:
+                # db 연결 끊김: 인터넷(와이파이) 재연결 필요
+                # self.stop()
+                self.check = 1
+        
+    progress = QtCore.pyqtSignal(object)
+    def run(self):
+        ''' Run Thread '''
+        
+        review_check = 1
+        with open(self.file_path, 'rb') as f:
+            product_codes = pickle.load(f)
+        self.scrape_infos, self.scrape_reviews, self.status_list = [], [], []
+        idx = 0
+        t = tqdm(product_codes)
+        for code in t:
+            if self.power:
+                self.progress.emit(t)
+            
+                driver, status = crw.get_webdriver_gl(code)
+                if status == -1:
+                    # 글로우픽 VPN ip 차단: VPN 재연결 필요
+                    self.stop()
+                    self.check = 2
+                    
+                elif status == 1:
+                    scrape, status, driver = crw.scrape_gl_info(code, driver, review_check)
+                    
+                    if status == 1:
+                        self.scrape_infos.append(scrape)
+                        if review_check == 1:
+                            reviews, rev_status = crw.crawling_review(code, driver)
+                            if rev_status == 1:
+                                self.scrape_reviews.append(reviews)
+                            
+                self.status_list.append([code, status])
+                
+                # if len(self.scrape_infos) % 500 == 0:
+                #     self.upload_df()
+                    
+            else:
+                with open(self.file_path, 'wb') as f:
+                    pickle.dump(product_codes[idx:], f)
+                self.upload_df()
+                self.progress.emit(t)
+                break
+                
+            idx += 1
+                
+    def stop(self):
+        ''' Stop Thread '''
+        
+        self.power = False
+        self.quit()
+        self.wait(3000)
+        
+class ThreadCrawlingProductCode(QtCore.QThread, QtCore.QObject):
+    ''' Thread Crawling glowpick products '''
+    
+    def __init__(self, parent=None):
+        super().__init__()
+        self.power = True
+        self.check = 0
+        self.file_path = os.path.join(tbl_cache, 'product_codes.txt')
+        self.selections = os.path.join(tbl_cache, 'selections.txt')
+        self.divisions = os.path.join(tbl_cache, 'divisions.txt')
+        self.selection_idx = os.path.join(tbl_cache, 'selection_idx.txt')
+        self.division_idx = os.path.join(tbl_cache, 'division_idx.txt')
+        
+        # db 연결
+        with open(conn_path, 'rb') as f:
+            conn = pickle.load(f)
+        self.db = access_db.AccessDataBase(conn[0], conn[1], conn[2])
+        
+    def find_category_index(self):
+        ''' Crawling & Save category index dictionary '''
+        selelction_idx = crw.find_selection_new()
+        division_idx = crw.find_division_rank()
+        with open(self.selection_idx, 'wb') as f:
+            pickle.dump(selelction_idx, f)
+        with open(self.division_idx, 'wb') as f:
+            pickle.dump(division_idx, f)
+        return selelction_idx, division_idx
+            
+    progress = QtCore.pyqtSignal(object)
+    def run(self):
+        ''' Run Thread '''
+        
+        if os.path.isfile(self.selection_idx):
+            with open(self.selection_idx, 'rb') as f:
+                selelction_idx = pickle.load(f)
+            with open(self.division_idx, 'rb') as f:
+                division_idx = pickle.load(f)
+        else:
+            selelction_idx, division_idx = self.find_category_index()
+        
+        # Categories to crawl
+        with open(self.selections, 'rb') as f:
+            selections = pickle.load(f)
+        with open(self.divisions, 'rb') as f:
+            divisions = pickle.load(f)
+        
+        sel_idx, div_idx = [], []
+        for sel in selections:
+            sel_idx.append(selelction_idx[sel])
+        for div in divisions:
+            div_idx.append(division_idx[div])
+        
+        t = tqdm(range(len(sel_idx) + len(div_idx)))
+        for i in t:
+            if self.power:
+                self.progress.emit(t)
+            
+                if i < len(sel_idx):
+                    # Scraping new products
+                    idx = sel_idx[i]
+                    url = f"https://www.glowpick.com/products/brand-new?cate1Id={idx}"
+                    wd = get_url(url)
+                    urls += crw.scraping_prds_rank(wd)
+                    
+                else:
+                    # Scraping rank products
+                    i -= len(sel_idx)
+                    idx = div_idx[i]
+                    url = f"https://www.glowpick.com/categories/{idx}?tab=ranking"
+                    wd = get_url(url)
+                    urls += crw.scraping_prds_new(wd)
+            else:
+                self.stop()
+                
+            # url -> product_code
+            product_codes = []
+            for url in urls:
+                product_code = url.replace('https://www.glowpick.com/products/', '')
+                product_codes.append(product_code)
+            with open(self.file_path, 'wb') as f:
+                pickle.dump(product_codes, f)
+                
+    def stop(self):
+        ''' Stop Thread '''
+        
+        self.power = False
+        self.quit()
+        self.wait(3000)
+    
+            
+        
+        
+        
+        
+    
