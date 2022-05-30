@@ -23,13 +23,8 @@ if not os.path.exists(tbl_cache_dir):
 # base_path
 print(f'\n\nroot: {base_path}\n\n')
 
-def _exec_gui():
-    ''' main gui execution '''
-    app = QApplication(sys.argv)
-    form = MainWidget()
-    form.show()
-    sys.exit(app.exec_())
-    
-''' Opne GUI '''
-if __name__ == '__main__':
-    _exec_gui()
+''' main gui execution '''
+app = QApplication(sys.argv)
+form = MainWidget()
+form.show()
+sys.exit(app.exec_())

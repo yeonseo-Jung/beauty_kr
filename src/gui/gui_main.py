@@ -15,8 +15,9 @@ from gui.gui_mapping import MappingWindow
 from gui.gui_get_table import GetTableWindow
 from gui.gui_review import ReviewWindow
 from gui.gui_crawling_nv_rev import CrawlingNvRevWindow
+from gui.gui_crawling_gl import CrawlingGlWindow
 
-from PyQt5.QtWidgets import QWidget, QGridLayout, QLabel, QLineEdit, QComboBox, QPushButton, QMessageBox
+from PyQt5.QtWidgets import QWidget, QGridLayout, QLabel, QLineEdit, QComboBox, QPushButton, QMessageBox, QApplication
 
 
 if getattr(sys, 'frozen', False) and hasattr(sys, '_MEIPASS'):
@@ -34,7 +35,7 @@ class MainWidget(QWidget):
     
     def __init__(self):
         super().__init__()
-        self.version = "0.0.1.2"
+        self.version = "0.0.2.0"
         self.w0 = None
         self.w1 = None
         self.w2 = None
@@ -124,10 +125,10 @@ class MainWidget(QWidget):
                 
             elif menu_index == 1:
                 if self.w1 is None:
-                    self.w1 = CrawlingNvRevWindow()
+                    self.w1 = CrawlingGlWindow()
                 else:
                     self.w1.close()
-                    self.w1 = CrawlingNvRevWindow()
+                    self.w1 = CrawlingGlWindow()
                 self.w1.show()
                 
             elif menu_index == 2:
@@ -149,19 +150,3 @@ class MainWidget(QWidget):
         except Exception as e:
             msg.setText(f'{e}')
             msg.exec_()
-            
-            
-            
-# def exec_gui():
-#     ''' main gui execution '''
-#     app = QApplication(sys.argv)
-#     form = MainWidget()
-#     form.show()
-#     sys.exit(app.exec_())
-        
-    
-# if __name__ == '__main__':
-#     app = QApplication(sys.argv)
-#     form = MainWidget()
-#     form.show()
-#     sys.exit(app.exec_())

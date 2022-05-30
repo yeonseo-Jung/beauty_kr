@@ -25,7 +25,7 @@ conn_path = os.path.join(base_path, 'conn.txt')
 form_path = os.path.join(base_path, 'form/crawlingNvRevWindow.ui')
 
 from access_database import access_db
-from multithreading.thread_crawling import CrawlingNvRev
+from multithreading.thread_crawling import ThreadCrawlingNvRev
 from gui.table_view import TableViewer
 from scraping.scraper import ReviewScrapeNv
 
@@ -42,7 +42,7 @@ class CrawlingNvRevWindow(QMainWindow, form):
         self.scrape_df_name = "scrape_df.csv"
         self.path_scrape_df = os.path.join(tbl_cache, self.scrape_df_name)
         self.rs = ReviewScrapeNv()
-        self.thread_crw = CrawlingNvRev()
+        self.thread_crw = ThreadCrawlingNvRev()
         
         # db 연결
         with open(conn_path, 'rb') as f:

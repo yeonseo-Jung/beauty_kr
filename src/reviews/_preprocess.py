@@ -40,9 +40,10 @@ class ReviewMapping:
             conn = pickle.load(f)
         self.db = access_db.AccessDataBase(conn[0], conn[1], conn[2])
         
-        year = str(datetime.today().year)
-        month = str(datetime.today().month)
-        day = str(datetime.today().day)
+        today = datetime.today()
+        year = str(today.year)
+        month = str(today.month)
+        day = str(today.day)
         if len(month) == 1:
             month = "0" + month
         if len(day) == 1:

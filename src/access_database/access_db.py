@@ -87,7 +87,7 @@ class AccessDataBase():
         curs.close()
         
         ed = time.time()
-        print(f'`{table_name}` Import Time: {round(ed-st, 0)}sec\n\n')
+        print(f'`{table_name}` Import Time: {round(ed-st, 1)}sec\n\n')
         
         return df
     

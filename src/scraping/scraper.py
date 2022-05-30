@@ -87,12 +87,12 @@ def get_url(url, window=None, image=None):
             except:
                 pass
             error.append([url, str(e)])
-            try:
-                with open(f'{tbl_cache}/scraping_error_msg.txt', 'wb') as f:
-                    pickle.dump(error, f)
-            except:
-                with open('./scraping_error_msg.txt', 'wb') as f:
-                    pickle.dump(error, f)
+            # try:
+            #     with open(f'{tbl_cache}/scraping_error_msg.txt', 'wb') as f:
+            #         pickle.dump(error, f)
+            # except:
+            #     with open('./scraping_error_msg.txt', 'wb') as f:
+            #         pickle.dump(error, f)
             wd = None
     return wd
     
@@ -251,7 +251,6 @@ def scraper_nv(product_id, search_word):
             
     return scraps, status
 
-
 class CrawlInfoRevGl():
     def __init__(self):
         pass
@@ -273,7 +272,7 @@ class CrawlInfoRevGl():
             driver = get_url(url=url, window=None, image=1)
             
             if driver == None:
-                pass
+                status = -1
             
             else:
                 try:    
@@ -330,13 +329,13 @@ class CrawlInfoRevGl():
     
     def find_division_rank(self):
         ''' find division index '''
+        
         divisions = {}
-        error = []
+        urls, error = [], []
         idx, error_cnt = 1, 0
         while error_cnt < 10:
-            url = f"https://www.glowpick.com/products/brand-new?cate1Id={idx}"
+            url = f"https://www.glowpick.com/categories/{idx}?tab=ranking"
             try:
-                # wait for page
                 wd = get_url(url)
                 wait_xpath = '/html/body/div/div/div/div/main/div/div[2]/div/div/div[1]/div/div/ul/li[1]'
                 WebDriverWait(wd, 30).until(EC.element_to_be_clickable((By.XPATH, wait_xpath)))
@@ -348,9 +347,9 @@ class CrawlInfoRevGl():
                 except NoSuchElementException:
                     pass
                 
-                # find division
+                # find division index
                 soup = BeautifulSoup(wd.page_source, 'lxml')
-                division = soup.find('div', 'selector__item__div').find('span').text.strip()
+                division = soup.find('h1', 'nav__h1').find('span').text
                 divisions[division] = idx
                 
             except Exception as e:
@@ -395,69 +394,99 @@ class CrawlInfoRevGl():
         return selections
     
     def scraping_prds_rank(self, wd):
-        soup = BeautifulSoup(wd.page_source, 'lxml')
-        n = len(soup.find_all('div', 'selector__item__div'))
+        
         urls = []
-        urls += self.search_url(soup)
-
-        if n >= 2:
+        try:
+            wait_xpath = '/html/body/div/div/div/div/main/div/div[2]/div/div/div[1]/div/div/ul/li[1]'
+            WebDriverWait(wd, 30).until(EC.element_to_be_clickable((By.XPATH, wait_xpath)))
+                        
+            # remove popup
             try:
-                groups_xpath = '/html/body/div/div/div/div/div[2]/div/div/div[3]/div/div[2]'
-                wd.find_element_by_xpath(groups_xpath).click()
-                time.sleep(3)
-                link = wd.current_url
-                groups_num = int(re.search(r'ids=[0-9]*', link).group(0).replace('ids=', ''))
-                
-                while n > 2:
-                    # pasing page source
-                    soup = BeautifulSoup(wd.page_source, 'lxml')
-                    # scraping product url 
-                    urls += self.search_url(soup)
-                    # next url 
-                    link = link.replace(f'ids={groups_num}', f'ids={groups_num+1}')
-                    wd.get(link)
-                    time.sleep(5)
-                    
-                    groups_num += 1
-                    n -= 1
-                    
+                popup_xpath = '/html/body/div/div/div/div/div[1]/span/div/div[2]/div[2]/button[1]'
+                wd.find_element_by_xpath(popup_xpath).click()
             except NoSuchElementException:
                 pass
-        urls = list(set(urls))
+            
+            soup = BeautifulSoup(wd.page_source, 'lxml')
+            n = len(soup.find_all('div', 'selector__item__div'))
+            urls += self.search_url(soup)
+            
+            if n >= 2:
+                try:
+                    groups_xpath = '/html/body/div/div/div/div/div[2]/div/div/div[3]/div/div[2]'
+                    wd.find_element_by_xpath(groups_xpath).click()
+                    # btn = wd.find_element_by_xpath(groups_xpath)
+                    # wd.execute_script("arguments[0].click();", btn)
+                    time.sleep(3)
+                    link = wd.current_url
+                    groups_num = int(re.search(r'ids=[0-9]*', link).group(0).replace('ids=', ''))
+                    
+                    while n > 2:
+                        # pasing page source
+                        soup = BeautifulSoup(wd.page_source, 'lxml')
+                        # scraping product url 
+                        urls += self.search_url(soup)
+                        # next url 
+                        link = link.replace(f'ids={groups_num}', f'ids={groups_num+1}')
+                        wd.get(link)
+                        time.sleep(5)
+                        
+                        groups_num += 1
+                        n -= 1
+                        
+                except NoSuchElementException:
+                    pass
+            urls = list(set(urls))
+        except TimeoutException:
+            pass
         return urls
     
     def scraping_prds_new(self, wd):
-        soup = BeautifulSoup(wd.page_source, 'lxml')
-        n = len(soup.find_all('div', 'selector__item__div'))
+        
         urls = []
-        urls += self.search_url(soup)
-
-        if n >= 2:
+        try:
+            wait_xpath = '/html/body/div/div/div/div/main/div/div[2]/div/div/div[1]/div/div/ul/li[1]'
+            WebDriverWait(wd, 30).until(EC.element_to_be_clickable((By.XPATH, wait_xpath)))
+            
+            # remove popup
             try:
-                groups_xpath = '/html/body/div/div/div/div/div[2]/div/div/div[3]/div/div[2]'
-                wd.find_element_by_xpath(groups_xpath).click()
-                time.sleep(5)
-                link = wd.current_url
-                groups_num = int(re.search(r'cate2Id=[0-9]*', link).group(0).replace('cate2Id=', ''))
-                
-                while n > 2:
-                    # pasing page source
-                    soup = BeautifulSoup(wd.page_source, 'lxml')
-                    
-                    # scraping product url 
-                    urls += self.search_url(soup)
-                    
-                    # next url 
-                    link = link.replace(f'cate2Id={groups_num}', f'cate2Id={groups_num+1}')
-                    wd.get(link)
-                    time.sleep(5)
-                    
-                    groups_num += 1
-                    n -= 1
-                    
+                popup_xpath = '/html/body/div/div/div/div/div[1]/span/div/div[2]/div[2]/button[1]'
+                wd.find_element_by_xpath(popup_xpath).click()
             except NoSuchElementException:
                 pass
-        urls = list(set(urls))
+            
+            soup = BeautifulSoup(wd.page_source, 'lxml')
+            n = len(soup.find_all('div', 'selector__item__div'))
+            urls += self.search_url(soup)
+
+            if n >= 2:
+                try:
+                    groups_xpath = '/html/body/div/div/div/div/div[2]/div/div/div[3]/div/div[2]'
+                    wd.find_element_by_xpath(groups_xpath).click()
+                    time.sleep(5)
+                    link = wd.current_url
+                    groups_num = int(re.search(r'cate2Id=[0-9]*', link).group(0).replace('cate2Id=', ''))
+                    
+                    while n > 2:
+                        # pasing page source
+                        soup = BeautifulSoup(wd.page_source, 'lxml')
+                        
+                        # scraping product url 
+                        urls += self.search_url(soup)
+                        
+                        # next url 
+                        link = link.replace(f'cate2Id={groups_num}', f'cate2Id={groups_num+1}')
+                        wd.get(link)
+                        time.sleep(5)
+                        
+                        groups_num += 1
+                        n -= 1
+                        
+                except NoSuchElementException:
+                    pass
+            urls = list(set(urls))
+        except TimeoutException:
+            pass
         return urls
     
     def scrape_gl_info(self, product_code, driver, review_check):
@@ -640,45 +669,37 @@ class CrawlInfoRevGl():
         elif review_check == 1:
             return product_scrapes, status, driver
     
-    def scraping_review(self, driver, soup, all_reviews, all_users, all_rating, all_date):
+    def scraping_review(self, product_code, driver, soup, reviews):
         ''' Review Data Scraper '''
         
-        comment = driver.find_elements_by_class_name('cutter__pre')    # 리뷰 
-        user = driver.find_elements_by_class_name('info__details__nickname')    # 유저 아이디
-        # combined = driver.find_elements_by_class_name('property__wrapper__item')    # 유저 정보(나이, 피부타입, 성별)
-        rating = soup.select('.stars__rating.font-spoqa')   # 상품 평점
-        date = driver.find_elements_by_class_name('review__side-info__created-at')  # 리뷰 작성 날짜
-        
-        for d in date:
-            d = d.text.strip()
-            if d == "":
-                d = np.nan
-            all_date.append(d)
-        for u in comment:
-            u = u.text.replace('\n', '').strip()
-            if u == "":
-                u = np.nan
-            all_reviews.append(u)
-        for r in rating:
-            r = r.text.replace('\n', '').replace(' ', '')
-            if r == "":
-                r = np.nan
-            all_rating.append(r)
-        for z in user:
-            z = z.text.strip()
-            if z == "":
-                z = np.nan
-            all_users.append(z)
+        soup = BeautifulSoup(driver.page_source, 'lxml')
+        wrapper = soup.find_all('article', 'review reviews__wrapper__review')
+        for rev in wrapper:
+            user_id = rev.find('p', 'info__details__nickname').text.strip()
+            if user_id == '':
+                user_id = np.nan
+                
+            product_rating = rev.find('span', 'stars__rating font-spoqa').text.replace('\n', '').replace(' ', '')
+            if product_rating == '':
+                product_rating = np.nan
+                
+            review_date = rev.find('span', 'review__side-info__created-at').text.replace('\n', '').replace(' ', '')
+            if review_date == '':
+                review_date = np.nan
+                
+            product_review = rev.find('pre', 'cutter__pre').text.replace('\n', ' ')
+            if product_review == '':
+                product_review = np.nan
+            else:
+                product_review = re.sub(r' +', ' ', product_review).strip()
+                
+            reviews.append([product_code, user_id, product_rating, review_date, product_review])
             
-        return driver, all_reviews, all_users, all_rating, all_date
+        return driver, reviews
     
     def crawling_review(self, product_code, driver):
         
-        all_reviews = []
-        all_users = []
-        # all_combined = []
-        all_rating = []
-        all_date = []
+        reviews = []
         soup = None
         status = 1
         try:
@@ -689,18 +710,18 @@ class CrawlInfoRevGl():
             if soup != None:
                 count = int(soup.find('span', 'reviews__header__count').text.replace(',', '').strip())
                 if count == 0:
-                    reviews = np.nan
                     status = 0
                 elif count <= 50:
-                    driver, all_reviews, all_users, all_rating, all_date = self.scraping_review(driver, soup, all_reviews, all_users, all_rating, all_date)
-                    product_codes = [product_code] * len(all_reviews)
-                    reviews = [product_codes, all_reviews, all_users, all_rating, all_date]
+                    driver, reviews = self.scraping_review(product_code, driver, soup, reviews)
+                    if len(reviews) == 0:
+                        # parsing error
+                        status = -1
                 else:
                     # scroll down to select rating 
                     tag = driver.find_element_by_xpath('/html/body/div/div/div/div/main/div/section/section/div[4]')
                     action = ActionChains(driver)
                     action.move_to_element(tag).perform()
-                    time.sleep(2)
+                    time.sleep(3)
                     
                     # rating 5 ~ 1 reviews scraping
                     for i in range(4, 9):
@@ -709,34 +730,29 @@ class CrawlInfoRevGl():
                         try:
                             rating_xpath = f'/html/body/div/div/div/div/main/div/section/section/div[2]/div[2]/div/div/div[{i}]/span'
                             driver.find_element_by_xpath(rating_xpath).click()
-                            # elm = driver.find_element_by_xpath(rating_xpath)
-                            # ActionChains(driver).click(elm).perform()
-                            time.sleep(1.5)
+                            time.sleep(3)
                         except:
                             continue
                         
                         # remove popup
                         try:
                             driver.find_element_by_xpath('/html/body/div/div/div/div/div[1]/span/div/div[2]/div/div/div/button[2]').click()
-                            time.sleep(1.5)
+                            time.sleep(3)
                         except:
                             pass
                         # scraping review data
-                        driver, all_reviews, all_users, all_rating, all_date = self.scraping_review(driver, soup, all_reviews, all_users, all_rating, all_date)
+                        driver, reviews = self.scraping_review(product_code, driver, soup, reviews)
                     
-                    if len(all_reviews) == 0:
-                        reviews = np.nan
-                        status = 0
-                    else:
-                        product_codes = [product_code] * len(all_reviews)
-                        reviews = [product_codes, all_reviews, all_users, all_rating, all_date]
-                    
+                    if len(reviews) == 0:
+                        # parsing error
+                        status = -1
+                        
             else:
-                reviews = np.nan
+                # parsing error
                 status = -1
             
         except TimeoutException:
-            reviews = np.nan
+            # parsing error
             status = -1
         
         driver.quit()

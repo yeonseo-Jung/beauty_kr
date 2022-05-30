@@ -138,9 +138,11 @@ class ThreadCrawlingGl(QtCore.QThread, QtCore.QObject):
     
     def __init__(self, parent=None):
         super().__init__()
-        self.power = True
+        self.power = False
         self.check = 0
         self.file_path = os.path.join(tbl_cache, 'product_codes.txt')
+        self.path_scrape_df = os.path.join(tbl_cache, 'gl_info.csv')
+        self.path_scrape_df_rev = os.path.join(tbl_cache, 'gl_info_rev.csv')
         
         # db 연결
         with open(conn_path, 'rb') as f:
@@ -167,22 +169,19 @@ class ThreadCrawlingGl(QtCore.QThread, QtCore.QObject):
         if (len(self.scrape_infos) != 0) & (len(self.scrape_reviews) != 0):
             # info table
             columns = ['product_code', 'product_name', 'brand_code', 'brand_name', 'product_url',
-                            'selection', 'division', 'groups', 
-                            'descriptions', 'product_keywords', 'color_type', 'volume', 'image_source', 
-                            'ingredients_all_kor', 'ingredients_all_eng', 'ingredients_all_desc',
-                            'ranks', 'product_awards', 'product_awards_sector', 'product_awards_rank',
-                            'price', 'product_stores']
+                        'selection', 'division', 'groups', 
+                        'descriptions', 'product_keywords', 'color_type', 'volume', 'image_source', 
+                        'ingredients_all_kor', 'ingredients_all_eng', 'ingredients_all_desc',
+                        'ranks', 'product_awards', 'product_awards_sector', 'product_awards_rank',
+                        'price', 'product_stores']
             df_info = pd.DataFrame(self.scrape_infos, columns=columns)
             df_info.loc[:, 'regist_date'] = self.date
+            df_info.to_csv(self.path_scrape_df, index=False)
             
             # reivew table
-            df_rev = pd.DataFrame()
-            df_rev.loc[:, 'product_code'] = self.scrape_reviews[0]
-            df_rev.loc[:, 'product_review'] = self.scrape_reviews[1]
-            df_rev.loc[:, 'user_id'] = self.scrape_reviews[2]
-            df_rev.loc[:, 'product_rating'] = self.scrape_reviews[3]
-            df_rev.loc[:, 'review_date'] = self.scrape_reviews[4]
-            df_rev.loc[:, 'regist_date'] = self.date
+            columns = ['product_code', 'user_id', 'product_rating', 'review_date', 'product_review']
+            df_rev = pd.DataFrame(self.scrape_reviews, columns=columns)
+            df_rev.to_csv(self.path_scrape_df_rev, index=False)
             
             # status table
             df_status = pd.DataFrame(self.status_list, columns=['product_code', 'status'])
@@ -191,7 +190,7 @@ class ThreadCrawlingGl(QtCore.QThread, QtCore.QObject):
             try:
                 self.db.engine_upload(df_info, self.table_name_info, 'append')
                 self.db.engine_upload(df_rev, self.table_name_rev, 'append')
-                self.db.engine_upload(self.table_name_status, 'append')
+                self.db.engine_upload(df_status, self.table_name_status, 'append')
             except:
                 # db 연결 끊김: 인터넷(와이파이) 재연결 필요
                 # self.stop()
@@ -225,21 +224,22 @@ class ThreadCrawlingGl(QtCore.QThread, QtCore.QObject):
                         if review_check == 1:
                             reviews, rev_status = crw.crawling_review(code, driver)
                             if rev_status == 1:
-                                self.scrape_reviews.append(reviews)
+                                self.scrape_reviews += reviews
                             
                 self.status_list.append([code, status])
                 
-                # if len(self.scrape_infos) % 500 == 0:
-                #     self.upload_df()
+                if len(self.scrape_infos) % 250 == 0:
+                    self.upload_df()
                     
             else:
-                with open(self.file_path, 'wb') as f:
-                    pickle.dump(product_codes[idx:], f)
-                self.upload_df()
-                self.progress.emit(t)
                 break
-                
             idx += 1
+            
+        with open(self.file_path, 'wb') as f:
+            pickle.dump(product_codes[idx:], f)
+        self.upload_df()
+        self.progress.emit(t)
+        self.power = False
                 
     def stop(self):
         ''' Stop Thread '''
@@ -253,7 +253,7 @@ class ThreadCrawlingProductCode(QtCore.QThread, QtCore.QObject):
     
     def __init__(self, parent=None):
         super().__init__()
-        self.power = True
+        self.power = False
         self.check = 0
         self.file_path = os.path.join(tbl_cache, 'product_codes.txt')
         self.selections = os.path.join(tbl_cache, 'selections.txt')
@@ -268,25 +268,29 @@ class ThreadCrawlingProductCode(QtCore.QThread, QtCore.QObject):
         
     def find_category_index(self):
         ''' Crawling & Save category index dictionary '''
-        selelction_idx = crw.find_selection_new()
-        division_idx = crw.find_division_rank()
-        with open(self.selection_idx, 'wb') as f:
-            pickle.dump(selelction_idx, f)
-        with open(self.division_idx, 'wb') as f:
-            pickle.dump(division_idx, f)
-        return selelction_idx, division_idx
-            
-    progress = QtCore.pyqtSignal(object)
-    def run(self):
-        ''' Run Thread '''
         
         if os.path.isfile(self.selection_idx):
             with open(self.selection_idx, 'rb') as f:
                 selelction_idx = pickle.load(f)
             with open(self.division_idx, 'rb') as f:
                 division_idx = pickle.load(f)
-        else:
-            selelction_idx, division_idx = self.find_category_index()
+        else:        
+            selelction_idx = crw.find_selection_new()
+            division_idx = crw.find_division_rank()
+            with open(self.selection_idx, 'wb') as f:
+                pickle.dump(selelction_idx, f)
+            with open(self.division_idx, 'wb') as f:
+                pickle.dump(division_idx, f)
+            
+    progress = QtCore.pyqtSignal(object)
+    def run(self):
+        ''' Run Thread '''
+                
+        # Category index
+        with open(self.selection_idx, 'rb') as f:
+            selelction_idx = pickle.load(f)
+        with open(self.division_idx, 'rb') as f:
+            division_idx = pickle.load(f)
         
         # Categories to crawl
         with open(self.selections, 'rb') as f:
@@ -296,39 +300,45 @@ class ThreadCrawlingProductCode(QtCore.QThread, QtCore.QObject):
         
         sel_idx, div_idx = [], []
         for sel in selections:
-            sel_idx.append(selelction_idx[sel])
+            if sel in selelction_idx.keys():
+                sel_idx.append(selelction_idx[sel])
         for div in divisions:
-            div_idx.append(division_idx[div])
+            if div in division_idx.keys():
+                div_idx.append(division_idx[div])
         
+        urls = []
         t = tqdm(range(len(sel_idx) + len(div_idx)))
         for i in t:
             if self.power:
                 self.progress.emit(t)
             
                 if i < len(sel_idx):
-                    # Scraping new products
+                    # Scraping rank products
                     idx = sel_idx[i]
-                    url = f"https://www.glowpick.com/products/brand-new?cate1Id={idx}"
+                    url = f"https://www.glowpick.com/categories/{idx}?tab=ranking"    # glowpick ranking products page 
                     wd = get_url(url)
                     urls += crw.scraping_prds_rank(wd)
                     
                 else:
                     # Scraping rank products
+                    # Scraping new products
                     i -= len(sel_idx)
                     idx = div_idx[i]
-                    url = f"https://www.glowpick.com/categories/{idx}?tab=ranking"
+                    url = f"https://www.glowpick.com/products/brand-new?cate1Id={idx}"    # glowpick new products page 
                     wd = get_url(url)
                     urls += crw.scraping_prds_new(wd)
             else:
-                self.stop()
+                break
                 
-            # url -> product_code
-            product_codes = []
-            for url in urls:
-                product_code = url.replace('https://www.glowpick.com/products/', '')
-                product_codes.append(product_code)
-            with open(self.file_path, 'wb') as f:
-                pickle.dump(product_codes, f)
+        # url -> product_code
+        product_codes = []
+        for url in urls:
+            product_code = url.replace('https://www.glowpick.com/products/', '')
+            product_codes.append(product_code)
+        with open(self.file_path, 'wb') as f:
+            pickle.dump(product_codes, f)
+        self.power = False
+        self.progress.emit(t)
                 
     def stop(self):
         ''' Stop Thread '''
@@ -336,10 +346,3 @@ class ThreadCrawlingProductCode(QtCore.QThread, QtCore.QObject):
         self.power = False
         self.quit()
         self.wait(3000)
-    
-            
-        
-        
-        
-        
-    
