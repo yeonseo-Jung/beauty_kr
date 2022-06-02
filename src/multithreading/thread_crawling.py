@@ -20,12 +20,13 @@ sys.path.append(root)
 sys.path.append(src)
 
 from PyQt5 import QtCore
-# from PyQt5.QtWidgets import 
 
 from access_database import access_db
 from scraping.scraper import get_url
 from scraping.scraper import ReviewScrapeNv
 from scraping.scraper import CrawlInfoRevGl
+from mapping._preprocessing import TitlePreProcess
+from scraping.crawler_naver import ProductStatusNv
 
 if getattr(sys, 'frozen', False) and hasattr(sys, '_MEIPASS'):
     base_path = sys._MEIPASS
@@ -131,7 +132,6 @@ class ThreadCrawlingNvRev(QtCore.QThread, QtCore.QObject):
         self.wait(3000)
         
         
-        
 crw = CrawlInfoRevGl()
 class ThreadCrawlingGl(QtCore.QThread, QtCore.QObject):
     ''' Thread Crawling glowpick products '''
@@ -149,6 +149,7 @@ class ThreadCrawlingGl(QtCore.QThread, QtCore.QObject):
             conn = pickle.load(f)
         self.db = access_db.AccessDataBase(conn[0], conn[1], conn[2])
         
+        # today (regist date)
         today = datetime.today()
         year = str(today.year)
         month = str(today.month)
@@ -159,11 +160,24 @@ class ThreadCrawlingGl(QtCore.QThread, QtCore.QObject):
             day = "0" + day
         self.date = year + "-" + month + "-" + day
         date = year[2:4] + month + day
+        # table name
         self.table_name_info = f"glowpick_product_info_update_{date}"
         self.table_name_rev = f"glowpick_product_info_update_review_{date}"
         self.table_name_status = f"glowpick_product_info_update_status_{date}"
         
-    def upload_df(self):
+    def _get_tbl(self):
+        
+        tables = ['glowpick_product_info_final_version']
+        columns = ['id', 'product_code', 'selection']
+
+        df = self.db.integ_tbl(tables, columns)
+        mapping_table = self.db.get_tbl('beauty_kr_mapping_table', ['item_key'])
+        item_keys = mapping_table.item_key.unique().tolist()
+        df_mapped = df.loc[df.id.isin(item_keys)].reset_index(drop=True)
+        
+        return df_mapped
+    
+    def _upload_df(self):
         ''' Upload Table to Database '''
         
         if (len(self.scrape_infos) != 0) & (len(self.scrape_reviews) != 0):
@@ -229,7 +243,7 @@ class ThreadCrawlingGl(QtCore.QThread, QtCore.QObject):
                 self.status_list.append([code, status])
                 
                 if len(self.scrape_infos) % 250 == 0:
-                    self.upload_df()
+                    self._upload_df()
                     
             else:
                 break
@@ -237,7 +251,7 @@ class ThreadCrawlingGl(QtCore.QThread, QtCore.QObject):
             
         with open(self.file_path, 'wb') as f:
             pickle.dump(product_codes[idx:], f)
-        self.upload_df()
+        self._upload_df()
         self.progress.emit(t)
         self.power = False
                 
@@ -248,6 +262,7 @@ class ThreadCrawlingGl(QtCore.QThread, QtCore.QObject):
         self.quit()
         self.wait(3000)
         
+prd = ProductStatusNv()
 class ThreadCrawlingProductCode(QtCore.QThread, QtCore.QObject):
     ''' Thread Crawling glowpick products '''
     
@@ -337,6 +352,119 @@ class ThreadCrawlingProductCode(QtCore.QThread, QtCore.QObject):
             product_codes.append(product_code)
         with open(self.file_path, 'wb') as f:
             pickle.dump(product_codes, f)
+        self.power = False
+        self.progress.emit(t)
+                
+    def stop(self):
+        ''' Stop Thread '''
+        
+        self.power = False
+        self.quit()
+        self.wait(3000)
+        
+preprocessor = TitlePreProcess()
+class ThreadCrawlingNvStatus(QtCore.QThread, QtCore.QObject):
+    def __init__(self):
+        super().__init__()
+        self.power = False
+        self.check = 0
+        
+        # path
+        self.path_input_df = os.path.join(tbl_cache, 'input_df.csv')
+        self.store_list = os.path.join(tbl_cache, 'store_list.txt')
+        self.status_list = os.path.join(tbl_cache, 'status_list.txt')
+        self.path_scrape_df = os.path.join(tbl_cache, 'scrape_df.csv')
+        
+        # db 연결
+        with open(conn_path, 'rb') as f:
+            conn = pickle.load(f)
+        self.db = access_db.AccessDataBase(conn[0], conn[1], conn[2])   
+        
+        # today (regist date)
+        today = datetime.today()
+        year = str(today.year)
+        month = str(today.month)
+        day = str(today.day)
+        if len(month) == 1:
+            month = "0" + month
+        if len(day) == 1:
+            day = "0" + day
+        self.date = year + "-" + month + "-" + day
+        date = year[2:4] + month + day
+        # uploaded table name
+        self.table_name = f'beauty_kr_product_info_{date}'
+    
+    def _get_tbl(self):
+        
+        tables = ['naver_beauty_product_info_extended_v1', 'naver_beauty_product_info_extended_v2', 'naver_beauty_product_info_extended_v3', 'naver_beauty_product_info_extended_v4', 'naver_beauty_product_info_extended_v5']
+        columns = ['id', 'product_url', 'selection', 'division', 'groups']
+
+        df = self.db.integ_tbl(tables, columns)
+        mapping_table = self.db.get_tbl('beauty_kr_mapping_table', ['item_key', 'mapped_id', 'source']).rename(columns={'mapped_id': 'id', 'source': 'table_name'})
+        df_mapped = df.merge(mapping_table, on=['id', 'table_name'], how='inner')
+        df_mapped = preprocessor.categ_reclassifier(df_mapped, source=1)
+        
+        return df_mapped
+    
+    def _upload_df(self):
+        ''' table upload into db '''
+        gl_info = self.db.get_tbl('glowpick_product_info_final_version', 'all').rename(columns={'id': 'item_key'})
+        columns = ['item_key', 'product_store', 'product_stote_url', 'price', 'delivery_fee', 'naver_pay', 'product_status', 'page_status']
+        nv_prd_status_update = pd.DataFrame(self.store_list, columns=columns).drop_duplicates(subset=['item_key', 'product_store', 'price', 'delivery_fee'], keep='first')
+        nv_prd_status_update.to_csv(self.path_scrape_df)
+        _nv_prd_status_update = nv_prd_status_update.loc[nv_prd_status_update.page_status==1]
+        df_mer = _nv_prd_status_update.merge(gl_info, on='item_key', how='left').sort_values(by='item_key').reset_index(drop=True)
+        
+        # table upload
+        try:
+            self.db.engine_upload(df_mer, self.table_name, 'replace')
+        except:
+            # db 연결 끊김
+            self.check = 1
+            
+    progress = QtCore.pyqtSignal(object)
+    def run(self):
+        
+        # input data (naver extended v[1:5] info)
+        df = pd.read_csv(self.path_input_df)
+        # store list
+        if os.path.isfile(self.store_list):
+            with open(self.store_list, 'rb') as f:
+                self.store_list = pickle.load(f)
+        else:
+            self.store_list = []
+        # status list
+        if os.path.isfile(self.status_list):
+            with open(self.status_list, 'rb') as f:
+                status_list = pickle.load(f)
+        else:
+            status_list = []
+        
+        if os.path.isfile(tbl_cache + '/prg_dict.txt'):
+            os.remove(tbl_cache + '/prg_dict.txt')
+            
+        t = tqdm(range(len(df)))
+        for idx in t:
+            if self.power:
+                self.progress.emit(t)
+                
+                item_key = df.loc[idx, 'item_key']
+                url = df.loc[idx, 'product_url']
+                product_status, store_info = prd.scraping_product_stores(item_key, url, None, None)
+                if store_info == None:
+                    pass
+                else:
+                    self.store_list.append(store_info)      
+            else:
+                break
+            idx += 1
+            
+        # save ipunt data into cache dir
+        df.loc[idx:].to_csv(self.path_input_df)
+        
+        # upload table into db 
+        self._upload_df()
+        
         self.power = False
         self.progress.emit(t)
                 

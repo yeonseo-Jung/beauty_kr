@@ -20,12 +20,6 @@ else:
     base_path = os.path.dirname(os.path.realpath(__file__))
     tbl_cache = os.path.join(root, 'tbl_cache')
 
-from PyQt5 import uic
-from PyQt5 import QtCore
-from PyQt5.QtWidgets import *
-
-from access_database import access_db
-
 class TitlePreProcess:
     
     def __init__(self):
@@ -197,12 +191,12 @@ class TitlePreProcess:
         else:
             return title_2, keep_wd_dict
         
-    def categ_reclassifier(self, input_data: pd.DataFrame, source: int) -> pd.DataFrame:
+    def categ_reclassifier(self, df: pd.DataFrame, source: int) -> pd.DataFrame:
         '''
         카테고리 재분류
         
         Input_Data
-        - input_data: 카테고리 정보가 할당된 데이터 프레임 
+        - df: 카테고리 정보가 할당된 데이터 프레임 
         
         ** necessary columns: ['id', 'selection', 'division', 'groups']
         
@@ -265,8 +259,6 @@ class TitlePreProcess:
         division = categs[1]
         groups = categs[2]
         
-        df = input_data.copy()
-        
         for idx in tqdm(range(len(df))):
             category = ''
             
@@ -287,69 +279,74 @@ class TitlePreProcess:
             if category == '':
                 category = np.nan
             df.loc[idx, 'category'] = category
+            
+        df = df[df.category.notnull()].reset_index(drop=True)
         
         return df
-
-class ThreadTitlePreprocess(QtCore.QThread, QtCore.QObject):
-    ''' Thread preprocessing product name '''
     
-    def __init__(self, parent=None):
-        super().__init__()
-        self.preprocess = TitlePreProcess()
-        self.power = True
-        
-        
-    progress = QtCore.pyqtSignal(object)
-    def run(self):
-            
-        df_0 = pd.read_csv(tbl_cache + '/tbl_0.csv')
-        # 글로우픽 내부 중복 제거
-        df_0 = df_0[df_0.dup_check != -1].reset_index(drop=True)
-        df_1 = pd.read_csv(tbl_cache + '/tbl_1.csv')
-        
-        df_0 = self.preprocess.categ_reclassifier(df_0, 0)
-        df_1 = self.preprocess.categ_reclassifier(df_1, 1)
-        
-        t = tqdm(range(len(df_0) + len(df_1)))
-        idx = 0
-        for i in t:
-            if self.power == True:
-                self.progress.emit(t)
-                
-                if idx >= len(df_0):
-                    idx_ = idx - len(df_0) 
-                    title = df_1.loc[idx_, 'product_name']
-                    brand = df_1.loc[idx_, 'brand_name']
-                    title_, keep_wd_dict = self.preprocess.title_preprocessor(title, brand)
-                    df_1.loc[idx_, 'product_name'] = str(title_)
-                    if len(keep_wd_dict) == 0:
-                        df_1.loc[idx_, 'keep_words'] = np.nan
-                    else:
-                        df_1.loc[idx_, 'keep_words'] = str(keep_wd_dict)
-                
-                else:
-                    title = df_0.loc[idx, 'product_name']
-                    brand = df_0.loc[idx, 'brand_name']
-                    title_, keep_wd_dict = self.preprocess.title_preprocessor(title, brand)
-                    df_0.loc[idx, 'product_name'] = str(title_)
-                    if len(keep_wd_dict) == 0:
-                        df_0.loc[idx, 'keep_words'] = np.nan
-                    else:
-                        df_0.loc[idx, 'keep_words'] = str(keep_wd_dict)
-                
-                idx += 1
-            
-            else:
-                self.progress.emit(t)
-                break
-            
-        if idx == len(df_0) + len(df_1):
-            df_0.to_csv(tbl_cache + '/deprepro_0.csv', index=False)
-            df_1.to_csv(tbl_cache + '/deprepro_1.csv', index=False)
-        
-    def stop(self):
-        ''' Stop Thread '''
-        
-        self.power = False
-        self.quit()
-        self.wait(3000)
+
+# '''
+# 전처리 실행 코드
+# '''
+
+# preprocessor = TitlePreProcess()
+# df_0_categ = preprocessor.categ_reclassifier(df_0_dedup, 0)
+# df_1_categ = preprocessor.categ_reclassifier(df_1, 1)
+
+# t = tqdm(range(len(df_0_categ) + len(df_1_categ)))
+# idx = 0
+# for i in t:        
+#     if idx >= len(df_0_categ):
+#         idx_ = idx - len(df_0_categ) 
+#         title = df_1_categ.loc[idx_, 'product_name']
+#         brand = df_1_categ.loc[idx_, 'brand_name']
+#         title_, keep_wd_dict  = preprocessor.title_preprocessor(title, brand)
+#         df_1_categ.loc[idx_, 'product_name'] = str(title_)
+#         if len(keep_wd_dict) == 0:
+#             df_1_categ.loc[idx_, 'keep_words'] = np.nan
+#         else:
+#             df_1_categ.loc[idx_, 'keep_words'] = str(keep_wd_dict)
+    
+#     else:
+#         title = df_0_categ.loc[idx, 'product_name']
+#         brand = df_0_categ.loc[idx, 'brand_name']
+#         title_, keep_wd_dict = preprocessor.title_preprocessor(title, brand)
+#         df_0_categ.loc[idx, 'product_name'] = str(title_)
+#         if len(keep_wd_dict) == 0:
+#             df_0_categ.loc[idx, 'keep_words'] = np.nan
+#         else:
+#             df_0_categ.loc[idx, 'keep_words'] = str(keep_wd_dict)
+    
+#     idx += 1
+    
+# columns = ['id', 'brand_name', 'product_name', 'category', 'keep_words', 'table_name']
+# df_concat = pd.concat([df_0_categ, df_1_categ]).loc[:, columns].reset_index(drop=True)
+# df_concat.loc[:, 'product_name'] = df_concat.product_name.str.replace(' ', '')
+# df_concat = df_concat[df_concat.product_name.str.len() >= 6].reset_index(drop=True)
+
+
+# ''' Dup check '''
+# subset = ['brand_name', 'product_name', 'category']
+# df_dup = df_concat[df_concat.duplicated(subset=subset, keep=False)].sort_values(by=subset).reset_index(drop=True)
+
+# df_group = df_dup.groupby(subset)
+# groups = df_group.groups.keys()
+# mapping_list = []
+# for group in tqdm(groups):
+#     grp = df_group.get_group(group)
+    
+#     if 'glowpick_product_info_final_version' in grp.table_name.tolist():
+#         grp_0 = grp.loc[grp.table_name=='glowpick_product_info_final_version']
+#         grp_1 = grp.loc[grp.table_name!='glowpick_product_info_final_version'].reset_index(drop=True)
+#         item_key = grp_0.id.values[0]
+#         keep_words_0 = grp_0.keep_words.values[0]
+#         for i in range(len(grp_1)):
+#             mapped_id = grp_1.loc[i, 'id']
+#             keep_words_1 = grp_1.loc[i, 'keep_words']
+#             table_name = grp_1.loc[i, 'table_name']
+#             mapping_list.append([item_key, keep_words_0, mapped_id, keep_words_1, table_name])
+#     else:
+#         pass
+    
+# columns = ['item_key', 'item_keep_words', 'mapped_id', 'mapped_keep_words', 'source']
+# mapping_table = pd.DataFrame(mapping_list, columns=columns).sort_values(['item_key', 'source'])

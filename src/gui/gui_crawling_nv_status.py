@@ -23,51 +23,36 @@ else:
     tbl_cache = os.path.join(root, 'tbl_cache')
     
 conn_path = os.path.join(base_path, 'conn.txt')
-form_path = os.path.join(base_path, 'form/crawlingGlInfoRevWindow.ui')
+form_path = os.path.join(base_path, 'form/crawlingNvStatus.ui')
 
 from access_database import access_db
-from multithreading.thread_crawling import ThreadCrawlingGl
-from multithreading.thread_crawling import ThreadCrawlingProductCode
+from multithreading.thread_crawling import ThreadCrawlingNvStatus
 from gui.table_view import TableViewer
-from scraping.scraper import CrawlInfoRevGl
 
 form = uic.loadUiType(form_path)[0]
-class CrawlingGlWindow(QMainWindow, form):
-    ''' Product Info Crawling Window '''
+class CrawlingNvStatus(QMainWindow, form):
+    ''' Product Status, Store Crawling Window '''
     
     def __init__(self):
         super().__init__()    
         self.setupUi(self)
-        self.setWindowTitle('Crawling Glowpick Products')
+        self.setWindowTitle('Update Naver Products Sales Status')
         self.viewer = None
-        self.file_path = os.path.join(tbl_cache, 'product_codes.txt')
-        self.selections = os.path.join(tbl_cache, 'selections.txt')
-        self.divisions = os.path.join(tbl_cache, 'divisions.txt')
-        self.path_scrape_df = os.path.join(tbl_cache, 'gl_info.csv')
-        self.path_scrape_df_rev = os.path.join(tbl_cache, 'gl_info_rev.csv')
         
-        # init class
-        self.crw = CrawlInfoRevGl()
-        self.thread_crw = ThreadCrawlingGl()
-        self.thread_code = ThreadCrawlingProductCode()
-        
-        # connect thread
+        # connect thread class 
+        self.thread_crw = ThreadCrawlingNvStatus()
         self.thread_crw.progress.connect(self.update_progress)
-        self.thread_code.progress.connect(self._update_progress)
-         
+        
+        # cache file path
+        self.path_input_df = os.path.join(tbl_cache, 'input_df.csv')
+        self.path_scrape_df = os.path.join(tbl_cache, 'scrape_df.csv')
+        
         # connect func & btn
         self.Select.clicked.connect(self._select)
-        self.Run_2.clicked.connect(self._run_prd_codes)
-        self.Run.clicked.connect(self._run_crawling)
-        self.Stop.clicked.connect(self.thread_code.stop)
+        self.Run.clicked.connect(self._run)
         self.Pause.clicked.connect(self.thread_crw.stop)
         self.View.clicked.connect(self.tbl_viewer)
         self.Save.clicked.connect(self.save_file)
-        
-        # connect db
-        with open(conn_path, 'rb') as f:
-            conn = pickle.load(f)
-        self.db = access_db.AccessDataBase(conn[0], conn[1], conn[2])
         
         # category toggled
         self.skincare.setChecked(False)
@@ -138,32 +123,7 @@ class CrawlingGlWindow(QMainWindow, form):
                 
             message = f"{int(per)}% | Progress item: {itm}  Total: {tot} | Elapsed time: {elapsed_h}:{elapsed_m}:{elapsed_s} < Remain time: {remain_h}:{remain_m}:{remain_s} **PAUSE**"
             self.statusbar.showMessage(message)
-    
-    def _update_progress(self, progress):
-        
-        prg_dict = progress.format_dict
-        itm = prg_dict['n'] 
-        tot = prg_dict['total']
-        per = round((itm / tot) * 100, 0)
-        elapsed = int(round(prg_dict['elapsed'], 0))
-        if itm >= 1:
-            remain_time = int(round((elapsed * tot / itm) - elapsed, 0))
-        else:
-            remain_time = 0
-        
-        self.progressBar_2.setValue(per)
-        
-        message = f"{int(per)}% | Progress item: {itm}  Total: {tot} | Elapsed time: {elapsed}s < Remain time: {remain_time}s "
-        self.statusbar.showMessage(message)
-        
-        if not self.thread_code.power:
-            with open(self.file_path, 'rb') as f:
-                product_codes = pickle.load(f)
-            products = len(product_codes)
-            time = round(products * 30 / 3600, 2)
-            self.Products.display(products)
-            self.Time.display(time)
-        
+            
     def categ_toggled(self):
         categs = []
         
@@ -172,16 +132,16 @@ class CrawlingGlWindow(QMainWindow, form):
             categs.append(categ)
             
         if self.bodycare.isChecked():
-            categ = "배쓰&바디"
+            categ = "바디케어"
             categs.append(categ)
             
         if self.makeup.isChecked():
-            categ_ = ["페이스메이크업", "아이메이크업", "립메이크업"]
+            categ_ = "메이크업"
             for categ in categ_:
                 categs.append(categ)
             
         if self.haircare.isChecked():
-            categ = "헤어"
+            categ = "헤어케어"
             categs.append(categ)
             
         if self.cleansing.isChecked():
@@ -189,7 +149,7 @@ class CrawlingGlWindow(QMainWindow, form):
             categs.append(categ)
             
         if self.menscare.isChecked():
-            categ = "남성화장품"
+            categ = "맨즈케어"
             categs.append(categ)
             
         if self.suncare.isChecked():
@@ -211,61 +171,30 @@ class CrawlingGlWindow(QMainWindow, form):
         return categs
     
     def _select(self):
-        selections = self.categ_toggled()
-        if len(selections) == 0:
+        categs = self.categ_toggled()
+        if len(categs) != 1:
             msg = QMessageBox()
-            msg.setText("** 한개 이상의 카테고리를 선택하세요 **")
+            msg.setText("** 한개의 카테고리를 선택하세요 **")
             msg.exec_()
         
         else:            
-            if self.checkBox.isChecked():
-                df_mapped = self.thread_crw._get_tbl()
-                df_mapped_categ = df_mapped.loc[df_mapped.selection.isin(selections)]
-                product_codes = df_mapped_categ.product_code.unique().tolist()
-                with open(self.file_path, 'wb') as f:
-                    pickle.dump(product_codes, f)
-                    
-            else:            
-                with open(self.selections, 'wb') as f:
-                    pickle.dump(selections, f)
-                gl = self.db.get_tbl('glowpick_product_info_final_version', ['selection', 'division'])
-                divisions = []
-                for sel in selections:
-                    div = list(set(gl.loc[gl.selection==sel, 'division'].values.tolist()))
-                    divisions += div
-                with open(self.divisions, 'wb') as f:
-                    pickle.dump(divisions, f)
-                    
+            df_mapped = self.thread_crw._get_tbl()
+            df_mapped = df_mapped.loc[df_mapped.category==categs[0]].reset_index(drop=True)
+            df_mapped.to_csv(self.path_input_df)
+            
+            products = len(df_mapped)
+            time = round(products * 9 / 3600, 2)
+            self.Products.display(products)
+            self.Time.display(time)
+            
             msg = QMessageBox()
             msg.setText("Selection done!")
             msg.exec_()
             
-            
-    def _run_prd_codes(self):
-        ''' Run crawling product codes thread '''
-        if not self.thread_code.power:
-            if os.path.isfile(self.selections):            
-                msg = QMessageBox()
-                msg.setText("- 인터넷 연결 확인 \n- VPN 연결 확인 \n- mac 자동 잠금 해제 확인")
-                msg.exec_()
-                
-                # get category index
-                self.thread_code.find_category_index()
-                
-                # start thread
-                self.thread_code.power = True
-                self.thread_code.start()
-            else:
-                msg = QMessageBox()
-                msg.setText("** Select 완료 후 시도하세요 **")
-                msg.exec_()
-        else:
-            pass
+    def _run(self):
         
-    def _run_crawling(self):
-        ''' Run crawling products thread '''
         if not self.thread_crw.power:
-            if os.path.isfile(self.file_path):
+            if os.path.isfile(self.path_input_df):
                 msg = QMessageBox()
                 msg.setText("- 인터넷 연결 확인 \n- VPN 연결 확인 \n- mac 자동 잠금 해제 확인")
                 msg.exec_()
@@ -273,11 +202,11 @@ class CrawlingGlWindow(QMainWindow, form):
                 self.thread_crw.start()
             else:
                 msg = QMessageBox()
-                msg.setText("** 신규 상품코드 수집 완료 후 시도하세요 **")
+                msg.setText("** Select 완료 후 시도하세요 **")
                 msg.exec_()    
         else:
             pass
-        
+            
     def save_file(self):
         ''' save csv file '''
         
@@ -305,7 +234,7 @@ class CrawlingGlWindow(QMainWindow, form):
                 self.viewer = TableViewer()
                 
             self.viewer.show()
-            self.viewer._loadFile('gl_info.csv')
+            self.viewer._loadFile('scrape_df.csv')
         else:
             msg = QMessageBox()
             msg.setText('일시정지 후 다시 시도해주세요')

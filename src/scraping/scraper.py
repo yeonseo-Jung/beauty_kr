@@ -560,7 +560,7 @@ class CrawlInfoRevGl():
             time.sleep(1.5)
             soup = BeautifulSoup(driver.page_source, 'lxml')
             
-            if soup.find('ul', 'ingredient__list__item item') == None:
+            if soup.find('li', 'ingredient__list__item item') == None:
                 ingredients_all_kor, ingredients_all_eng, ingredients_all_desc = np.nan, np.nan, np.nan
             else:
                 ingredients_all_kor, ingredients_all_eng, ingredients_all_desc = [], [], []
@@ -568,9 +568,21 @@ class CrawlInfoRevGl():
                 engs = soup.find_all('p', 'item__wrapper__text__eng')
                 descs = soup.find_all('p', 'item__wrapper__text__desc')
                 for kor, eng, desc in zip(kors, engs, descs):
-                    ingredients_all_kor.append(kor.text.strip())
-                    ingredients_all_eng.append(eng.text.strip())
-                    ingredients_all_desc.append(desc.text.strip().split(','))
+                    kor = kor.text.strip()
+                    if kor == "":
+                        kor = np.nan
+                    eng = eng.text.strip()
+                    if eng == "":
+                        eng = np.nan
+                    desc = desc.text.strip()
+                    if desc == "":
+                        desc = np.nan
+                    else:
+                        desc = desc.split(',')
+                        
+                    ingredients_all_kor.append(kor)
+                    ingredients_all_eng.append(eng)
+                    ingredients_all_desc.append(desc)
                 ingredients_all_kor = str(ingredients_all_kor)
                 ingredients_all_eng =  str(ingredients_all_eng)
                 ingredients_all_desc = str(ingredients_all_desc)
