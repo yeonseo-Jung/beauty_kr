@@ -36,7 +36,7 @@ class MainWidget(QWidget):
     
     def __init__(self):
         super().__init__()
-        self.version = "0.0.2.2"
+        self.version = "0.0.2.3"
         self.w0 = None
         self.w1 = None
         self.w2 = None

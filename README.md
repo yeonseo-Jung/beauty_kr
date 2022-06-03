@@ -9,15 +9,11 @@
 
 ---
 
-# DataManager
+### version 0.0.1
 
-# version 0.0.1
+#### Connect Database
 
----
-
-## Connect Database
-
-### 데이터 베이스 연동을 위한 로그인 화면 & 메뉴 선택
+##### 데이터 베이스 연동을 위한 로그인 화면 & 메뉴 선택
 
 **→ user name, password, database 입력** 
 
@@ -27,9 +23,9 @@
 
 ![login_db_connect.png](DataManager%20c4b4fcb75c0c444092530c8f5cbdbc10/login_db_connect.png)
 
-## Mapping Products
+#### Mapping Products
 
-### 상품 매핑 프로세스 메뉴
+##### 상품 매핑 프로세스 메뉴
 
 → **Table List에서 매핑 대상 테이블 선택 (체크)** 
 
@@ -51,9 +47,9 @@
 
 ![스크린샷 2022-04-28 오후 6.32.51.png](DataManager%20c4b4fcb75c0c444092530c8f5cbdbc10/%E1%84%89%E1%85%B3%E1%84%8F%E1%85%B3%E1%84%85%E1%85%B5%E1%86%AB%E1%84%89%E1%85%A3%E1%86%BA_2022-04-28_%E1%84%8B%E1%85%A9%E1%84%92%E1%85%AE_6.32.51.png)
 
-## Scraping Product Info
+#### Scraping Product Info
 
-### 네이버 뷰티윈도 미매핑 상품 크롤링
+##### 네이버 뷰티윈도 미매핑 상품 크롤링
 
 **→ 상품 카테고리 선택 (체크, 다중체크 가능)**
 
@@ -69,9 +65,9 @@
 
 ![crawling_naver_products.png](DataManager%20c4b4fcb75c0c444092530c8f5cbdbc10/crawling_naver_products.png)
 
-## Get Table From Database
+#### Get Table From Database
 
-### db에서 원하는 테이블, 원하는 컬럼 가져오기
+##### db에서 원하는 테이블, 원하는 컬럼 가져오기
 
 **→ 테이블 선택 → Select 버튼 클릭**
 
@@ -83,13 +79,13 @@
 
 ![스크린샷 2022-04-28 오후 7.12.45.png](DataManager%20c4b4fcb75c0c444092530c8f5cbdbc10/%E1%84%89%E1%85%B3%E1%84%8F%E1%85%B3%E1%84%85%E1%85%B5%E1%86%AB%E1%84%89%E1%85%A3%E1%86%BA_2022-04-28_%E1%84%8B%E1%85%A9%E1%84%92%E1%85%AE_7.12.45.png)
 
-# version 0.0.2 Update
+### version 0.0.2 Update
 
 ---
 
-## Update Glowpick Products
+#### Update Glowpick Products
 
-### 글로우픽 신규 상품 개체 & 리뷰 업데이트
+##### 글로우픽 신규 상품 개체 & 리뷰 업데이트
 
 → 카테고리 선택
 
@@ -106,9 +102,9 @@
 
 ![update_glowpick_products.png](DataManager%20c4b4fcb75c0c444092530c8f5cbdbc10/update_glowpick_products.png)
 
-## Update Naver Products Sales Status
+#### Update Naver Products Sales Status
 
-### 네이버 매핑 상품 판매 현황 및 링크 업데이트
+##### 네이버 매핑 상품 판매 현황 및 링크 업데이트
 
 → 카테고리 선택
 
@@ -120,9 +116,9 @@
 
 ![update_naver_products_status.png](DataManager%20c4b4fcb75c0c444092530c8f5cbdbc10/update_naver_products_status.png)
 
-## Update Review Table
+#### Update Review Table
 
-### 매핑 상품에 대한 리뷰 테이블 업데이트
+##### 매핑 상품에 대한 리뷰 테이블 업데이트
 
 → Select review table
 
