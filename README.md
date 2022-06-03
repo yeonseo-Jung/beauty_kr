@@ -10,6 +10,7 @@
 ---
 
 ### version 0.0.1
+___
   
 #### Connect Database
 
@@ -45,7 +46,7 @@
 
 **→ Update :  db에 매핑 테이블 업데이트**   
 
-![스크린샷 2022-04-28 오후 6.32.51.png](DataManager%20c4b4fcb75c0c444092530c8f5cbdbc10/%E1%84%89%E1%85%B3%E1%84%8F%E1%85%B3%E1%84%85%E1%85%B5%E1%86%AB%E1%84%89%E1%85%A3%E1%86%BA_2022-04-28_%E1%84%8B%E1%85%A9%E1%84%92%E1%85%AE_6.32.51.png)
+![mapping_products.png](DataManager%20c4b4fcb75c0c444092530c8f5cbdbc10/mapping_products.png)
 
 #### Scraping Product Info
 
@@ -77,11 +78,12 @@
 
 **→ Save 버튼 : 테이블 다른이름으로 저장 (.csv)**
 
-![스크린샷 2022-04-28 오후 7.12.45.png](DataManager%20c4b4fcb75c0c444092530c8f5cbdbc10/%E1%84%89%E1%85%B3%E1%84%8F%E1%85%B3%E1%84%85%E1%85%B5%E1%86%AB%E1%84%89%E1%85%A3%E1%86%BA_2022-04-28_%E1%84%8B%E1%85%A9%E1%84%92%E1%85%AE_7.12.45.png)
+![get_table_from_db.png](DataManager%20c4b4fcb75c0c444092530c8f5cbdbc10/get_table_from_db.png)
   
 ---
   
 ### version 0.0.2 Update
+___
   
 #### Update Glowpick Products
 
