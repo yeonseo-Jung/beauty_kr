@@ -124,62 +124,52 @@ class MainWidget(QWidget):
             if menu_index == 0:
                 if self.w0 is None:
                     self.w0 = MappingWindow()
+                    self.w0.show()
                 else:
-                    self.w0.close()
-                    self.w0 = MappingWindow()
-                self.w0.show()
+                    pass
                 
             elif menu_index == 1:
                 if self.w1 is None:
                     self.w1 = ScrapingWindow()
+                    self.w1.show()
                 else:
-                    self.w1.close()
-                    self.w1 = ScrapingWindow()
-                self.w1.show()
+                    pass
                 
             elif menu_index == 2:
                 if self.w2 is None:
                     self.w2 = CrawlingGlWindow()
+                    self.w2.show()
                 else:
-                    self.w2.close()
-                    self.w2 = CrawlingGlWindow()
-                self.w2.show()
+                    pass
                 
             elif menu_index == 3:
                 if self.w3 is None:
                     self.w3 = CrawlingNvStatus()
+                    self.w3.show()
                 else:
-                    self.w3.close()
-                    self.w3 = CrawlingNvStatus()
-                self.w3.show()
+                    pass
                 
             elif menu_index == 4:
                 if self.w4 is None:
                     self.w4 = CrawlingNvRevWindow()
+                    self.w4.show()
                 else:
-                    self.w4.close()
-                    self.w4 = CrawlingNvRevWindow()
-                self.w4.show()
+                    pass
             
             elif menu_index == 5:
                 if self.w5 is None:
                     self.w5 = GetTableWindow()
+                    self.w5.show()
                 else:
-                    self.w5.close()
-                    self.w5 = GetTableWindow()
-                self.w5.show()
+                    pass
                 
             elif menu_index == 6:
                 if self.w6 is None:
                     self.w6 = ReviewWindow()
+                    self.w6.show()
                 else:
-                    self.w6.close()
-                    self.w6 = ReviewWindow()
-                self.w6.show()
+                    pass
                 
-        # except Exception as e:
-        #     msg.setText(f'{e}')
-        #     msg.exec_()
-        
-        except NameError:
-            pass
+        except Exception as e:
+            msg.setText(f'{e}')
+            msg.exec_()

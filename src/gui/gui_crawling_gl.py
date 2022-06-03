@@ -7,7 +7,7 @@ from tqdm.auto import tqdm
 
 from PyQt5 import uic
 from PyQt5.QtCore import Qt
-from PyQt5.QtWidgets import QMainWindow, QMessageBox, QFileDialog, QListWidgetItem
+from PyQt5.QtWidgets import QMainWindow, QMessageBox, QFileDialog
 
 if getattr(sys, 'frozen', False) and hasattr(sys, '_MEIPASS'):
     base_path = sys._MEIPASS
@@ -26,10 +26,9 @@ conn_path = os.path.join(base_path, 'conn.txt')
 form_path = os.path.join(base_path, 'form/crawlingGlInfoRevWindow.ui')
 
 from access_database import access_db
-from multithreading.thread_crawling import ThreadCrawlingGl
-from multithreading.thread_crawling import ThreadCrawlingProductCode
+from multithreading.thread_crawling_glowpick import ThreadCrawlingGl
+from multithreading.thread_crawling_glowpick import ThreadCrawlingProductCode
 from gui.table_view import TableViewer
-from scraping.scraper import CrawlInfoRevGl
 
 form = uic.loadUiType(form_path)[0]
 class CrawlingGlWindow(QMainWindow, form):
@@ -38,7 +37,7 @@ class CrawlingGlWindow(QMainWindow, form):
     def __init__(self):
         super().__init__()    
         self.setupUi(self)
-        self.setWindowTitle('Crawling Glowpick Products')
+        self.setWindowTitle('Update Glowpick Products')
         self.viewer = None
         self.file_path = os.path.join(tbl_cache, 'product_codes.txt')
         self.selections = os.path.join(tbl_cache, 'selections.txt')
@@ -47,7 +46,6 @@ class CrawlingGlWindow(QMainWindow, form):
         self.path_scrape_df_rev = os.path.join(tbl_cache, 'gl_info_rev.csv')
         
         # init class
-        self.crw = CrawlInfoRevGl()
         self.thread_crw = ThreadCrawlingGl()
         self.thread_code = ThreadCrawlingProductCode()
         
@@ -63,6 +61,7 @@ class CrawlingGlWindow(QMainWindow, form):
         self.Pause.clicked.connect(self.thread_crw.stop)
         self.View.clicked.connect(self.tbl_viewer)
         self.Save.clicked.connect(self.save_file)
+        self.Upload.clicked.connect(self.thread_crw._upload_df)
         
         # connect db
         with open(conn_path, 'rb') as f:
@@ -88,11 +87,6 @@ class CrawlingGlWindow(QMainWindow, form):
         self.maskpack.toggled.connect(self.categ_toggled)
         
     def update_progress(self, progress):
-        if self.thread_crw.check == 2:
-            msg = QMessageBox()
-            msg.setText("\n\t ** ip 차단됨 **\n \n\t - VPN 나라변경 필요 \n\t - wifi 재연결 필요")
-            msg.exec_()
-            self.thread_crw.check = 0
         
         if os.path.isfile(tbl_cache + '/prg_dict.txt'):
             with open(tbl_cache + '/prg_dict.txt', 'rb') as f:
@@ -138,7 +132,19 @@ class CrawlingGlWindow(QMainWindow, form):
                 
             message = f"{int(per)}% | Progress item: {itm}  Total: {tot} | Elapsed time: {elapsed_h}:{elapsed_m}:{elapsed_s} < Remain time: {remain_h}:{remain_m}:{remain_s} **PAUSE**"
             self.statusbar.showMessage(message)
-    
+        
+        # ip 차단 및 db 연결 끊김 대응
+        if self.thread_crw.check == 1:
+            msg = QMessageBox()
+            msg.setText("\n    ** ip 차단됨 **\n\n - VPN 나라변경 필요\n - wifi 재연결 필요")
+            msg.exec_()
+            self.thread_crw.check = 0
+        elif self.thread_crw.check == 2:
+            msg = QMessageBox()
+            msg.setText("\n    ** db 연결 끊김 **\n\n - wifi 재연결 필요\n\n wifi 재연결 후 Upload 버튼 클릭")
+            msg.exec_()
+            self.thread_crw.check = 0
+                
     def _update_progress(self, progress):
         
         prg_dict = progress.format_dict
@@ -239,7 +245,6 @@ class CrawlingGlWindow(QMainWindow, form):
             msg = QMessageBox()
             msg.setText("Selection done!")
             msg.exec_()
-            
             
     def _run_prd_codes(self):
         ''' Run crawling product codes thread '''

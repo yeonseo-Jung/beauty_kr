@@ -7,7 +7,7 @@ from tqdm.auto import tqdm
 
 from PyQt5 import uic
 from PyQt5.QtCore import Qt
-from PyQt5.QtWidgets import QMainWindow, QMessageBox, QFileDialog, QListWidgetItem
+from PyQt5.QtWidgets import QMainWindow, QMessageBox, QFileDialog
 
 if getattr(sys, 'frozen', False) and hasattr(sys, '_MEIPASS'):
     base_path = sys._MEIPASS
@@ -26,7 +26,7 @@ conn_path = os.path.join(base_path, 'conn.txt')
 form_path = os.path.join(base_path, 'form/crawlingNvStatus.ui')
 
 from access_database import access_db
-from multithreading.thread_crawling import ThreadCrawlingNvStatus
+from multithreading.thread_crawling_naver import ThreadCrawlingNvStatus
 from gui.table_view import TableViewer
 
 form = uic.loadUiType(form_path)[0]
@@ -46,6 +46,7 @@ class CrawlingNvStatus(QMainWindow, form):
         # cache file path
         self.path_input_df = os.path.join(tbl_cache, 'input_df.csv')
         self.path_scrape_df = os.path.join(tbl_cache, 'scrape_df.csv')
+        self.category_list = os.path.join(tbl_cache, 'category_list.txt')
         
         # connect func & btn
         self.Select.clicked.connect(self._select)
@@ -53,6 +54,7 @@ class CrawlingNvStatus(QMainWindow, form):
         self.Pause.clicked.connect(self.thread_crw.stop)
         self.View.clicked.connect(self.tbl_viewer)
         self.Save.clicked.connect(self.save_file)
+        self.Upload.clicked.connect(self.thread_crw._upload_df)
         
         # category toggled
         self.skincare.setChecked(False)
@@ -73,12 +75,7 @@ class CrawlingNvStatus(QMainWindow, form):
         self.maskpack.toggled.connect(self.categ_toggled)
         
     def update_progress(self, progress):
-        if self.thread_crw.check == 2:
-            msg = QMessageBox()
-            msg.setText("\n\t ** ip 차단됨 **\n \n\t - VPN 나라변경 필요 \n\t - wifi 재연결 필요")
-            msg.exec_()
-            self.thread_crw.check = 0
-        
+
         if os.path.isfile(tbl_cache + '/prg_dict.txt'):
             with open(tbl_cache + '/prg_dict.txt', 'rb') as f:
                 prg_dict_ = pickle.load(f)
@@ -123,6 +120,18 @@ class CrawlingNvStatus(QMainWindow, form):
                 
             message = f"{int(per)}% | Progress item: {itm}  Total: {tot} | Elapsed time: {elapsed_h}:{elapsed_m}:{elapsed_s} < Remain time: {remain_h}:{remain_m}:{remain_s} **PAUSE**"
             self.statusbar.showMessage(message)
+        
+        # ip 차단 및 db 연결 끊김 대응
+        if self.thread_crw.check == 1:
+            msg = QMessageBox()
+            msg.setText("\n    ** ip 차단됨 **\n\n - VPN 나라변경 필요\n - wifi 재연결 필요")
+            msg.exec_()
+            self.thread_crw.check = 0
+        elif self.thread_crw.check == 2:
+            msg = QMessageBox()
+            msg.setText("\n    ** db 연결 끊김 **\n\n - wifi 재연결 필요\n\n wifi 재연결 후 Upload 버튼 클릭")
+            msg.exec_()
+            self.thread_crw.check = 0
             
     def categ_toggled(self):
         categs = []
@@ -136,9 +145,8 @@ class CrawlingNvStatus(QMainWindow, form):
             categs.append(categ)
             
         if self.makeup.isChecked():
-            categ_ = "메이크업"
-            for categ in categ_:
-                categs.append(categ)
+            categ = "메이크업"
+            categs.append(categ)
             
         if self.haircare.isChecked():
             categ = "헤어케어"
@@ -178,6 +186,10 @@ class CrawlingNvStatus(QMainWindow, form):
             msg.exec_()
         
         else:            
+            # save category 
+            with open(self.category_list, 'wb') as f:
+                pickle.dump(categs, f)
+            
             df_mapped = self.thread_crw._get_tbl()
             df_mapped = df_mapped.loc[df_mapped.category==categs[0]].reset_index(drop=True)
             df_mapped.to_csv(self.path_input_df)

@@ -23,7 +23,7 @@ conn_path = os.path.join(base_path, 'conn.txt')
 form_path = os.path.join(base_path, 'form/scrapingWindow.ui')
 
 from access_database import access_db
-from scraping.scraper_naver import ThreadScraping
+from multithreading.thread_crawling_naver import ThreadCrawlingNvInfo
 from gui.table_view import TableViewer
 
 scraping_form = uic.loadUiType(form_path)[0]
@@ -61,7 +61,7 @@ class ScrapingWindow(QMainWindow, scraping_form):
         
         self.Accept.clicked.connect(self._accept)
 
-        self.thread_scrap = ThreadScraping()
+        self.thread_scrap = ThreadCrawlingNvInfo()
         self.thread_scrap.progress.connect(self.update_progress)
         self.Run.clicked.connect(self._scraping)
         self.Pause.clicked.connect(self.thread_scrap.stop)

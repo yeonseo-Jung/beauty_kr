@@ -73,25 +73,6 @@
      <string>Pause</string>
     </property>
    </widget>
-   <widget class="QLabel" name="label_1">
-    <property name="geometry">
-     <rect>
-      <x>440</x>
-      <y>150</y>
-      <width>181</width>
-      <height>41</height>
-     </rect>
-    </property>
-    <property name="font">
-     <font>
-      <family>.Apple SD Gothic NeoI</family>
-      <pointsize>15</pointsize>
-     </font>
-    </property>
-    <property name="text">
-     <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;예상 수집 리뷰 수:&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-    </property>
-   </widget>
    <widget class="QLCDNumber" name="time">
     <property name="geometry">
      <rect>
@@ -164,7 +145,7 @@
     <property name="geometry">
      <rect>
       <x>55</x>
-      <y>390</y>
+      <y>400</y>
       <width>600</width>
       <height>30</height>
      </rect>
@@ -201,19 +182,26 @@
     <property name="geometry">
      <rect>
       <x>460</x>
-      <y>210</y>
-      <width>181</width>
+      <y>150</y>
+      <width>121</width>
       <height>41</height>
      </rect>
     </property>
-    <property name="font">
-     <font>
-      <family>.Apple SD Gothic NeoI</family>
-      <pointsize>15</pointsize>
-     </font>
+    <property name="text">
+     <string>예상 수집 리뷰 수:</string>
+    </property>
+   </widget>
+   <widget class="QLabel" name="label_3">
+    <property name="geometry">
+     <rect>
+      <x>470</x>
+      <y>220</y>
+      <width>121</width>
+      <height>31</height>
+     </rect>
     </property>
     <property name="text">
-     <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;예상 수집 시간:&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+     <string>예상 소요 시간:</string>
     </property>
    </widget>
   </widget>
@@ -223,7 +211,7 @@
      <x>0</x>
      <y>0</y>
      <width>705</width>
-     <height>24</height>
+     <height>21</height>
     </rect>
    </property>
   </widget>

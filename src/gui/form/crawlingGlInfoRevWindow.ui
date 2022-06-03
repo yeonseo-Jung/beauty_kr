@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>730</width>
-    <height>536</height>
+    <height>513</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -27,58 +27,12 @@
      <string>Select</string>
     </property>
    </widget>
-   <widget class="QLabel" name="label">
-    <property name="geometry">
-     <rect>
-      <x>330</x>
-      <y>200</y>
-      <width>76</width>
-      <height>18</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string>신규 상품 수:</string>
-    </property>
-   </widget>
-   <widget class="QLabel" name="label_2">
-    <property name="geometry">
-     <rect>
-      <x>330</x>
-      <y>260</y>
-      <width>89</width>
-      <height>18</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string>예상 수집 시간:</string>
-    </property>
-   </widget>
-   <widget class="QLCDNumber" name="Products">
-    <property name="geometry">
-     <rect>
-      <x>430</x>
-      <y>200</y>
-      <width>64</width>
-      <height>23</height>
-     </rect>
-    </property>
-   </widget>
-   <widget class="QLCDNumber" name="Time">
-    <property name="geometry">
-     <rect>
-      <x>430</x>
-      <y>260</y>
-      <width>64</width>
-      <height>23</height>
-     </rect>
-    </property>
-   </widget>
    <widget class="QProgressBar" name="progressBar">
     <property name="geometry">
      <rect>
       <x>40</x>
-      <y>450</y>
-      <width>650</width>
+      <y>440</y>
+      <width>641</width>
       <height>23</height>
      </rect>
     </property>
@@ -142,7 +96,7 @@
     <property name="geometry">
      <rect>
       <x>320</x>
-      <y>140</y>
+      <y>130</y>
       <width>350</width>
       <height>23</height>
      </rect>
@@ -370,46 +324,108 @@
      <string>Stop</string>
     </property>
    </widget>
+   <widget class="QCheckBox" name="checkBox">
+    <property name="geometry">
+     <rect>
+      <x>50</x>
+      <y>260</y>
+      <width>101</width>
+      <height>21</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>All Products</string>
+    </property>
+   </widget>
+   <widget class="QPushButton" name="Upload">
+    <property name="geometry">
+     <rect>
+      <x>550</x>
+      <y>400</y>
+      <width>113</width>
+      <height>32</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Upload</string>
+    </property>
+   </widget>
+   <widget class="QLCDNumber" name="Time">
+    <property name="geometry">
+     <rect>
+      <x>420</x>
+      <y>250</y>
+      <width>75</width>
+      <height>25</height>
+     </rect>
+    </property>
+    <property name="segmentStyle">
+     <enum>QLCDNumber::Flat</enum>
+    </property>
+   </widget>
+   <widget class="QLCDNumber" name="Products">
+    <property name="geometry">
+     <rect>
+      <x>420</x>
+      <y>190</y>
+      <width>75</width>
+      <height>25</height>
+     </rect>
+    </property>
+    <property name="segmentStyle">
+     <enum>QLCDNumber::Flat</enum>
+    </property>
+   </widget>
    <widget class="QLabel" name="label_3">
+    <property name="geometry">
+     <rect>
+      <x>50</x>
+      <y>360</y>
+      <width>131</width>
+      <height>31</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>상품 개체 &amp; 리뷰 수집</string>
+    </property>
+   </widget>
+   <widget class="QLabel" name="label_5">
+    <property name="geometry">
+     <rect>
+      <x>340</x>
+      <y>190</y>
+      <width>111</width>
+      <height>31</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>신규 상품 수:</string>
+    </property>
+   </widget>
+   <widget class="QLabel" name="label_6">
     <property name="geometry">
      <rect>
       <x>330</x>
       <y>50</y>
-      <width>98</width>
-      <height>16</height>
+      <width>121</width>
+      <height>31</height>
      </rect>
     </property>
     <property name="text">
      <string>신규 상품코드 수집</string>
     </property>
    </widget>
-   <widget class="QLabel" name="label_4">
+   <widget class="QLabel" name="label_7">
     <property name="geometry">
      <rect>
-      <x>50</x>
-      <y>360</y>
-      <width>161</width>
-      <height>16</height>
-     </rect>
-    </property>
-    <property name="whatsThis">
-     <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;신규 상품 개체,  리뷰 수집&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-    </property>
-    <property name="text">
-     <string>신규 상품 개체,  리뷰 수집</string>
-    </property>
-   </widget>
-   <widget class="QCheckBox" name="checkBox">
-    <property name="geometry">
-     <rect>
-      <x>50</x>
-      <y>260</y>
-      <width>91</width>
-      <height>21</height>
+      <x>330</x>
+      <y>250</y>
+      <width>131</width>
+      <height>31</height>
      </rect>
     </property>
     <property name="text">
-     <string>All Product</string>
+     <string>예상 소요 시간:</string>
     </property>
    </widget>
   </widget>
