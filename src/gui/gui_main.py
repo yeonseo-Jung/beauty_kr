@@ -18,7 +18,7 @@ from gui.gui_crawling_nv_rev import CrawlingNvRevWindow
 from gui.gui_crawling_gl import CrawlingGlWindow
 from gui.gui_crawling_nv_status import CrawlingNvStatus
 
-from PyQt5.QtWidgets import QWidget, QGridLayout, QLabel, QLineEdit, QComboBox, QPushButton, QMessageBox, QApplication
+from PyQt5.QtWidgets import QWidget, QGridLayout, QLabel, QLineEdit, QComboBox, QPushButton, QMessageBox
 
 
 if getattr(sys, 'frozen', False) and hasattr(sys, '_MEIPASS'):
