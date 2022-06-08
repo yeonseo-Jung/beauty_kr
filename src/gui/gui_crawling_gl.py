@@ -141,7 +141,7 @@ class CrawlingGlWindow(QMainWindow, form):
             self.thread_crw.check = 0
         elif self.thread_crw.check == 2:
             msg = QMessageBox()
-            msg.setText("\n    ** db 연결 끊김 **\n\n - wifi 재연결 필요\n\n wifi 재연결 후 Upload 버튼 클릭")
+            msg.setText("\n    ** db 연결 끊김 **\n\n - VPN 연결 해제 및 wifi 재연결 필요\n\n - Upload 버튼 클릭 후 re-Run")
             msg.exec_()
             self.thread_crw.check = 0
                 
@@ -226,6 +226,12 @@ class CrawlingGlWindow(QMainWindow, form):
         else:            
             if self.checkBox.isChecked():
                 df_mapped = self.thread_crw._get_tbl()
+                while len(df_mapped) == 0:
+                    msg = QMessageBox()
+                    msg.setText("\n    ** db 연결 끊김 **\n\n - VPN 연결 해제 및 wifi 재연결 필요\n\n")
+                    msg.exec_()
+                    df_mapped = self.thread_crw._get_tbl()
+                    
                 df_mapped_categ = df_mapped.loc[df_mapped.selection.isin(selections)]
                 product_codes = df_mapped_categ.product_code.unique().tolist()
                 with open(self.file_path, 'wb') as f:
@@ -234,7 +240,16 @@ class CrawlingGlWindow(QMainWindow, form):
             else:            
                 with open(self.selections, 'wb') as f:
                     pickle.dump(selections, f)
-                gl = self.db.get_tbl('glowpick_product_info_final_version', ['selection', 'division'])
+                    
+                while True:
+                    try:
+                        gl = self.db.get_tbl('glowpick_product_info_final_version', ['selection', 'division'])
+                        break
+                    except:
+                        msg = QMessageBox()
+                        msg.setText("\n    ** db 연결 끊김 **\n\n - VPN 연결 해제 및 wifi 재연결 필요\n\n")
+                        msg.exec_()
+                
                 divisions = []
                 for sel in selections:
                     div = list(set(gl.loc[gl.selection==sel, 'division'].values.tolist()))

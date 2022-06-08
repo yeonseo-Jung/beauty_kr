@@ -1,7 +1,6 @@
 import os
 import sys
 import pickle
-import pandas as pd
 
 cur_dir = os.path.dirname(os.path.realpath(__file__))
 root = os.path.abspath(os.path.join(cur_dir, os.pardir, os.pardir))
@@ -9,7 +8,7 @@ src = os.path.abspath(os.path.join(cur_dir, os.pardir))
 sys.path.append(root)
 sys.path.append(src)
 
-from access_database import access_db
+from access_database.access_db import AccessDataBase
 from gui.gui_scraping import ScrapingWindow
 from gui.gui_mapping import MappingWindow
 from gui.gui_get_table import GetTableWindow
@@ -19,7 +18,6 @@ from gui.gui_crawling_gl import CrawlingGlWindow
 from gui.gui_crawling_nv_status import CrawlingNvStatus
 
 from PyQt5.QtWidgets import QWidget, QGridLayout, QLabel, QLineEdit, QComboBox, QPushButton, QMessageBox
-
 
 if getattr(sys, 'frozen', False) and hasattr(sys, '_MEIPASS'):
     base_path = sys._MEIPASS
@@ -109,12 +107,12 @@ class MainWidget(QWidget):
             1: self.lineEdit_password.text(),
             2: self.lineEdit_database.text(),
         }
-        
-        db = access_db.AccessDataBase(conn[0], conn[1], conn[2])
+        db = AccessDataBase(conn[0], conn[1], conn[2])
         try:
-            db.db_connect()
+            curs = db.db_connect()
             msg.setText(f'Database Connection Successful \n - {self.lineEdit_database.text()}')
             msg.exec_()
+            curs.close()
             
             # save connect info 
             with open(conn_path, 'wb') as f:
@@ -171,5 +169,5 @@ class MainWidget(QWidget):
                     pass
                 
         except Exception as e:
-            msg.setText(f'{e}')
+            msg.setText(f'{e}\n\n** VPN 연결 해제 후 로그인 **')
             msg.exec_()

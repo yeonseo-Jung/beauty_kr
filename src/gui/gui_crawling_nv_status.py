@@ -129,7 +129,7 @@ class CrawlingNvStatus(QMainWindow, form):
             self.thread_crw.check = 0
         elif self.thread_crw.check == 2:
             msg = QMessageBox()
-            msg.setText("\n    ** db 연결 끊김 **\n\n - wifi 재연결 필요\n\n wifi 재연결 후 Upload 버튼 클릭")
+            msg.setText("\n    ** db 연결 끊김 **\n\n - VPN 연결 해제 및 wifi 재연결 필요\n\n - Upload 버튼 클릭 후 re-Run")
             msg.exec_()
             self.thread_crw.check = 0
             
