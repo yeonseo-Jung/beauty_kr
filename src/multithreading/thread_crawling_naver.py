@@ -103,6 +103,7 @@ class ThreadCrawlingNvRev(QtCore.QThread, QtCore.QObject):
                 # Pause: 일시정지    
                 self.progress.emit(t)
                 break
+            
             # Crawl completed
             if idx == len(df_for_rev_crw) - 1:
                 
@@ -186,28 +187,36 @@ class ThreadCrawlingNvStatus(QtCore.QThread, QtCore.QObject):
     
     def _upload_df(self):
         ''' table upload into db '''
-        gl_info = self.db.get_tbl('glowpick_product_info_final_version', 'all').rename(columns={'id': 'item_key'})
-        columns = ['item_key', 'product_store', 'product_stote_url', 'price', 'delivery_fee', 'naver_pay', 'product_status', 'page_status']
-        nv_prd_status_update = pd.DataFrame(self.store_list, columns=columns).drop_duplicates(subset=['item_key', 'product_store', 'price', 'delivery_fee'], keep='first')
-        nv_prd_status_update.to_csv(self.path_scrape_df)
-        _nv_prd_status_update = nv_prd_status_update.loc[nv_prd_status_update.page_status==1]
-        df_mer = _nv_prd_status_update.merge(gl_info, on='item_key', how='left').sort_values(by='item_key').reset_index(drop=True)
-        df_mer.loc[:, 'regist_date'] = pd.Timestamp(self.date)
         
-        # category 
-        with open(self.category_list, 'rb') as f:
-            categs = pickle.load(f)
-        categ = categs[0]
-        df_mer.loc[:, 'category'] = categ
-        categ_eng = self.categ_dict[categ]
-        
-        # table upload
         try:
+            gl_info = self.db.get_tbl('glowpick_product_info_final_version', 'all').rename(columns={'id': 'item_key'})
+            columns = ['item_key', 'product_store', 'product_stote_url', 'product_price', 'delivery_fee', 'naver_pay', 'product_status', 'page_status']
+            nv_prd_status_update = pd.DataFrame(self.store_list, columns=columns)
+            nv_prd_status_update.to_csv(self.path_scrape_df, index=False)
+            
+            _nv_prd_status_update = nv_prd_status_update[nv_prd_status_update.product_status==1]    # 판매 중 상품
+            _nv_prd_status_update_price = _nv_prd_status_update.loc[_nv_prd_status_update.page_status==1]    # 네이버 뷰티윈도 가격비교 탭 상품
+            _nv_prd_status_update_all = _nv_prd_status_update.loc[_nv_prd_status_update.page_status==2]    # 네이버 뷰티윈도 전체 탭 상품
+            _nv_prd_status_update_dedup = pd.concat([_nv_prd_status_update_price, _nv_prd_status_update_all]).drop_duplicates('item_key', keep='first')
+            
+            df_mer = _nv_prd_status_update_dedup.merge(gl_info, on='item_key', how='left').sort_values(by='item_key').reset_index(drop=True)
+            df_mer.loc[:, 'regist_date'] = pd.Timestamp(self.date)
+            
+            # category 
+            with open(self.category_list, 'rb') as f:
+                categs = pickle.load(f)
+            categ = categs[0]
+            df_mer.loc[:, 'category'] = categ
+            categ_eng = self.categ_dict[categ]
+            
+            # table upload
             table_name = f'beauty_kr_{categ_eng}_info_all'
             self.db.engine_upload(df_mer, table_name, 'replace')
+            
         except:
             # db 연결 끊김: 인터넷(와이파이) 재연결 필요
-            self.stop()
+            if self.power:
+                self.stop()
             self.check = 2
             
     progress = QtCore.pyqtSignal(object)
@@ -238,7 +247,14 @@ class ThreadCrawlingNvStatus(QtCore.QThread, QtCore.QObject):
                 
                 item_key = df.loc[idx, 'item_key']
                 url = df.loc[idx, 'product_url']
+                st = time.time()
                 product_status, store_info = prd.scraping_product_stores(item_key, url, None, None)
+                ed = time.time()
+                if ed - st > 100:
+                    # 네이버 VPM ip 차단
+                    self.check = 1
+                    break
+                
                 if store_info == None:
                     pass
                 else:

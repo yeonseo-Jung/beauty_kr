@@ -76,24 +76,28 @@ class ThreadCrawlingGl(QtCore.QThread, QtCore.QObject):
         tables = ['glowpick_product_info_final_version']
         columns = ['id', 'product_code', 'selection']
 
-        df = self.db.integ_tbl(tables, columns)
-        mapping_table = self.db.get_tbl('beauty_kr_mapping_table', ['item_key'])
-        item_keys = mapping_table.item_key.unique().tolist()
-        df_mapped = df.loc[df.id.isin(item_keys)].reset_index(drop=True)
+        try:
+            df = self.db.integ_tbl(tables, columns)
+            mapping_table = self.db.get_tbl('beauty_kr_mapping_table', ['item_key'])
+            item_keys = mapping_table.item_key.unique().tolist()
+            df_mapped = df.loc[df.id.isin(item_keys)].reset_index(drop=True)
+        except:
+            # db 연결 끊김: VPN 연결 해제 및 와이파이 재연결 필요
+            df_mapped = pd.DataFrame()
         
         return df_mapped
     
-    def _upload_df(self):
+    def _upload_df(self, comp=False):
         ''' Upload Table to Database '''
         
         if (len(self.scrape_infos) != 0) & (len(self.scrape_reviews) != 0):
             # info table
             columns = ['product_code', 'product_name', 'brand_code', 'brand_name', 'product_url',
-                        'selection', 'division', 'groups', 
-                        'descriptions', 'product_keywords', 'color_type', 'volume', 'image_source', 
-                        'ingredients_all_kor', 'ingredients_all_eng', 'ingredients_all_desc',
-                        'ranks', 'product_awards', 'product_awards_sector', 'product_awards_rank',
-                        'price', 'product_stores']
+                       'selection', 'division', 'groups', 
+                       'descriptions', 'product_keywords', 'color_type', 'volume', 'image_source', 
+                       'ingredients_all_kor', 'ingredients_all_eng', 'ingredients_all_desc',
+                       'ranks', 'product_awards', 'product_awards_sector', 'product_awards_rank',
+                       'price', 'product_stores']
             df_info = pd.DataFrame(self.scrape_infos, columns=columns)
             df_info.loc[:, 'regist_date'] = self.date
             df_info.to_csv(self.path_scrape_df, index=False)
@@ -106,27 +110,43 @@ class ThreadCrawlingGl(QtCore.QThread, QtCore.QObject):
             # status table
             df_status = pd.DataFrame(self.status_list, columns=['product_code', 'status'])
             
-            # dup check
-            db_tables = self.db.get_tbl_name()
-            if self.table_name_info in db_tables:
-                _df_info = self.db.get_tbl(self.table_name_info, 'all')
-                _df_rev = self.db.get_tbl(self.table_name_rev, 'all')
-                _df_status = self.db.get_tbl(self.table_name_status, 'all')
-                
-                df_info = pd.concat([df_info, _df_info]).drop_duplicates('product_code', keep='first').sort_values('product_code').reset_index(drop=True)
-                df_rev = pd.concat([df_rev, _df_rev]).drop_duplicates(keep='first').sort_values('product_code').reset_index(drop=True)
-                df_status = pd.concat([df_status, _df_status]).drop_duplicates('product_code', keep='first').sort_values('product_code').reset_index(drop=True)
-            else:
-                pass
-            
-            # Upload Database
             try:
+                # dup check
+                db_tables = self.db.get_tbl_name()
+                if self.table_name_info in db_tables:
+                    _df_info = self.db.get_tbl(self.table_name_info, 'all')
+                    _df_rev = self.db.get_tbl(self.table_name_rev, 'all')
+                    _df_status = self.db.get_tbl(self.table_name_status, 'all')
+                    
+                    df_info = pd.concat([df_info, _df_info]).drop_duplicates('product_code', keep='first').sort_values('product_code').reset_index(drop=True)
+                    df_rev = pd.concat([df_rev, _df_rev]).drop_duplicates(keep='first').sort_values('product_code').reset_index(drop=True)
+                    df_status = pd.concat([df_status, _df_status]).drop_duplicates('product_code', keep='first').sort_values('product_code').reset_index(drop=True)
+                else:
+                    pass
+                
+                # upload table into db        
                 self.db.engine_upload(df_info, self.table_name_info, 'replace')
                 self.db.engine_upload(df_rev, self.table_name_rev, 'replace')
                 self.db.engine_upload(df_status, self.table_name_status, 'replace')
+                
+                if comp:
+                    # 업데이트 완료 시 glowpick_product_info_fianl_version 테이블 업데이트 (append)
+                    gl_info_final_v = self.db.get_tbl('glowpick_product_info_final_version', ['id', 'product_code'])
+                    df_mer = gl_info_final_v.merge(df_info, on='product_code', how='inner')
+                    df_dedup = pd.concat([df_mer, gl_info_final_v]).drop_duplicates('id', keep='first').sort_values('id')
+                    gl_info_new_v = pd.concat([df_mer, df_info]).drop_duplicates('product_code', keep=False).reset_index(drop=True)
+                    gl_info_new_v.loc[:, 'id'] = range(len(df_dedup), len(df_dedup) + len(gl_info_new_v))
+                    gl_info_final_v = pd.concat([df_dedup, gl_info_new_v]).reset_index(drop=True)
+                    
+                    # upload table into db
+                    self.db.engine_upload(gl_info_new_v, 'glowpick_product_info_update_new', 'append')
+                    table_name = 'glowpick_product_info_final_version'
+                    self.db.table_backup(table_name)
+                    self.db.engine_upload(gl_info_final_v, table_name, 'replace')
             except:
-                # db 연결 끊김: 인터넷(와이파이) 재연결 필요
-                self.stop()
+                # db 연결 끊김: VPN 연결 해제 및 와이파이 재연결 필요
+                if self.power:
+                    self.stop()
                 self.check = 2
         
     progress = QtCore.pyqtSignal(object)
@@ -146,8 +166,8 @@ class ThreadCrawlingGl(QtCore.QThread, QtCore.QObject):
                 if status == -1:
                     # 글로우픽 VPN ip 차단: VPN 재연결 필요
                     self.check = 1
-                    break
-                    
+                    break                    
+                
                 elif status == 1:
                     scrape, status, driver = crw.scrape_gl_info(code, driver, review_check)
                     
@@ -160,10 +180,6 @@ class ThreadCrawlingGl(QtCore.QThread, QtCore.QObject):
                             
                 self.status_list.append([code, status])
                 idx += 1
-                
-                if len(self.scrape_infos) % 250 == 0:
-                    self._upload_df()
-                
             else:
                 break
         
@@ -171,8 +187,13 @@ class ThreadCrawlingGl(QtCore.QThread, QtCore.QObject):
         with open(self.file_path, 'wb') as f:
             pickle.dump(product_codes[idx:], f)
         
-        # upload table into db 
-        self._upload_df()
+        if idx == len(product_codes):
+            # Thread completion
+            self._upload_df(comp=True)
+        else:
+            # upload table into db 
+            self._upload_df()
+        
         self.power = False
         self.progress.emit(t)
                 
