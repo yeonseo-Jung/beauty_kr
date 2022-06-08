@@ -3,6 +3,7 @@ import numpy as np
 import pandas as pd
 from tqdm.auto import tqdm
 import time
+from datetime import datetime
 
 # db connection 
 import pymysql
@@ -11,10 +12,24 @@ import sqlalchemy
 class AccessDataBase():
     
     def __init__(self, user_name, password, db_name):
+        # user info & db
         self.user_name = user_name
         self.password = password
         self.db_name = db_name
     
+        # today 
+        today = datetime.today()
+        year = str(today.year)
+        month = str(today.month)
+        day = str(today.day)
+        if len(month) == 1:
+            month = "0" + month
+        if len(day) == 1:
+            day = "0" + day    
+        self.date = year[2:4] + month + day
+        self.regist_date = year + "-" + month + "-" + day
+        
+        
     def db_connect(self):
         ''' db connect '''
 
@@ -128,6 +143,7 @@ class AccessDataBase():
     def engine_upload(self, upload_df, table_name, if_exists_option, pk=None):
         ''' Create Table '''
         
+        # engine
         host_url = "db.ds.mycelebs.com"
         port_num = 3306
         engine = sqlalchemy.create_engine(f'mysql+pymysql://{self.user_name}:{self.password}@{host_url}:{port_num}/{self.db_name}?charset=utf8mb4')
@@ -168,3 +184,13 @@ class AccessDataBase():
             print(e)
             df = df.sort_values(by=pk).reset_index(drop=True)
             self.engine_upload(df, table_name, "replace", pk=pk)
+            
+    def table_backup(self, table_name):
+        
+        curs = self.db_connect()
+        
+        new_table_name = f'{table_name}_backup_{self.date}'
+        query = f'ALTER TABLE {table_name} RENAME {new_table_name};'
+        curs.execute(query)
+
+        curs.close()
