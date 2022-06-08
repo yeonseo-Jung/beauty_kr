@@ -154,7 +154,7 @@ class CrawlInfoRevGl():
         return divisions
     
     def find_selection_new(self):
-        ''' find selection index'''
+        ''' find selection index '''
         selections = {}
         error = []
         idx, error_cnt = 1, 0
@@ -208,11 +208,13 @@ class CrawlInfoRevGl():
                 try:
                     groups_xpath = '/html/body/div/div/div/div/div[2]/div/div/div[3]/div/div[2]'
                     wd.find_element_by_xpath(groups_xpath).click()
-                    # btn = wd.find_element_by_xpath(groups_xpath)
-                    # wd.execute_script("arguments[0].click();", btn)
-                    time.sleep(3)
-                    link = wd.current_url
-                    groups_num = int(re.search(r'ids=[0-9]*', link).group(0).replace('ids=', ''))
+                    try:
+                        wait_xpath = '/html/body/div/div/div/div/main/div/div[2]/div/div/div[1]/div/div/ul/li[1]'
+                        WebDriverWait(wd, 30).until(EC.element_to_be_clickable((By.XPATH, wait_xpath)))
+                        link = wd.current_url
+                        groups_num = int(re.search(r'ids=[0-9]*', link).group(0).replace('ids=', ''))
+                    except (TimeoutException, AttributeError):
+                        n = 0
                     
                     while n > 2:
                         # pasing page source
@@ -222,7 +224,11 @@ class CrawlInfoRevGl():
                         # next url 
                         link = link.replace(f'ids={groups_num}', f'ids={groups_num+1}')
                         wd.get(link)
-                        time.sleep(5)
+                        try:
+                            wait_xpath = '/html/body/div/div/div/div/main/div/div[2]/div/div/div[1]/div/div/ul/li[1]'
+                            WebDriverWait(wd, 30).until(EC.element_to_be_clickable((By.XPATH, wait_xpath)))
+                        except TimeoutException:
+                            pass
                         
                         groups_num += 1
                         n -= 1
@@ -256,9 +262,14 @@ class CrawlInfoRevGl():
                 try:
                     groups_xpath = '/html/body/div/div/div/div/div[2]/div/div/div[3]/div/div[2]'
                     wd.find_element_by_xpath(groups_xpath).click()
-                    time.sleep(5)
-                    link = wd.current_url
-                    groups_num = int(re.search(r'cate2Id=[0-9]*', link).group(0).replace('cate2Id=', ''))
+                    
+                    try:
+                        wait_xpath = '/html/body/div/div/div/div/main/div/div[2]/div/div/div[1]/div/div/ul/li[1]'
+                        WebDriverWait(wd, 30).until(EC.element_to_be_clickable((By.XPATH, wait_xpath)))
+                        link = wd.current_url
+                        groups_num = int(re.search(r'cate2Id=[0-9]*', link).group(0).replace('cate2Id=', ''))
+                    except (TimeoutException, AttributeError):
+                        n = 0
                     
                     while n > 2:
                         # pasing page source
@@ -270,7 +281,11 @@ class CrawlInfoRevGl():
                         # next url 
                         link = link.replace(f'cate2Id={groups_num}', f'cate2Id={groups_num+1}')
                         wd.get(link)
-                        time.sleep(5)
+                        try:
+                            wait_xpath = '/html/body/div/div/div/div/main/div/div[2]/div/div/div[1]/div/div/ul/li[1]'
+                            WebDriverWait(wd, 30).until(EC.element_to_be_clickable((By.XPATH, wait_xpath)))
+                        except TimeoutException:
+                            pass
                         
                         groups_num += 1
                         n -= 1
@@ -298,8 +313,12 @@ class CrawlInfoRevGl():
             # brand
             brand_name = soup.find('button', 'product__summary__brand__name').text.strip()
             brand_code_source = soup.find_all('script',  type="application/ld+json")[-1].text
-            brand_url = re.search(r'https://www.glowpick.com/brands/[0-9]*', brand_code_source).group(0)
-            brand_code = re.search(r'[0-9]+', brand_url).group(0).strip()
+            brand_url = re.search(r'https://www.glowpick.com/brands/[0-9]*', brand_code_source)
+            if brand_url == None:
+                pass
+            else:
+                brand_url = brand_url.group(0)
+                brand_code = int(re.search(r'[0-9]+', brand_url).group(0).strip())
 
             # product_name
             product_name = soup.find('p', 'product__summary__name').text.strip()
@@ -415,7 +434,11 @@ class CrawlInfoRevGl():
             else:
                 desc_keywords = soup.find('p', 'descriptions__article__keywords').text.strip()
                 reg = re.compile('#[가-힣]+')
-                desc_keywords = str(re.findall(reg, desc_keywords))
+                desc_keywords = re.findall(reg, desc_keywords)
+                if len(desc_keywords) == 0:
+                    desc_keywords = np.nan
+                else:
+                    desc_keywords = str(desc_keywords)
                 
             # color | type
             if '컬러/타입' in str(soup.select('.descriptions__article')):
@@ -461,12 +484,12 @@ class CrawlInfoRevGl():
             driver.find_element_by_xpath(close_xpath).click()
             
             status = 1
-            product_scrapes = [product_code, product_name, brand_code, brand_name, url,
-                            selection, division, groups, 
-                            desc_pre, desc_keywords, color_type, volume, img_src, 
-                            ingredients_all_kor, ingredients_all_eng, ingredients_all_desc,
-                            rank_dict, product_awards, product_awards_sector, product_awards_rank,
-                            price, _stores]
+            product_scrapes = [int(product_code), product_name, brand_code, brand_name, url,
+                               selection, division, groups, 
+                               desc_pre, desc_keywords, color_type, volume, img_src, 
+                               ingredients_all_kor, ingredients_all_eng, ingredients_all_desc,
+                               rank_dict, product_awards, product_awards_sector, product_awards_rank,
+                               price, _stores]
             
         if review_check == 0:
             driver.quit()
@@ -498,7 +521,7 @@ class CrawlInfoRevGl():
             else:
                 product_review = re.sub(r' +', ' ', product_review).strip()
                 
-            reviews.append([product_code, user_id, product_rating, review_date, product_review])
+            reviews.append([int(product_code), user_id, product_rating, review_date, product_review])
             
         return driver, reviews
     

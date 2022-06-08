@@ -221,7 +221,7 @@ class ReviewScrapeNv:
         actions.move_to_element(rating_tab).perform()    # scroll to rating tab list to click each rating tab
         time.sleep(1.5)
         driver.find_element_by_xpath(f'//*[@id="section_review"]/div[2]/div[2]/ul/li[{i+2}]/a').click()
-        time.sleep(1)
+        time.sleep(1.5)
         return driver
     
     def pagination(self, driver):
