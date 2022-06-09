@@ -29,7 +29,6 @@ class AccessDataBase():
         self.date = year[2:4] + month + day
         self.regist_date = year + "-" + month + "-" + day
         
-        
     def db_connect(self):
         ''' db connect '''
 
@@ -189,8 +188,104 @@ class AccessDataBase():
         
         curs = self.db_connect()
         
-        new_table_name = f'{table_name}_backup_{self.date}'
-        query = f'ALTER TABLE {table_name} RENAME {new_table_name};'
-        curs.execute(query)
-
+        table_list = self.get_tbl_name()
+        if table_name in table_list:
+            new_table_name = f'{table_name}_backup_{self.date}'
+            
+            # 백업 테이블이 이미 존재하는경우 replace(drop -> insert)
+            if new_table_name in table_list:
+                curs.execute(f'DROP TABLE {new_table_name};')
+                
+            query = f'ALTER TABLE {table_name} RENAME {new_table_name};'
+            curs.execute(query)
+        else:
+            pass
         curs.close()
+        
+    def create_table(self, upload_df, table_name):
+        ''' Create table '''
+        
+        category = ""
+        query_dict = {
+            'beauty_kr_mapping_table': "CREATE TABLE beauty_kr_mapping_table (\
+                                        `item_key` int(11) DEFAULT NULL COMMENT '매핑 기준 상품 id',\
+                                        `item_keep_words` varchar(255) DEFAULT NULL COMMENT '매핑 기준 상품 세부정보',\
+                                        `mapped_id` int(11) DEFAULT NULL COMMENT '매핑 대상 상품 id',\
+                                        `mapped_keep_words` varchar(255) DEFAULT NULL COMMENT '매핑 대상 상품 세부정보',\
+                                        `source` varchar(255) DEFAULT NULL COMMENT '매핑 대상 상품 소스 테이블명'\
+                                        ) ENGINE=InnoDB DEFAULT CHARSET=utf8;",
+                                        
+            f'beauty_kr_{category}_info_all': f"CREATE TABLE `beauty_kr_{category}_info_all` (\
+                                                `item_key` int(11) DEFAULT NULL COMMENT '매핑 기준 상품 id',\
+                                                `product_store` text COMMENT '상품 판매 스토어',\
+                                                `product_stote_url` text COMMENT '스토어 별 판매 링크',\
+                                                `product_price` varchar(255) COMMENT '스토어 별 판매 가격',\
+                                                `delivery_fee` varchar(255) COMMENT '스토어 별 배송비',\
+                                                `naver_pay` varchar(255) COMMENT '네이버페이 유무',\
+                                                `product_status` int(11) DEFAULT NULL COMMENT '상품 판매 상태 (1: 판매중, 0: 판매중단)',\
+                                                `page_status` int(11) DEFAULT NULL COMMENT '상품 판매 페이지 상태 (1: 네이버 뷰티윈도 가격비교 탭, 2: 네이버 뷰티윈도 전체 탭, -1: 페이지 누락)',\
+                                                `product_code` int(11) DEFAULT NULL,\
+                                                `product_name` varchar(255),\
+                                                `brand_code` int(11),\
+                                                `brand_name` varchar(255),\
+                                                `product_url` text,\
+                                                `selection` varchar(255),\
+                                                `division` varchar(255),\
+                                                `groups` varchar(255),\
+                                                `descriptions` text,\
+                                                `product_keywords` varchar(255),\
+                                                `color_type` varchar(255),\
+                                                `volume` varchar(255),\
+                                                `image_source` text,\
+                                                `ingredients_all_kor` text,\
+                                                `ingredients_all_eng` text,\
+                                                `ingredients_all_desc` text,\
+                                                `ranks` varchar(255),\
+                                                `product_awards` text,\
+                                                `product_awards_sector` text,\
+                                                `product_awards_rank` text,\
+                                                `price` varchar(255) COMMENT '정가',\
+                                                `product_stores` varchar(255) COMMENT '글로우픽 기준 판매 스토어',\
+                                                `regist_date` datetime DEFAULT NULL\
+                                                ) ENGINE=InnoDB DEFAULT CHARSET=utf8;",
+                                                
+            f'beauty_kr_{category}_reviews_all': None,
+            'test': "CREATE TABLE `test` (\
+                    `a` varchar(255),\
+                    `b` varchar(255)\
+                    ) ENGINE=InnoDB DEFAULT CHARSET=utf8;",
+        }
+        
+        if 'info_all' in table_name:
+            category = table_name.replace('beauty_kr_', '').replace('_info_all', '')
+            query = query_dict[f'beauty_kr_{category}_info_all']
+        elif 'reviews_all' in table_name:
+            category = table_name.replace('beauty_kr_', '').replace('_reviews_all', '')
+            query = query_dict[f'beauty_kr_{category}_reviews_all']
+        else:
+            if table_name in list(query_dict.keys()):
+                query = query_dict[table_name]
+            else:
+                query = None
+        
+        if query == None:
+            print('query is None')
+        else:
+            # backup table
+            self.table_backup(table_name)
+            
+            # create table
+            curs = self.db_connect()
+            curs.execute(query)
+            
+            # upload table
+            self.engine_upload(upload_df, table_name, if_exists_option='append')
+            
+            # drop temporary table
+            table_list = self.get_tbl_name()
+            if  f'{table_name}_temp' in table_list:
+                curs.execute(f'DROP TABLE {table_name}_temp;')
+            
+            # close cursor
+            curs.close()
+            print(query)
