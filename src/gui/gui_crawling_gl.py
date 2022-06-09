@@ -39,9 +39,13 @@ class CrawlingGlWindow(QMainWindow, form):
         self.setupUi(self)
         self.setWindowTitle('Update Glowpick Products')
         self.viewer = None
+        
+        # file path
         self.file_path = os.path.join(tbl_cache, 'product_codes.txt')
         self.selections = os.path.join(tbl_cache, 'selections.txt')
         self.divisions = os.path.join(tbl_cache, 'divisions.txt')
+        self.selection_idx = os.path.join(tbl_cache, 'selection_idx.txt')
+        self.division_idx = os.path.join(tbl_cache, 'division_idx.txt')
         self.path_scrape_df = os.path.join(tbl_cache, 'gl_info.csv')
         self.path_scrape_df_rev = os.path.join(tbl_cache, 'gl_info_rev.csv')
         
@@ -266,15 +270,27 @@ class CrawlingGlWindow(QMainWindow, form):
         if not self.thread_code.power:
             if os.path.isfile(self.selections):            
                 msg = QMessageBox()
-                msg.setText("- 인터넷 연결 확인 \n- VPN 연결 확인 \n- mac 자동 잠금 해제 확인")
+                msg.setText("- 인터넷 연결 확인 \n- VPN 연결 확인 \n- mac 자동 잠금 해제 확인 \n ** 카테고리 인덱스 수집: 약 20분 이상 소요됩니다 **")
                 msg.exec_()
                 
                 # get category index
                 self.thread_code.find_category_index()
+                if os.path.isfile(self.selection_idx):
+                    with open(self.selection_idx, 'rb') as f:
+                        selection_idx = pickle.load(f)
+                        if len(selection_idx) == 0:
+                            msg = QMessageBox()
+                            msg.setText("\n    ** ip 차단됨 **\n\n - VPN 나라변경 필요\n - wifi 재연결 필요\n re-Run 필요")
+                            msg.exec_()
+                        else:
+                            # start thread
+                            self.thread_code.power = True
+                            self.thread_code.start()
+                else:
+                    msg = QMessageBox()
+                    msg.setText("\n    ** ip 차단됨 **\n\n - VPN 나라변경 필요\n - wifi 재연결 필요\n re-Run 필요")
+                    msg.exec_()
                 
-                # start thread
-                self.thread_code.power = True
-                self.thread_code.start()
             else:
                 msg = QMessageBox()
                 msg.setText("** Select 완료 후 시도하세요 **")
