@@ -131,18 +131,18 @@ class ThreadCrawlingGl(QtCore.QThread, QtCore.QObject):
                 
                 if comp:
                     # 업데이트 완료 시 glowpick_product_info_fianl_version 테이블 업데이트 (append)
-                    gl_info_final_v = self.db.get_tbl('glowpick_product_info_final_version', ['id', 'product_code'])
-                    df_mer = gl_info_final_v.merge(df_info, on='product_code', how='inner')
+                    gl_info_final_v = self.db.get_tbl('glowpick_product_info_final_version', 'all')
+                    df_mer = gl_info_final_v.loc[:, ['id', 'product_code']].merge(df_info, on='product_code', how='inner')
                     df_dedup = pd.concat([df_mer, gl_info_final_v]).drop_duplicates('id', keep='first').sort_values('id')
                     gl_info_new_v = pd.concat([df_mer, df_info]).drop_duplicates('product_code', keep=False).reset_index(drop=True)
                     gl_info_new_v.loc[:, 'id'] = range(len(df_dedup), len(df_dedup) + len(gl_info_new_v))
-                    gl_info_final_v = pd.concat([df_dedup, gl_info_new_v]).reset_index(drop=True)
+                    _gl_info_final_v = pd.concat([df_dedup, gl_info_new_v]).drop(columns='regist_date').reset_index(drop=True)
                     
                     # upload table into db
                     self.db.engine_upload(gl_info_new_v, 'glowpick_product_info_update_new', 'append')
                     table_name = 'glowpick_product_info_final_version'
                     self.db.table_backup(table_name)
-                    self.db.engine_upload(gl_info_final_v, table_name, 'replace')
+                    self.db.engine_upload(_gl_info_final_v, table_name, 'replace')
             except:
                 # db 연결 끊김: VPN 연결 해제 및 와이파이 재연결 필요
                 if self.power:
@@ -286,6 +286,7 @@ class ThreadCrawlingProductCode(QtCore.QThread, QtCore.QObject):
                 break
                 
         # url -> product_code
+        urls = list(set(urls))    # dedup
         product_codes = []
         for url in urls:
             product_code = url.replace('https://www.glowpick.com/products/', '')
