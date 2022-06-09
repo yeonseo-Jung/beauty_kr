@@ -1,6 +1,7 @@
 import os
 import re
 import sys
+import ast
 from tqdm.auto import tqdm
 
 import numpy as np
@@ -283,70 +284,147 @@ class TitlePreProcess:
         df = df[df.category.notnull()].reset_index(drop=True)
         
         return df
-    
 
-# '''
-# 전처리 실행 코드
-# '''
-
-# preprocessor = TitlePreProcess()
-# df_0_categ = preprocessor.categ_reclassifier(df_0_dedup, 0)
-# df_1_categ = preprocessor.categ_reclassifier(df_1, 1)
-
-# t = tqdm(range(len(df_0_categ) + len(df_1_categ)))
-# idx = 0
-# for i in t:        
-#     if idx >= len(df_0_categ):
-#         idx_ = idx - len(df_0_categ) 
-#         title = df_1_categ.loc[idx_, 'product_name']
-#         brand = df_1_categ.loc[idx_, 'brand_name']
-#         title_, keep_wd_dict  = preprocessor.title_preprocessor(title, brand)
-#         df_1_categ.loc[idx_, 'product_name'] = str(title_)
-#         if len(keep_wd_dict) == 0:
-#             df_1_categ.loc[idx_, 'keep_words'] = np.nan
-#         else:
-#             df_1_categ.loc[idx_, 'keep_words'] = str(keep_wd_dict)
+def check_duplicated(grp_df) :
     
-#     else:
-#         title = df_0_categ.loc[idx, 'product_name']
-#         brand = df_0_categ.loc[idx, 'brand_name']
-#         title_, keep_wd_dict = preprocessor.title_preprocessor(title, brand)
-#         df_0_categ.loc[idx, 'product_name'] = str(title_)
-#         if len(keep_wd_dict) == 0:
-#             df_0_categ.loc[idx, 'keep_words'] = np.nan
-#         else:
-#             df_0_categ.loc[idx, 'keep_words'] = str(keep_wd_dict)
-    
-#     idx += 1
-    
-# columns = ['id', 'brand_name', 'product_name', 'category', 'keep_words', 'table_name']
-# df_concat = pd.concat([df_0_categ, df_1_categ]).loc[:, columns].reset_index(drop=True)
-# df_concat.loc[:, 'product_name'] = df_concat.product_name.str.replace(' ', '')
-# df_concat = df_concat[df_concat.product_name.str.len() >= 6].reset_index(drop=True)
+    grp_df.loc[(grp_df.status_grp == 1) | (grp_df.status_grp == 3), 'dup_check'] = 0
+    grp_df.loc[(grp_df.status_grp == 1) | (grp_df.status_grp == 3), 'dup_id'] = np.nan
 
 
-# ''' Dup check '''
-# subset = ['brand_name', 'product_name', 'category']
-# df_dup = df_concat[df_concat.duplicated(subset=subset, keep=False)].sort_values(by=subset).reset_index(drop=True)
+    df_l = []
 
-# df_group = df_dup.groupby(subset)
-# groups = df_group.groups.keys()
-# mapping_list = []
-# for group in tqdm(groups):
-#     grp = df_group.get_group(group)
+    for i in tqdm([2,4,5]) :
+        grp = grp_df[grp_df.status_grp == i]
+        detail_grp = grp.groupby(['brand_code','prd_prepro'])
+
+        if i == 2 or i==4 :
+            
+            #product_code가 높은것 -> 최우선 매핑 대상
+            for key, item in detail_grp:
+                df=detail_grp.get_group(key)
+
+                select_prd=max(df.product_code)
+                dup_prd_code = list(set(df.product_code) - {max(df.product_code)})
+                dup_ids = list(df[df.product_code.isin(dup_prd_code)].id)
+
+                df.loc[df.product_code == select_prd, 'dup_check'] = 1
+                df.loc[df.product_code == select_prd, 'dup_id'] = str(dup_ids)
+                df.loc[df.id.isin(dup_ids), 'dup_check'] = -1
+                df.loc[df.id.isin(dup_ids), 'dup_id'] = np.nan
+
+                df_l.append(df)
+
+        else :
+            for key, item in detail_grp:
+                df=detail_grp.get_group(key)
+                select_prd=df[df.status == 1]
+
+                # 판매중인 상품이 여러개인 경우, product_code가 높은 것 선택
+                if len(select_prd) >= 2:
+                    select_prd_lst = df.loc[(df.status == 1), 'product_code']
+                    select_prd = max(select_prd_lst)
+                else :
+                    select_prd=max(df.product_code)
+
+                dup_prd_code = list(set(df.product_code) - {select_prd})
+                dup_ids = list(df[df.product_code.isin(dup_prd_code)].id)
+
+                df.loc[df.product_code == select_prd, 'dup_check'] = 1
+                df.loc[df.product_code == select_prd, 'dup_id'] = str(dup_ids)
+                df.loc[df.id.isin(dup_ids), 'dup_check'] = -1
+                df.loc[df.id.isin(dup_ids), 'dup_id'] = np.nan
+                df_l.append(df)
+                
+    final_df=pd.concat([grp_df[grp_df.status_grp == 1], grp_df[grp_df.status_grp == 3], pd.concat(df_l)]).sort_values('id').reset_index(drop=True)
     
-#     if 'glowpick_product_info_final_version' in grp.table_name.tolist():
-#         grp_0 = grp.loc[grp.table_name=='glowpick_product_info_final_version']
-#         grp_1 = grp.loc[grp.table_name!='glowpick_product_info_final_version'].reset_index(drop=True)
-#         item_key = grp_0.id.values[0]
-#         keep_words_0 = grp_0.keep_words.values[0]
-#         for i in range(len(grp_1)):
-#             mapped_id = grp_1.loc[i, 'id']
-#             keep_words_1 = grp_1.loc[i, 'keep_words']
-#             table_name = grp_1.loc[i, 'table_name']
-#             mapping_list.append([item_key, keep_words_0, mapped_id, keep_words_1, table_name])
-#     else:
-#         pass
+    return final_df
+
+# 글로우픽 타이틀 [단종] 제거
+def check_status_and_prepro(glowpick_info_df):
     
-# columns = ['item_key', 'item_keep_words', 'mapped_id', 'mapped_keep_words', 'source']
-# mapping_table = pd.DataFrame(mapping_list, columns=columns).sort_values(['item_key', 'source'])
+    df = glowpick_info_df.copy()
+    df['status'] = 1
+    df.loc[df.product_name.str.contains('단종'), 'status'] = 0
+    
+    for i in tqdm(df.index) :
+        
+        prd_name=df.loc[i, 'product_name']
+        df.loc[i, 'prd_prepro'] = prd_name
+        
+        if df.loc[i, 'status'] == 0 :
+            prd_name_=re.sub(r'\[단종\]', '', prd_name).strip()
+            df.loc[i, 'prd_prepro'] = prd_name_
+            
+    return df
+
+def str_to_lst(values):
+    
+    lst_val=ast.literal_eval(values)
+
+    if len(lst_val) == 0 :
+        return np.nan
+
+    else :
+        return lst_val
+        
+# grouping
+def grouping(df): 
+    
+    """ glowpick product duplicate check
+    Input data
+    df: glowpick_product_info_final_version 
+        columns = ['id', 'product_name', 'product_code', 'brand_code']
+    
+    return values
+        - 1 : 단종 상품 없이 하나의 상품만 존재
+        - 2 : 같은 상품을 두개의 url로 할당한 경우
+        - 3 : 단종 상품만 존재
+        - 4 : 단종이 여러번 된 상품(판매중 상품은 없고 단종만 있는 경우)
+        - 5 : 단종 상품 + 판매중 상품
+    """
+    
+    prepro_df = check_status_and_prepro(df)
+    
+    grouped_df=prepro_df.groupby('brand_code')
+    grouped_df_lst = []
+    for key, item in tqdm(grouped_df):
+        grp_df=grouped_df.get_group(key)
+
+        for j in grp_df.index :
+            prd_name = grp_df.loc[j, 'prd_prepro']
+            st = grp_df.loc[j, 'status']
+
+            dup_df = grp_df[grp_df.prd_prepro == prd_name]
+            dup_status_lst = list(dup_df.status)
+            
+            # 판매중인 상품만 존재
+            if len(dup_df) == 1 and st == 1 :
+                grp_df.loc[j, 'status_grp'] = int(1)
+                
+            # 같은 상품을 두개의 url로 할당한 경우 
+            elif len(dup_df) >= 2 and (0 not in set(dup_status_lst)) :
+                grp_df.loc[j, 'status_grp'] = int(2)
+            
+            # 유일한 단종 상품만 존재
+            elif len(dup_df) == 1 and st == 0 :
+                grp_df.loc[j, 'status_grp'] = int(3)
+            
+            # 같은 상품이 단종이 여러번 된 경우 (단종만 존재)
+            elif len(dup_df) >=2 and (1 not in set(dup_status_lst)) :
+                grp_df.loc[j, 'status_grp'] = int(4)
+            
+            # 판매중과 단종상품이 섞여있는 경우
+            elif len(dup_df) >= 2 and (1 in dup_status_lst and 0 in dup_status_lst):
+                grp_df.loc[j, 'status_grp'] = int(5)
+                
+        grouped_df_lst.append(grp_df)
+    
+    grouped_df_final=pd.concat(grouped_df_lst).sort_values('id').reset_index(drop=True)
+
+    final_df = check_duplicated(grouped_df_final)
+    final_dfs = final_df.loc[:, ['id', 'status', 'dup_check', 'dup_id']]
+        
+    final_dfs['dup_id'] = final_dfs['dup_id'].fillna('[]')
+    final_dfs['dup_id'] = final_dfs.apply(lambda x : str_to_lst(x.dup_id), axis=1)
+    
+    return final_dfs
