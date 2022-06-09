@@ -24,10 +24,7 @@ from PyQt5 import uic
 from PyQt5 import QtCore
 from PyQt5.QtWidgets import *
 
-from access_database import access_db
-
 class TitlePreProcess:
-    
     def __init__(self):
         
         # 제거해야 할 단어 정규식 표현
