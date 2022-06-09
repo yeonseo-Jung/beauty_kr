@@ -185,7 +185,7 @@ class ThreadCrawlingNvStatus(QtCore.QThread, QtCore.QObject):
         
         return df_mapped
     
-    def _upload_df(self):
+    def _upload_df(self, comp=False):
         ''' table upload into db '''
         
         try:
@@ -210,8 +210,13 @@ class ThreadCrawlingNvStatus(QtCore.QThread, QtCore.QObject):
             categ_eng = self.categ_dict[categ]
             
             # table upload
-            table_name = f'beauty_kr_{categ_eng}_info_all'
-            self.db.engine_upload(df_mer, table_name, 'replace')
+            if comp:
+                table_name = f'beauty_kr_{categ_eng}_info_all'
+                self.db.create_table(df_mer, table_name, 'append')
+                
+            else:    
+                table_name = f'beauty_kr_{categ_eng}_info_all_temp'
+                self.db.engine_upload(df_mer, table_name, 'replace')
             
         except:
             # db 연결 끊김: 인터넷(와이파이) 재연결 필요
@@ -266,10 +271,14 @@ class ThreadCrawlingNvStatus(QtCore.QThread, QtCore.QObject):
         # save ipunt data into cache dir
         df.loc[idx:].to_csv(self.path_input_df)
         
-        # upload table into db 
-        self._upload_df()
-        self.power = False
+        # upload table into db
+        if idx == len(df):
+            self._upload_df(comp=True)
+        else:
+            self._upload_df()
+        
         self.progress.emit(t)
+        self.power = False
                 
     def stop(self):
         ''' Stop Thread '''

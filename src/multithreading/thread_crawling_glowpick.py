@@ -22,6 +22,7 @@ from PyQt5 import QtCore
 from access_database import access_db
 from scraping.scraper import get_url
 from scraping.crawler_glowpick import CrawlInfoRevGl
+from mapping._preprocessing import grouping
 
 if getattr(sys, 'frozen', False) and hasattr(sys, '_MEIPASS'):
     base_path = sys._MEIPASS
@@ -137,12 +138,14 @@ class ThreadCrawlingGl(QtCore.QThread, QtCore.QObject):
                     gl_info_new_v = pd.concat([df_mer, df_info]).drop_duplicates('product_code', keep=False).reset_index(drop=True)
                     gl_info_new_v.loc[:, 'id'] = range(len(df_dedup), len(df_dedup) + len(gl_info_new_v))
                     _gl_info_final_v = pd.concat([df_dedup, gl_info_new_v]).drop(columns='regist_date').reset_index(drop=True)
+                    gl_dup_ck = grouping(_gl_info_final_v.loc[:, ['id', 'product_name', 'product_code', 'brand_code']])
+                    _gl_info_final_v_dedup = _gl_info_final_v.merge(gl_dup_ck, on='id', how='inner')
                     
                     # upload table into db
                     self.db.engine_upload(gl_info_new_v, 'glowpick_product_info_update_new', 'append')
                     table_name = 'glowpick_product_info_final_version'
                     self.db.table_backup(table_name)
-                    self.db.engine_upload(_gl_info_final_v, table_name, 'replace')
+                    self.db.engine_upload(_gl_info_final_v_dedup, table_name, 'replace')
             except:
                 # db 연결 끊김: VPN 연결 해제 및 와이파이 재연결 필요
                 if self.power:
@@ -194,8 +197,8 @@ class ThreadCrawlingGl(QtCore.QThread, QtCore.QObject):
             # upload table into db 
             self._upload_df()
         
-        self.power = False
         self.progress.emit(t)
+        self.power = False
                 
     def stop(self):
         ''' Stop Thread '''
@@ -293,8 +296,9 @@ class ThreadCrawlingProductCode(QtCore.QThread, QtCore.QObject):
             product_codes.append(product_code)
         with open(self.file_path, 'wb') as f:
             pickle.dump(product_codes, f)
-        self.power = False
+        
         self.progress.emit(t)
+        self.power = False
                 
     def stop(self):
         ''' Stop Thread '''
