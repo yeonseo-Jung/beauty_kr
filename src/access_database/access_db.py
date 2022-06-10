@@ -259,12 +259,12 @@ class AccessDataBase():
             f'beauty_kr_{category}_reviews_all': None,
             
             'glowpick_product_info_final_version': f"CREATE TABLE `glowpick_product_info_final_version` (\
-                                                `id` int(11) DEFAULT NULL COMMENT '상품 id',\
-                                                `product_code` int(11) DEFAULT NULL,\
+                                                `id` int(11) DEFAULT NULL COMMENT '상품 아이디 (자체부여)',\
+                                                `product_code` int(11) DEFAULT NULL COMMENT '글로우픽 내부 상품 코드',\
                                                 `product_name` varchar(255),\
                                                 `brand_code` int(11),\
                                                 `brand_name` varchar(255),\
-                                                `product_url` text,\
+                                                `product_url` varchar(255),\
                                                 `selection` varchar(255),\
                                                 `division` varchar(255),\
                                                 `groups` varchar(255),\
@@ -289,14 +289,15 @@ class AccessDataBase():
                                                 
             'glowpick_product_info_final_version_review': f"CREATE TABLE glowpick_product_info_final_version_review (\
                                                         `id` int(11) DEFAULT NULL COMMENT '싱품 id',\
+                                                        `product_code` int(11) DEFAULT NULL COMMENT '글로우픽 내부 상품 코드',\
                                                         `user_id` varchar(100) DEFAULT NULL COMMENT '유저 아이디',\
                                                         `product_rating` int(11) DEFAULT NULL COMMENT '상품 평점',\
                                                         `review_date` varchar(100) DEFAULT NULL COMMENT '리뷰 작성 일자',\
                                                         `product_review` text DEFAULT NULL COMMENT '리뷰 내용'\
                                                         ) ENGINE=InnoDB DEFAULT CHARSET=utf8;",
             'test': "CREATE TABLE `test` (\
-                    `a` varchar(255),\
-                    `b` varchar(255)\
+                    `a` int(11),\
+                    `b` int(11)\
                     ) ENGINE=InnoDB DEFAULT CHARSET=utf8;",
         }
         
