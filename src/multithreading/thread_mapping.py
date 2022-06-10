@@ -132,8 +132,8 @@ class ThreadMapping(QtCore.QThread, QtCore.QObject):
             else:
                 break
             
-            self.progress.emit(t)
-            self.poewr = False
+        self.progress.emit(t)
+        self.poewr = False
             
         columns = ['item_key', 'item_keep_words', 'mapped_id', 'mapped_keep_words', 'source']
         mapping_table = pd.DataFrame(mapping_list, columns=columns).sort_values(['item_key', 'source'])
