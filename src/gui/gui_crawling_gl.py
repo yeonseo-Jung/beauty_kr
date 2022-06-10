@@ -65,7 +65,7 @@ class CrawlingGlWindow(QMainWindow, form):
         self.Pause.clicked.connect(self.thread_crw.stop)
         self.View.clicked.connect(self.tbl_viewer)
         self.Save.clicked.connect(self.save_file)
-        self.Upload.clicked.connect(self.thread_crw._upload_df)
+        self.Upload.clicked.connect(self._upload_df)
         
         # connect db
         with open(conn_path, 'rb') as f:
@@ -346,3 +346,15 @@ class CrawlingGlWindow(QMainWindow, form):
             msg = QMessageBox()
             msg.setText('일시정지 후 다시 시도해주세요')
             msg.exec_()
+            
+    def _upload_df(self):
+        
+        # upload table into db    
+        self.thread_crw._upload_df()
+        
+        # db connection check
+        if self.thread_crw.check == 2:
+            msg = QMessageBox()
+            msg.setText("\n    ** db 연결 끊김 **\n\n - VPN 연결 해제 및 wifi 재연결 필요\n\n - Upload 버튼 클릭 후 re-Run")
+            msg.exec_()
+            self.thread_crw.check = 0

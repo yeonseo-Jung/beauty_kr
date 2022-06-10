@@ -119,15 +119,16 @@ class MappingWindow(QMainWindow, mapping_form):
         
         self.pbar_1.setValue(per)
         
-        elapsed_h = int(elapsed // 3600)
-        elapsed_m = int((elapsed % 3600) // 60)
-        elapsed_s = int(elapsed - (elapsed_h * 3600 + elapsed_m * 60))
+        # elapsed_h = int(elapsed // 3600)
+        # elapsed_m = int((elapsed % 3600) // 60)
+        # elapsed_s = int(elapsed - (elapsed_h * 3600 + elapsed_m * 60))
         
-        remain_h = int(remain_time // 3600)
-        remain_m = int((remain_time % 3600) // 60)
-        remain_s = int(remain_time - (remain_h * 3600 + remain_m * 60))
+        # remain_h = int(remain_time // 3600)
+        # remain_m = int((remain_time % 3600) // 60)
+        # remain_s = int(remain_time - (remain_h * 3600 + remain_m * 60))
         
-        message = f"{int(per)}% | Progress item: {itm}  Total: {tot} | Elapsed time: {elapsed_h}:{elapsed_m}:{elapsed_s} < Remain time: {remain_h}:{remain_m}:{remain_s} "
+        # message = f"{int(per)}% | Progress item: {itm}  Total: {tot} | Elapsed time: {elapsed_h}:{elapsed_m}:{elapsed_s} < Remain time: {remain_h}:{remain_m}:{remain_s} "
+        message = f"{int(per)}% | Progress item: {itm}  Total: {tot} | Elapsed time: {elapsed}s < Remain time: {remain_time}s "
         self.statusbar.showMessage(message)
     
     def _get_tbl(self):
@@ -314,10 +315,11 @@ class MappingWindow(QMainWindow, mapping_form):
         file_path = os.path.join(tbl_cache, file_name)
         if os.path.isfile(file_path):
             mapping_table = pd.read_csv(file_path)
-            
+            mapped_product_count = len(mapping_table.item_key.unique())
+            mapping_product_count = len(mapping_table)
             QMessageBox.about(self,
                             'Mapping Status',
-                            f"** Perfect Mapping Completion ** \n- 매핑 기준 상품 수(글로우픽): {len(mapping_table.item_key.unique())}\n- 매핑 대상 상품 수: {len(mapping_table)}\n")        
+                            f"** Perfect Mapping Completion ** \n- 매핑 기준 상품 수(글로우픽): {mapped_product_count}\n- 매핑 대상 상품 수: {mapping_product_count}\n")        
         else:
             msg = QMessageBox()
             msg.setText(f'매핑 완료 후 시도하세요')
