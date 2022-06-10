@@ -1,7 +1,5 @@
 import os
-import re
 import sys
-import time
 import pickle
 import pandas as pd
 from tqdm.auto import tqdm
@@ -131,21 +129,32 @@ class ThreadCrawlingGl(QtCore.QThread, QtCore.QObject):
                 self.db.engine_upload(df_status, self.table_name_status, 'replace')
                 
                 if comp:
-                    # 업데이트 완료 시 glowpick_product_info_fianl_version 테이블 업데이트 (append)
+                    ''' Table Update (append) '''
+                    # glowpick_product_info_final_version
                     gl_info_final_v = self.db.get_tbl('glowpick_product_info_final_version', 'all')
+                    # 기존 상품 id 부여
                     df_mer = gl_info_final_v.loc[:, ['id', 'product_code']].merge(df_info, on='product_code', how='inner')
                     df_dedup = pd.concat([df_mer, gl_info_final_v]).drop_duplicates('id', keep='first').sort_values('id')
                     gl_info_new_v = pd.concat([df_mer, df_info]).drop_duplicates('product_code', keep=False).reset_index(drop=True)
+                    # 신규 상품 id 부여
                     gl_info_new_v.loc[:, 'id'] = range(len(df_dedup), len(df_dedup) + len(gl_info_new_v))
                     _gl_info_final_v = pd.concat([df_dedup, gl_info_new_v]).drop(columns='regist_date').reset_index(drop=True)
-                    gl_dup_ck = grouping(_gl_info_final_v.loc[:, ['id', 'product_name', 'product_code', 'brand_code']])
+                    gl_dup_ck = grouping(_gl_info_final_v.loc[:, ['id', 'product_name', 'product_code', 'brand_code']])    # dup check 
+                    if 'status' in _gl_info_final_v.columns:
+                        _gl_info_final_v = _gl_info_final_v.drop(columns=['status', 'dup_check', 'dup_id'])
                     _gl_info_final_v_dedup = _gl_info_final_v.merge(gl_dup_ck, on='id', how='inner')
                     
+                    # glowpick_product_info_final_version_review
+                    gl_rev_final_v = self.db.get_tbl('glowpick_product_info_final_version_review')
+                    df_mer_rev = _gl_info_final_v_dedup.loc[:, ['id', 'product_code']].merge(df_rev, on='product_code', how='inner')
+                    df_dedup_rev = pd.concat([df_mer_rev, gl_rev_final_v]).drop_duplicates(keep='first').sort_values('id').reset_index(drop=True)
+                    
                     # upload table into db
-                    self.db.engine_upload(gl_info_new_v, 'glowpick_product_info_update_new', 'append')
-                    table_name = 'glowpick_product_info_final_version'
-                    self.db.table_backup(table_name)
-                    self.db.engine_upload(_gl_info_final_v_dedup, table_name, 'replace')
+                    df_new = self.db.get_tbl('glowpick_product_info_update_new')
+                    gl_info_new_v = pd.concat([gl_info_new_v, df_new]).drop_duplicates('product_code', keep='first').sort_values('id').reset_index(drop=True)
+                    self.db.engine_upload(gl_info_new_v, 'glowpick_product_info_update_new', 'replace')
+                    self.db.create_table(_gl_info_final_v_dedup, 'glowpick_product_info_final_version')
+                    self.db.create_table(df_dedup_rev, 'glowpick_product_info_final_version_review')
             except:
                 # db 연결 끊김: VPN 연결 해제 및 와이파이 재연결 필요
                 if self.power:
