@@ -361,10 +361,10 @@ def str_to_lst(values):
     
     lst_val=ast.literal_eval(values)
 
-    if len(lst_val) == 0 :
+    if len(lst_val) == 0:
         return np.nan
 
-    else :
+    else:
         return lst_val
         
 # grouping
@@ -402,7 +402,7 @@ def grouping(df):
                 grp_df.loc[j, 'status_grp'] = int(1)
                 
             # 같은 상품을 두개의 url로 할당한 경우 
-            elif len(dup_df) >= 2 and (0 not in set(dup_status_lst)) :
+            elif len(dup_df) >= 2 and (0 not in set(dup_status_lst)):
                 grp_df.loc[j, 'status_grp'] = int(2)
             
             # 유일한 단종 상품만 존재
@@ -410,7 +410,7 @@ def grouping(df):
                 grp_df.loc[j, 'status_grp'] = int(3)
             
             # 같은 상품이 단종이 여러번 된 경우 (단종만 존재)
-            elif len(dup_df) >=2 and (1 not in set(dup_status_lst)) :
+            elif len(dup_df) >=2 and (1 not in set(dup_status_lst)):
                 grp_df.loc[j, 'status_grp'] = int(4)
             
             # 판매중과 단종상품이 섞여있는 경우
@@ -424,7 +424,7 @@ def grouping(df):
     final_df = check_duplicated(grouped_df_final)
     final_dfs = final_df.loc[:, ['id', 'status', 'dup_check', 'dup_id']]
         
-    final_dfs['dup_id'] = final_dfs['dup_id'].fillna('[]')
-    final_dfs['dup_id'] = final_dfs.apply(lambda x : str_to_lst(x.dup_id), axis=1)
+    # final_dfs['dup_id'] = final_dfs['dup_id'].fillna('[]')
+    # final_dfs['dup_id'] = final_dfs.apply(lambda x : str_to_lst(x.dup_id), axis=1)
     
     return final_dfs
