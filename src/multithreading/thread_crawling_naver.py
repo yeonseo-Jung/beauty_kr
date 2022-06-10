@@ -264,7 +264,6 @@ class ThreadCrawlingNvStatus(QtCore.QThread, QtCore.QObject):
                     pass
                 else:
                     self.store_list.append(store_info)      
-                idx += 1
             else:
                 break
             
@@ -272,7 +271,7 @@ class ThreadCrawlingNvStatus(QtCore.QThread, QtCore.QObject):
         df.loc[idx:].to_csv(self.path_input_df)
         
         # upload table into db
-        if idx == len(df):
+        if idx == len(df) - 1:
             self._upload_df(comp=True)
         else:
             self._upload_df()
