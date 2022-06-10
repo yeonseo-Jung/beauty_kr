@@ -156,6 +156,7 @@ class AccessDataBase():
         else:
             pass
         engine.dispose()
+        print(f'\nTable Upload Success: {table_name}')
 
     def table_update(self, table_name, pk, df):
         ''' Table Update from DB
@@ -205,7 +206,14 @@ class AccessDataBase():
     def create_table(self, upload_df, table_name):
         ''' Create table '''
         
-        category = ""
+        
+        if 'info_all' in table_name:
+            category = table_name.replace('beauty_kr_', '').replace('_info_all', '')
+        elif 'reviews_all' in table_name:
+            category = table_name.replace('beauty_kr_', '').replace('_reviews_all', '')
+        else:
+            category = ""
+            
         query_dict = {
             'beauty_kr_mapping_table': "CREATE TABLE beauty_kr_mapping_table (\
                                         `item_key` int(11) DEFAULT NULL COMMENT '매핑 기준 상품 id',\
@@ -246,7 +254,8 @@ class AccessDataBase():
                                                 `product_awards_rank` text,\
                                                 `price` varchar(255) COMMENT '정가',\
                                                 `product_stores` varchar(255) COMMENT '글로우픽 기준 판매 스토어',\
-                                                `regist_date` datetime DEFAULT NULL\
+                                                `regist_date` datetime DEFAULT NULL COMMENT '개체 수집 일자',\
+                                                `category` varchar (255) DEFAULT NULL COMMENT '카테고리'\
                                                 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;",
                                                 
             f'beauty_kr_{category}_reviews_all': None,
@@ -257,10 +266,8 @@ class AccessDataBase():
         }
         
         if 'info_all' in table_name:
-            category = table_name.replace('beauty_kr_', '').replace('_info_all', '')
             query = query_dict[f'beauty_kr_{category}_info_all']
         elif 'reviews_all' in table_name:
-            category = table_name.replace('beauty_kr_', '').replace('_reviews_all', '')
             query = query_dict[f'beauty_kr_{category}_reviews_all']
         else:
             if table_name in list(query_dict.keys()):
@@ -288,4 +295,3 @@ class AccessDataBase():
             
             # close cursor
             curs.close()
-            print(query)
