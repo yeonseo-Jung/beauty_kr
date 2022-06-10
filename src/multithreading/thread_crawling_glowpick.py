@@ -237,12 +237,18 @@ class ThreadCrawlingProductCode(QtCore.QThread, QtCore.QObject):
     def find_category_index(self):
         ''' Crawling & Save category index dictionary '''
         
+        ck = 0
         if os.path.isfile(self.selection_idx):
             with open(self.selection_idx, 'rb') as f:
                 selelction_idx = pickle.load(f)
             with open(self.division_idx, 'rb') as f:
                 division_idx = pickle.load(f)
-        else:        
+            if len(selelction_idx) == 0:
+                pass
+            else:
+                ck = 1
+                
+        if ck == 0:
             selelction_idx = crw.find_selection_new()
             division_idx = crw.find_division_rank()
             with open(self.selection_idx, 'wb') as f:

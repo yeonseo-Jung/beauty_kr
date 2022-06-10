@@ -1,11 +1,11 @@
 import os
-import re
 import sys
 import time
 import pickle
 import pandas as pd
 from tqdm.auto import tqdm
 from datetime import datetime
+from PyQt5 import QtCore
 
 # Exception Error Handling
 import warnings
@@ -16,8 +16,6 @@ root = os.path.abspath(os.path.join(cur_dir, os.pardir, os.pardir))
 src = os.path.abspath(os.path.join(cur_dir, os.pardir))
 sys.path.append(root)
 sys.path.append(src)
-
-from PyQt5 import QtCore
 
 from access_database import access_db
 from scraping.scraper import scraper_nv

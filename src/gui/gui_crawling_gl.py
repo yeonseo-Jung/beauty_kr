@@ -1,12 +1,8 @@
 import os
-import re
 import sys
 import pickle
 import pandas as pd
-from tqdm.auto import tqdm
-
 from PyQt5 import uic
-from PyQt5.QtCore import Qt
 from PyQt5.QtWidgets import QMainWindow, QMessageBox, QFileDialog
 
 if getattr(sys, 'frozen', False) and hasattr(sys, '_MEIPASS'):
@@ -280,7 +276,7 @@ class CrawlingGlWindow(QMainWindow, form):
                         selection_idx = pickle.load(f)
                         if len(selection_idx) == 0:
                             msg = QMessageBox()
-                            msg.setText("\n    ** ip 차단됨 **\n\n - VPN 나라변경 필요\n - wifi 재연결 필요\n re-Run 필요")
+                            msg.setText("\n    ** ip 차단됨 **\n\n - VPN 나라변경 필요\n - wifi 재연결 필요\n - re-Run 필요")
                             msg.exec_()
                         else:
                             # start thread
@@ -288,7 +284,7 @@ class CrawlingGlWindow(QMainWindow, form):
                             self.thread_code.start()
                 else:
                     msg = QMessageBox()
-                    msg.setText("\n    ** ip 차단됨 **\n\n - VPN 나라변경 필요\n - wifi 재연결 필요\n re-Run 필요")
+                    msg.setText("\n    ** ip 차단됨 **\n\n - VPN 나라변경 필요\n - wifi 재연결 필요\n - re-Run 필요")
                     msg.exec_()
                 
             else:
