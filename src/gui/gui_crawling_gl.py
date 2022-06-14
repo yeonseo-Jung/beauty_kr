@@ -2,6 +2,8 @@ import os
 import sys
 import pickle
 import pandas as pd
+from datetime import datetime
+
 from PyQt5 import uic
 from PyQt5.QtWidgets import QMainWindow, QMessageBox, QFileDialog
 
@@ -67,6 +69,22 @@ class CrawlingGlWindow(QMainWindow, form):
         with open(conn_path, 'rb') as f:
             conn = pickle.load(f)
         self.db = access_db.AccessDataBase(conn[0], conn[1], conn[2])
+        
+        # today (regist date)
+        today = datetime.today()
+        year = str(today.year)
+        month = str(today.month)
+        day = str(today.day)
+        if len(month) == 1:
+            month = "0" + month
+        if len(day) == 1:
+            day = "0" + day
+        self.date = year + "-" + month + "-" + day
+        date = year[2:4] + month + day
+        # table name
+        self.table_name_info = f"glowpick_product_info_update_{date}"
+        self.table_name_rev = f"glowpick_product_info_update_review_{date}"
+        self.table_name_status = f"glowpick_product_info_update_status_{date}"
         
         # category toggled
         self.skincare.setChecked(False)
@@ -141,7 +159,7 @@ class CrawlingGlWindow(QMainWindow, form):
             self.thread_crw.check = 0
         elif self.thread_crw.check == 2:
             msg = QMessageBox()
-            msg.setText("\n    ** db 연결 끊김 **\n\n - VPN 연결 해제 및 wifi 재연결 필요\n\n - Upload 버튼 클릭 후 re-Run")
+            msg.setText("\n    ** db 연결 끊김 **\n\n - VPN, wifi 재연결 필요\n\n - Upload 버튼 클릭 후 re-Run")
             msg.exec_()
             self.thread_crw.check = 0
                 
@@ -228,7 +246,7 @@ class CrawlingGlWindow(QMainWindow, form):
                 df_mapped = self.thread_crw._get_tbl()
                 while len(df_mapped) == 0:
                     msg = QMessageBox()
-                    msg.setText("\n    ** db 연결 끊김 **\n\n - VPN 연결 해제 및 wifi 재연결 필요\n\n")
+                    msg.setText("\n    ** db 연결 끊김 **\n\n - VPN, wifi 재연결 필요\n\n")
                     msg.exec_()
                     df_mapped = self.thread_crw._get_tbl()
                     
@@ -247,7 +265,7 @@ class CrawlingGlWindow(QMainWindow, form):
                         break
                     except:
                         msg = QMessageBox()
-                        msg.setText("\n    ** db 연결 끊김 **\n\n - VPN 연결 해제 및 wifi 재연결 필요\n\n")
+                        msg.setText("\n    ** db 연결 끊김 **\n\n - VPN, wifi 재연결 필요\n\n")
                         msg.exec_()
                 
                 divisions = []
@@ -344,13 +362,33 @@ class CrawlingGlWindow(QMainWindow, form):
             msg.exec_()
             
     def _upload_df(self):
+        ''' upload table into db '''
         
-        # upload table into db    
-        self.thread_crw._upload_df()
+        with open(self.file_path, 'rb') as f:
+            product_codes = pickle.load(f)
+            
+        if len(product_codes) == 0:
+            ck = self.thread_crw._upload_df(comp=True)
+        else:
+            ck = self.thread_crw._upload_df(comp=False)
         
         # db connection check
-        if self.thread_crw.check == 2:
+        if ck == 1:
             msg = QMessageBox()
-            msg.setText("\n    ** db 연결 끊김 **\n\n - VPN 연결 해제 및 wifi 재연결 필요\n\n - Upload 버튼 클릭 후 re-Run")
+            msg.setText("\n    ** db 업로드 완료 **\n\n - glowpick_product_info_final_version\n\n - glowpick_product_info_final_version_review")
             msg.exec_()
-            self.thread_crw.check = 0
+            
+        elif ck == 2:
+            msg = QMessageBox()
+            msg.setText(f"\n    ** db 연결 끊김 **\n\n - {self.table_name_info}\n\n - {self.table_name_rev}")
+            msg.exec_()
+                    
+        elif ck == -1:
+            msg = QMessageBox()
+            msg.setText("\n    ** db 연결 끊김 **\n\n (Upload failed: glowpick_product_info_final_version)\n\n- VPN, wifi 재연결 필요\n\n - Upload 버튼 클릭 후 re-Run")
+            msg.exec_()
+
+        elif ck == -2:
+            msg = QMessageBox()
+            msg.setText(f"\n    ** db 연결 끊김 **\n\n (Upload failed: {self.table_name_info})\n\n- VPN, wifi 재연결 필요\n\n - Upload 버튼 클릭 후 re-Run")
+            msg.exec_()

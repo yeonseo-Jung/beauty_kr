@@ -126,12 +126,11 @@ class CrawlingNvStatus(QMainWindow, form):
             msg = QMessageBox()
             msg.setText("\n    ** ip 차단됨 **\n\n - VPN 나라변경 필요\n - wifi 재연결 필요")
             msg.exec_()
-            self.thread_crw.check = 0
+            
         elif self.thread_crw.check == 2:
             msg = QMessageBox()
-            msg.setText("\n    ** db 연결 끊김 **\n\n - VPN 연결 해제 및 wifi 재연결 필요\n\n - Upload 버튼 클릭 후 re-Run")
+            msg.setText("\n    ** db 연결 끊김 **\n\n - VPN, wifi 재연결 필요\n\n - Upload 버튼 클릭 후 re-Run")
             msg.exec_()
-            self.thread_crw.check = 0
             
     def categ_toggled(self):
         categs = []
@@ -253,13 +252,21 @@ class CrawlingNvStatus(QMainWindow, form):
             msg.exec_()
             
     def _upload_df(self):
+        ''' Upload table into db '''    
         
-        # upload table into db    
-        self.thread_crw._upload_df()
+        df = pd.read_csv(self.path_input_df)
+        if len(df) == 0:
+            ck, table_name = self.thread_crw._upload_df(comp=True)
+        else:
+            ck, table_name = self.thread_crw._upload_df()
         
         # db connection check
-        if self.thread_crw.check == 2:
+        if ck == 1:
             msg = QMessageBox()
-            msg.setText("\n    ** db 연결 끊김 **\n\n - VPN 연결 해제 및 wifi 재연결 필요\n\n - Upload 버튼 클릭 후 re-Run")
+            msg.setText(f"\n    ** db 업로드 완료 **\n\n - {table_name}")
             msg.exec_()
-            self.thread_crw.check = 0
+            
+        elif ck == -1:
+            msg = QMessageBox()
+            msg.setText(f"\n    ** db 연결 끊김 **\n\n (Upload failed: {table_name})\n\n- VPN, wifi 재연결 필요\n\n - Upload 버튼 클릭 후 re-Run")
+            msg.exec_()

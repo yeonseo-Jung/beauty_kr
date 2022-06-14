@@ -155,7 +155,6 @@ class ThreadCrawlingNvStatus(QtCore.QThread, QtCore.QObject):
         if len(day) == 1:
             day = "0" + day
         self.date = year + "-" + month + "-" + day
-        date = year[2:4] + month + day
         
         # category dict
         self.categ_dict = {
@@ -185,10 +184,23 @@ class ThreadCrawlingNvStatus(QtCore.QThread, QtCore.QObject):
     
     def _upload_df(self, comp=False):
         ''' table upload into db '''
+
+        # category 
+        with open(self.category_list, 'rb') as f:
+            categs = pickle.load(f)
+        categ = categs[0]
+        categ_eng = self.categ_dict[categ]
         
+        # table name
+        if comp:
+            table_name = f'beauty_kr_{categ_eng}_info_all'
+        else:    
+            table_name = f'beauty_kr_{categ_eng}_info_all_temp'
+        
+        df = self.db.get_tbl(f'beauty_kr_{categ_eng}_info_all_temp')
         try:
             gl_info = self.db.get_tbl('glowpick_product_info_final_version', 'all').rename(columns={'id': 'item_key'})
-            columns = ['item_key', 'product_store', 'product_stote_url', 'product_price', 'delivery_fee', 'naver_pay', 'product_status', 'page_status']
+            columns = ['item_key', 'product_store', 'product_store_url', 'product_price', 'delivery_fee', 'naver_pay', 'product_status', 'page_status']
             nv_prd_status_update = pd.DataFrame(self.store_list, columns=columns)
             nv_prd_status_update.to_csv(self.path_scrape_df, index=False)
             
@@ -201,26 +213,30 @@ class ThreadCrawlingNvStatus(QtCore.QThread, QtCore.QObject):
             df_mer.loc[:, 'regist_date'] = pd.Timestamp(self.date)
             
             # category 
-            with open(self.category_list, 'rb') as f:
-                categs = pickle.load(f)
-            categ = categs[0]
             df_mer.loc[:, 'category'] = categ
-            categ_eng = self.categ_dict[categ]
+            
+            # dedup
+            if str(type(df)) == "<class 'NoneType'>":
+                pass
+            else:
+                df_mer = pd.concat([df_mer, df]).drop_duplicates('item_key', keep='first').sort_values(by='item_key').reset_index(drop=True)
             
             # table upload
             if comp:
-                table_name = f'beauty_kr_{categ_eng}_info_all'
-                self.db.create_table(df_mer, table_name, 'append')
-                
-            else:    
-                table_name = f'beauty_kr_{categ_eng}_info_all_temp'
+                self.db.create_table(df_mer, table_name, 'append')    
+            else:                
                 self.db.engine_upload(df_mer, table_name, 'replace')
+            status = 1
             
-        except:
+        except Exception as e:
             # db 연결 끊김: 인터넷(와이파이) 재연결 필요
+            print(e)
             if self.power:
                 self.stop()
             self.check = 2
+            status = -1
+        
+        return status, table_name
             
     progress = QtCore.pyqtSignal(object)
     def run(self):
@@ -242,7 +258,8 @@ class ThreadCrawlingNvStatus(QtCore.QThread, QtCore.QObject):
         
         if os.path.isfile(tbl_cache + '/prg_dict.txt'):
             os.remove(tbl_cache + '/prg_dict.txt')
-            
+        
+        cnt = 0    
         t = tqdm(range(len(df)))
         for idx in t:
             if self.power:
@@ -261,22 +278,26 @@ class ThreadCrawlingNvStatus(QtCore.QThread, QtCore.QObject):
                 if store_info == None:
                     pass
                 else:
-                    self.store_list.append(store_info)      
+                    self.store_list.append(store_info)
+                cnt += 1  
             else:
                 break
             
-        # save ipunt data into cache dir
-        df.loc[idx:].to_csv(self.path_input_df)
+        # save data into cache dir
+        df.loc[cnt:].to_csv(self.path_input_df)
+        with open(self.path_store_list, 'wb') as f:
+            pickle.dump(self.store_list, f)
         
         # upload table into db
-        if idx == len(df) - 1:
+        if cnt == len(df):
             self._upload_df(comp=True)
         else:
             self._upload_df()
         
         self.progress.emit(t)
         self.power = False
-                
+        self.check = 0
+        
     def stop(self):
         ''' Stop Thread '''
         

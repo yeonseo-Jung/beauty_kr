@@ -8,7 +8,6 @@ import pandas as pd
 
 # Scrapping
 from bs4 import BeautifulSoup
-from selenium import webdriver
 from user_agent import generate_user_agent
 from selenium.webdriver.common.by import By
 # from selenium.webdriver.common.keys import Keys
