@@ -7,7 +7,7 @@ from datetime import datetime
 import pymysql
 import sqlalchemy
 
-class AccessDataBase():
+class AccessDataBase:
     
     def __init__(self, user_name, password, db_name):
         # user info & db
@@ -56,7 +56,7 @@ class AccessDataBase():
 
     def get_tbl_columns(self, table_name):
         ''' 선택한 테이블 컬럼 가져오기 '''
-
+        
         curs = self.db_connect()
 
         # get table columns 
@@ -75,31 +75,35 @@ class AccessDataBase():
     def get_tbl(self, table_name, columns='all'):
         ''' db에서 원하는 테이블, 컬럼 pd.DataFrame에 할당 '''
         
-        st = time.time()
-        curs = self.db_connect()
-        
-        if columns == 'all':
-            query = f'SELECT * FROM {table_name};'
-        else:
-            # SELECT columns
-            query = 'SELECT '
-            i = 0
-            for col in columns:
-                if i == 0:
-                    query += f"`{col}`"
-                else:
-                    query += ', ' + f"`{col}`"
-                i += 1
+        if table_name in self.get_tbl_name():
+            st = time.time()
+            curs = self.db_connect()
+            
+            if columns == 'all':
+                query = f'SELECT * FROM {table_name};'
+            else:
+                # SELECT columns
+                query = 'SELECT '
+                i = 0
+                for col in columns:
+                    if i == 0:
+                        query += f"`{col}`"
+                    else:
+                        query += ', ' + f"`{col}`"
+                    i += 1
 
-            # FROM table_name
-            query += f' FROM {table_name};'
-        curs.execute(query)
-        tbl = curs.fetchall()
-        df = pd.DataFrame(tbl)
-        curs.close()
-        
-        ed = time.time()
-        print(f'`{table_name}` Import Time: {round(ed-st, 1)}sec\n\n')
+                # FROM table_name
+                query += f' FROM {table_name};'
+            curs.execute(query)
+            tbl = curs.fetchall()
+            df = pd.DataFrame(tbl)
+            curs.close()
+            
+            ed = time.time()
+            print(f'`{table_name}` Import Time: {round(ed-st, 1)}sec\n\n')
+        else:
+            df = None
+            print(f'\n\n{table_name} does not exist in db')
         
         return df
     
@@ -204,7 +208,6 @@ class AccessDataBase():
     def create_table(self, upload_df, table_name):
         ''' Create table '''
         
-        
         if 'info_all' in table_name:
             category = table_name.replace('beauty_kr_', '').replace('_info_all', '')
         elif 'reviews_all' in table_name:
@@ -224,7 +227,7 @@ class AccessDataBase():
             f'beauty_kr_{category}_info_all': f"CREATE TABLE `beauty_kr_{category}_info_all` (\
                                             `item_key` int(11) DEFAULT NULL COMMENT '매핑 기준 상품 id',\
                                             `product_store` text COMMENT '상품 판매 스토어',\
-                                            `product_stote_url` text COMMENT '스토어 별 판매 링크',\
+                                            `product_store_url` text COMMENT '스토어 별 판매 링크',\
                                             `product_price` varchar(255) COMMENT '스토어 별 판매 가격',\
                                             `delivery_fee` varchar(255) COMMENT '스토어 별 배송비',\
                                             `naver_pay` varchar(255) COMMENT '네이버페이 유무',\
@@ -252,6 +255,9 @@ class AccessDataBase():
                                             `product_awards_rank` text,\
                                             `price` varchar(255) COMMENT '정가',\
                                             `product_stores` varchar(255) COMMENT '글로우픽 기준 판매 스토어',\
+                                            `status` int(11) COMMENT '단종 여부 (0: 단종, 1: 판매중)',\
+                                            `dup_check` int(11) COMMENT '중복 여부 (0: 단일상품(중복x), -1: 종속상품(중복o), 1: 대표상품(중복o))',\
+                                            `dup_id` varchar(255) COMMENT '종속상품 id 리스트',\
                                             `regist_date` datetime DEFAULT NULL COMMENT '개체 수집 일자',\
                                             `category` varchar (255) DEFAULT NULL COMMENT '카테고리'\
                                             ) ENGINE=InnoDB DEFAULT CHARSET=utf8;",
