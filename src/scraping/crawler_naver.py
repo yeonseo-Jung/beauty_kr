@@ -107,8 +107,11 @@ class ProductStatusNv:
             if page_status == 1:
                 if product_status == 1:
                     # Price Tab
-                    store_table = soup.find('table', 'productByMall_list_seller__2-bzE').find('tbody')
-                    store_list = store_table.find_all('tr')
+                    try:
+                        store_table = soup.find('table', 'productByMall_list_seller__2-bzE').find('tbody')
+                        store_list = store_table.find_all('tr')
+                    except AttributeError:
+                        store_list = []
                     for store in store_list:
                         # store name
                         store_name = store.find('a', 'productByMall_mall__1ITj0').text.strip()
@@ -161,6 +164,8 @@ class ProductStatusNv:
                         store_name = soup.find('span', 'KasFrJs3SA').text.strip()
                     elif soup.find('img', '_1QhZSUVBeK') != None:
                         store_name = soup.find('img', '_1QhZSUVBeK')['alt']
+                    else:
+                        store_name = np.nan
                     store_names.append(store_name)
                     
                     # store url
@@ -168,7 +173,10 @@ class ProductStatusNv:
                     store_urls.append(store_url)
                     
                     # product price
-                    price = int(soup.find_all('span', '_1LY7DqCnwR')[-1].text.replace(',', '').replace(' ', ''))
+                    if len(soup.find_all('span', '_1LY7DqCnwR')) == 0:
+                        price = np.nan
+                    else:
+                        price = int(soup.find_all('span', '_1LY7DqCnwR')[-1].text.replace(',', '').replace(' ', ''))
                     prices.append(price)
                     
                     # delivery_fee

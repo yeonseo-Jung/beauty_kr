@@ -2,24 +2,23 @@ import os
 import re
 import sys
 import time
-import pickle
+# import pickle
 import numpy as np
-import pandas as pd
+# import pandas as pd
 
 # Scrapping
 from bs4 import BeautifulSoup
 from selenium import webdriver
 from user_agent import generate_user_agent
-from selenium.webdriver.common.by import By
+# from selenium.webdriver.common.by import By
 from selenium.webdriver.common.keys import Keys
-from selenium.webdriver.common.alert import Alert
+# from selenium.webdriver.common.alert import Alert
 from selenium.webdriver.chrome.options import Options
-from selenium.webdriver.support.ui import WebDriverWait
+# from selenium.webdriver.support.ui import WebDriverWait
 from webdriver_manager.chrome import ChromeDriverManager
-from selenium.webdriver.common.action_chains import ActionChains
-from selenium.webdriver.support import expected_conditions as EC
-from selenium.common.exceptions import UnexpectedAlertPresentException, NoAlertPresentException, NoSuchElementException, TimeoutException
-
+# from selenium.webdriver.common.action_chains import ActionChains
+# from selenium.webdriver.support import expected_conditions as EC
+# from selenium.common.exceptions import UnexpectedAlertPresentException, NoAlertPresentException, NoSuchElementException, TimeoutException
 
 # Exception Error Handling
 import socket
@@ -48,6 +47,27 @@ try:
     from hangle import _distance
 except:
     pass
+
+'''TLS CA error solution'''
+def override_where():
+    """ overrides certifi.core.where to return actual location of cacert.pem"""
+    # change this to match the location of cacert.pem
+    return os.path.join(base_path, '_certifi', 'cacert.pem')
+
+def replace_certifi():
+    if hasattr(sys, "frozen"):
+        import certifi.core
+
+        os.environ["REQUESTS_CA_BUNDLE"] = override_where()
+        certifi.core.where = override_where
+
+        # delay importing until after where() has been replaced
+        import requests.utils
+        import requests.adapters
+        # replace these variables in case these modules were
+        # imported before we replaced certifi.core.where
+        requests.utils.DEFAULT_CA_BUNDLE_PATH = override_where()
+        requests.adapters.DEFAULT_CA_BUNDLE_PATH = override_where()
 
 def get_url(url, window=None, image=None):
     ''' Set up webdriver, useragent & Get url '''
@@ -81,6 +101,11 @@ def get_url(url, window=None, image=None):
         # 예외처리
         except Exception as e:
             print(f'\n\nError: {str(e)}\n\n')
+            
+            # tls ca error solution
+            if 'TLS CA' in str(e):
+                replace_certifi()
+            
             time.sleep(300)
             try:
                 wd.quit()
@@ -89,22 +114,19 @@ def get_url(url, window=None, image=None):
             wd = None
     return wd
     
-def scroll_down(wd):
-    ''' 
-    Scroll down to the bottom of the page 
-    ** 데스크탑 웹 페이지에서만 사용가능 **
-    '''
+def scroll_down(wd, sleep_time, check_count):
+    ''' page scroll down '''
     
-    prev_height = wd.execute_script("return document.body.scrollHeight")
+    cnt = 0
     while True:
-        wd.execute_script("window.scrollTo(0, document.body.scrollHeight);")
-        # wd.implicitly_wait(5)
-        time.sleep(1)
-        current_height = wd.execute_script("return document.body.scrollHeight")
-
-        if prev_height == current_height:
-            break
-        prev_height = current_height
+        height = wd.execute_script("return document.body.scrollHeight")
+        wd.find_element_by_tag_name('body').send_keys(Keys.END)
+        time.sleep(sleep_time)
+        if int(height) == 0:
+            cnt += 1
+            if cnt == check_count:
+                break        
+    return wd
 
 def scraper_nv(product_id, search_word):
     ''' 네이버 뷰티윈도 가격비교탭에서 검색어 입력해서 상품 정보 스크레이핑
