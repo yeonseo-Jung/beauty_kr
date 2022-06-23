@@ -136,7 +136,7 @@ class ThreadCrawlingNvStatus(QtCore.QThread, QtCore.QObject):
         # path
         self.path_input_df = os.path.join(tbl_cache, 'input_df.csv')
         self.path_store_list = os.path.join(tbl_cache, 'store_list.txt')
-        self.status_list = os.path.join(tbl_cache, 'status_list.txt')
+        self.path_status_list = os.path.join(tbl_cache, 'status_list.txt')
         self.path_scrape_df = os.path.join(tbl_cache, 'scrape_df.csv')
         self.category_list = os.path.join(tbl_cache, 'category_list.txt')
         
@@ -175,10 +175,19 @@ class ThreadCrawlingNvStatus(QtCore.QThread, QtCore.QObject):
         tables = ['naver_beauty_product_info_extended_v1', 'naver_beauty_product_info_extended_v2', 'naver_beauty_product_info_extended_v3', 'naver_beauty_product_info_extended_v4', 'naver_beauty_product_info_extended_v5']
         columns = ['id', 'product_url', 'selection', 'division', 'groups']
 
+        # check mapping products
         df = self.db.integ_tbl(tables, columns)
         mapping_table = self.db.get_tbl('beauty_kr_mapping_table', ['item_key', 'mapped_id', 'source']).rename(columns={'mapped_id': 'id', 'source': 'table_name'})
         df_mapped = df.merge(mapping_table, on=['id', 'table_name'], how='inner')
         df_mapped = preprocessor.categ_reclassifier(df_mapped, source=1)
+        
+        # check status
+        status_df = self.db.get_tbl('naver_beauty_product_info_status')
+        if status_df is None:
+            pass
+        else: 
+            df_mapped = df_mapped.merge(status_df, on='product_url', how='left').fillna(-2)
+            df_mapped = df_mapped.loc[df_mapped.status!=-1].reset_index(drop=True)
         
         return df_mapped
     
@@ -199,6 +208,20 @@ class ThreadCrawlingNvStatus(QtCore.QThread, QtCore.QObject):
         
         df = self.db.get_tbl(f'beauty_kr_{categ_eng}_info_all_temp')
         try:
+            '''status table''' 
+            status_df = pd.DataFrame(self.status_list, columns=['product_url', 'status'])
+        
+            # dup check
+            _status_df = self.db.get_tbl('naver_beauty_product_info_status')
+            if _status_df is None:
+                status_df_dedup = status_df.copy()
+            else:
+                status_df_dedup = pd.concat([status_df, _status_df]).drop_duplicates('product_url', keep='first')
+                
+            # update table
+            self.db.engine_upload(status_df_dedup, 'naver_beauty_product_info_status', 'replace')
+            
+            '''info table'''
             gl_info = self.db.get_tbl('glowpick_product_info_final_version', 'all').rename(columns={'id': 'item_key'})
             columns = ['item_key', 'product_store', 'product_store_url', 'product_price', 'delivery_fee', 'naver_pay', 'product_status', 'page_status']
             nv_prd_status_update = pd.DataFrame(self.store_list, columns=columns)
@@ -216,18 +239,18 @@ class ThreadCrawlingNvStatus(QtCore.QThread, QtCore.QObject):
             df_mer.loc[:, 'category'] = categ
             
             # dedup
-            if str(type(df)) == "<class 'NoneType'>":
+            if df is None:
                 pass
             else:
                 df_mer = pd.concat([df_mer, df]).drop_duplicates('item_key', keep='first').sort_values(by='item_key').reset_index(drop=True)
             
             # table upload
             if comp:
-                self.db.create_table(df_mer, table_name, 'append')    
+                self.db.create_table(df_mer, table_name)    
             else:                
                 self.db.engine_upload(df_mer, table_name, 'replace')
             status = 1
-            
+        
         except Exception as e:
             # db 연결 끊김: 인터넷(와이파이) 재연결 필요
             print(e)
@@ -249,26 +272,26 @@ class ThreadCrawlingNvStatus(QtCore.QThread, QtCore.QObject):
                 self.store_list = pickle.load(f)
         else:
             self.store_list = []
-        # status list
-        if os.path.isfile(self.status_list):
-            with open(self.status_list, 'rb') as f:
-                status_list = pickle.load(f)
-        else:
-            status_list = []
         
-        if os.path.isfile(tbl_cache + '/prg_dict.txt'):
-            os.remove(tbl_cache + '/prg_dict.txt')
+        # status list
+        if os.path.isfile(self.path_status_list):
+            with open(self.path_status_list, 'rb') as f:
+                self.status_list = pickle.load(f)
+        else:
+            self.status_list = []
         
         cnt = 0    
         t = tqdm(range(len(df)))
         for idx in t:
             if self.power:
+                self.check = 0
                 self.progress.emit(t)
                 
                 item_key = df.loc[idx, 'item_key']
                 url = df.loc[idx, 'product_url']
                 st = time.time()
                 product_status, store_info = prd.scraping_product_stores(item_key, url, None, None)
+                self.status_list.append([url, product_status])
                 ed = time.time()
                 if ed - st > 100:
                     # 네이버 VPM ip 차단
@@ -287,6 +310,8 @@ class ThreadCrawlingNvStatus(QtCore.QThread, QtCore.QObject):
         df.loc[cnt:].to_csv(self.path_input_df)
         with open(self.path_store_list, 'wb') as f:
             pickle.dump(self.store_list, f)
+        with open(self.path_status_list, 'wb') as f:
+            pickle.dump(self.status_list, f)
         
         # upload table into db
         if cnt == len(df):
@@ -296,7 +321,6 @@ class ThreadCrawlingNvStatus(QtCore.QThread, QtCore.QObject):
         
         self.progress.emit(t)
         self.power = False
-        self.check = 0
         
     def stop(self):
         ''' Stop Thread '''

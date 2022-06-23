@@ -47,6 +47,7 @@ class CrawlingNvStatus(QMainWindow, form):
         self.path_input_df = os.path.join(tbl_cache, 'input_df.csv')
         self.path_scrape_df = os.path.join(tbl_cache, 'scrape_df.csv')
         self.category_list = os.path.join(tbl_cache, 'category_list.txt')
+        self.path_prg = os.path.join(tbl_cache, 'prg_dict.txt')
         
         # connect func & btn
         self.Select.clicked.connect(self._select)
@@ -76,8 +77,8 @@ class CrawlingNvStatus(QMainWindow, form):
         
     def update_progress(self, progress):
 
-        if os.path.isfile(tbl_cache + '/prg_dict.txt'):
-            with open(tbl_cache + '/prg_dict.txt', 'rb') as f:
+        if os.path.isfile(self.path_prg):
+            with open(self.path_prg, 'rb') as f:
                 prg_dict_ = pickle.load(f)
             itm_ = prg_dict_['n'] 
             elapsed_ = round(prg_dict_['elapsed'], 0)
@@ -115,10 +116,14 @@ class CrawlingNvStatus(QMainWindow, form):
         
         # pause 시에 현재까지 진행률 저장
         if not self.thread_crw.power:
-            with open(tbl_cache + '/prg_dict.txt', 'wb') as f:
+            with open(self.path_prg, 'wb') as f:
                 pickle.dump(prg_dict_, f)
                 
-            message = f"{int(per)}% | Progress item: {itm}  Total: {tot} | Elapsed time: {elapsed_h}:{elapsed_m}:{elapsed_s} < Remain time: {remain_h}:{remain_m}:{remain_s} **PAUSE**"
+            if itm == tot:
+                message = f"{int(per)}% | Progress item: {itm}  Total: {tot} | Elapsed time: {elapsed_h}:{elapsed_m}:{elapsed_s} < Remain time: {remain_h}:{remain_m}:{remain_s} **Complete**"
+                os.remove(self.path_prg)
+            else:
+                message = f"{int(per)}% | Progress item: {itm}  Total: {tot} | Elapsed time: {elapsed_h}:{elapsed_m}:{elapsed_s} < Remain time: {remain_h}:{remain_m}:{remain_s} **PAUSE**"
             self.statusbar.showMessage(message)
         
         # ip 차단 및 db 연결 끊김 대응
@@ -194,7 +199,7 @@ class CrawlingNvStatus(QMainWindow, form):
             df_mapped.to_csv(self.path_input_df)
             
             products = len(df_mapped)
-            time = round(products * 9 / 3600, 2)
+            time = round(products * 10 / 3600, 2)
             self.Products.display(products)
             self.Time.display(time)
             
@@ -258,15 +263,15 @@ class CrawlingNvStatus(QMainWindow, form):
         if len(df) == 0:
             ck, table_name = self.thread_crw._upload_df(comp=True)
         else:
-            ck, table_name = self.thread_crw._upload_df()
+            ck, table_name = self.thread_crw._upload_df(comp=False)
         
         # db connection check
         if ck == 1:
             msg = QMessageBox()
-            msg.setText(f"\n    ** db 업로드 완료 **\n\n - {table_name}")
+            msg.setText(f"\n    ** db 업로드 완료 **\n\n- {table_name}")
             msg.exec_()
             
         elif ck == -1:
             msg = QMessageBox()
-            msg.setText(f"\n    ** db 연결 끊김 **\n\n (Upload failed: {table_name})\n\n- VPN, wifi 재연결 필요\n\n - Upload 버튼 클릭 후 re-Run")
+            msg.setText(f"\n    ** db 연결 끊김 **\n\n- Upload failed: {table_name}\n\n- VPN, wifi 재연결 필요\n\n- Upload 버튼 클릭 후 re-Run")
             msg.exec_()
