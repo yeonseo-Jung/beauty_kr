@@ -38,7 +38,6 @@ config/
 
 # pem
 *.pem
-main.py
 
 # image
 *.PIL
@@ -46,4 +45,5 @@ main.py
 *.icns
 
 # .py
+main.py
 scraper_naver.py
