@@ -214,6 +214,7 @@ class CrawlingNvStatus(QMainWindow, form):
                 msg = QMessageBox()
                 msg.setText("- 인터넷 연결 확인 \n- VPN 연결 확인 \n- mac 자동 잠금 해제 확인")
                 msg.exec_()
+                self.thread_crw._get_category()
                 self.thread_crw.power = True
                 self.thread_crw.start()
             else:

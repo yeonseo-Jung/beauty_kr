@@ -169,7 +169,6 @@ class ThreadCrawlingNvStatus(QtCore.QThread, QtCore.QObject):
             '뷰티툴': 'beauty_tool',
             '프래그런스': 'fragrance',            
         }
-    
     def _get_tbl(self):
         
         tables = ['naver_beauty_product_info_extended_v1', 'naver_beauty_product_info_extended_v2', 'naver_beauty_product_info_extended_v3', 'naver_beauty_product_info_extended_v4', 'naver_beauty_product_info_extended_v5']
@@ -190,23 +189,28 @@ class ThreadCrawlingNvStatus(QtCore.QThread, QtCore.QObject):
             df_mapped = df_mapped.loc[df_mapped.status!=-1].reset_index(drop=True)
         
         return df_mapped
-    
+
+    def _get_category(self):
+        # category 
+        if os.path.isfile(self.category_list):
+            with open(self.category_list, 'rb') as f:
+                categs = pickle.load(f)
+            self.categ = categs[0]
+            self.categ_eng = self.categ_dict[self.categ]
+        else:
+            self.categ = '카테고리'
+            self.categ_eng = 'category'
+        
     def _upload_df(self, comp=False):
         ''' table upload into db '''
-
-        # category 
-        with open(self.category_list, 'rb') as f:
-            categs = pickle.load(f)
-        categ = categs[0]
-        categ_eng = self.categ_dict[categ]
         
         # table name
         if comp:
-            table_name = f'beauty_kr_{categ_eng}_info_all'
+            table_name = f'beauty_kr_{self.categ_eng}_info_all'
         else:    
-            table_name = f'beauty_kr_{categ_eng}_info_all_temp'
+            table_name = f'beauty_kr_{self.categ_eng}_info_all_temp'
         
-        df = self.db.get_tbl(f'beauty_kr_{categ_eng}_info_all_temp')
+        df = self.db.get_tbl(f'beauty_kr_{self.categ_eng}_info_all_temp')
         try:
             '''status table''' 
             status_df = pd.DataFrame(self.status_list, columns=['product_url', 'status'])
@@ -236,7 +240,7 @@ class ThreadCrawlingNvStatus(QtCore.QThread, QtCore.QObject):
             df_mer.loc[:, 'regist_date'] = pd.Timestamp(self.date)
             
             # category 
-            df_mer.loc[:, 'category'] = categ
+            df_mer.loc[:, 'category'] = self.categ
             
             # dedup
             if df is None:
