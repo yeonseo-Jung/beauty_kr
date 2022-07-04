@@ -288,25 +288,29 @@ class ThreadCrawlingNvStatus(QtCore.QThread, QtCore.QObject):
         t = tqdm(range(len(df)))
         for idx in t:
             if self.power:
-                self.check = 0
-                self.progress.emit(t)
-                
-                item_key = df.loc[idx, 'item_key']
-                url = df.loc[idx, 'product_url']
-                st = time.time()
-                product_status, store_info = prd.scraping_product_stores(item_key, url, None, None)
-                self.status_list.append([url, product_status])
-                ed = time.time()
-                if ed - st > 100:
-                    # 네이버 VPM ip 차단
-                    self.check = 1
+                try:
+                    self.check = 0
+                    self.progress.emit(t)
+                    
+                    item_key = df.loc[idx, 'item_key']
+                    url = df.loc[idx, 'product_url']
+                    
+                    st = time.time()
+                    product_status, store_info = prd.scraping_product_stores(item_key, url, None, None)
+                    self.status_list.append([url, product_status])
+                    ed = time.time()
+                    if ed - st > 100:
+                        # 네이버 VPM ip 차단
+                        self.check = 1
+                        break
+                    
+                    if store_info == None:
+                        pass
+                    else:
+                        self.store_list.append(store_info)
+                    cnt += 1  
+                except:
                     break
-                
-                if store_info == None:
-                    pass
-                else:
-                    self.store_list.append(store_info)
-                cnt += 1  
             else:
                 break
             

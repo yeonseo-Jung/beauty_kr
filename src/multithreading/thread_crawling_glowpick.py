@@ -132,10 +132,16 @@ class ThreadCrawlingGl(QtCore.QThread, QtCore.QObject):
                     ''' Table Update (append) '''
                     # glowpick_product_info_final_version
                     gl_info_final_v = self.db.get_tbl('glowpick_product_info_final_version', 'all')
+                    
                     # 기존 상품 id 부여
                     df_mer = gl_info_final_v.loc[:, ['id', 'product_code']].merge(df_info, on='product_code', how='inner')
+                    
+                    # 기존상품 추출
                     df_dedup = pd.concat([df_mer, gl_info_final_v]).drop_duplicates('id', keep='first').sort_values('id')
+                    
+                    # 신규상품 추출
                     gl_info_new_v = pd.concat([df_mer, df_info]).drop_duplicates('product_code', keep=False).reset_index(drop=True)
+                    
                     # 신규 상품 id 부여
                     gl_info_new_v.loc[:, 'id'] = range(len(df_dedup), len(df_dedup) + len(gl_info_new_v))
                     _gl_info_final_v = pd.concat([df_dedup, gl_info_new_v]).drop(columns='regist_date').reset_index(drop=True)
@@ -181,6 +187,7 @@ class ThreadCrawlingGl(QtCore.QThread, QtCore.QObject):
         t = tqdm(product_codes)
         for code in t:
             if self.power:
+                self.check = 0
                 self.progress.emit(t)
             
                 driver, status = crw.get_webdriver_gl(code)
@@ -217,7 +224,6 @@ class ThreadCrawlingGl(QtCore.QThread, QtCore.QObject):
         
         self.progress.emit(t)
         self.power = False
-        self.check = 0
                 
     def stop(self):
         ''' Stop Thread '''

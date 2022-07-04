@@ -16,7 +16,6 @@ sys.path.append(src)
 if getattr(sys, 'frozen', False) and hasattr(sys, '_MEIPASS'):
     base_path = sys._MEIPASS
     tbl_cache = os.path.join(base_path, 'tbl_cache_')
-    
 else:
     base_path = os.path.dirname(os.path.realpath(__file__))
     tbl_cache = os.path.join(root, 'tbl_cache')
@@ -192,17 +191,13 @@ class TitlePreProcess:
         else:
             return title_2, keep_wd_dict
         
-    def categ_reclassifier(self, df: pd.DataFrame, source: int) -> pd.DataFrame:
+    def categ_reclassifier(self, df: pd.DataFrame) -> pd.DataFrame:
         '''
         카테고리 재분류
         
         Input_Data
         - df: 카테고리 정보가 할당된 데이터 프레임 
-        
-        ** necessary columns: ['id', 'selection', 'division', 'groups']
-        
-        - source: glowpick(0) or naver(1)
-        
+            ** necessary columns: ['id', 'selection', 'division', 'groups', 'table_name']  **
         '''
         
         # Category Sync
@@ -250,28 +245,71 @@ class TitlePreProcess:
                 
             }
         ]
-        if source == 0:
-            categs = categ_list_0
-        
-        elif source == 1:
-            categs = categ_list_1
+        categ_list_2 = [
+            {
+                '스킨케어': '스킨케어',
+                '메이크업': '메이크업',
+                '선케어': '선케어',
+                '클렌징': '클렌징',
+                '마스크팩': '마스크/팩',
+                '헤어케어': '헤어케어',
+                '남성': '맨즈케어',
+                '향수/디퓨저': '향수/디퓨저',
+                '베이비': '베이비',
+                '미용소품': '뷰티툴',
+            },
+            {
+                '마스크팩': '마스크/팩',
+                '미스트/오일': '스킨케어',
+                '바디케어': '바디케어',
+                '선케어': '선케어',
+                '스킨/로션': '스킨케어',
+                '에센스/크림': '스킨케어',
+                '클렌징': '클렌징',
+            },
+            {
             
-        selection = categs[0]
-        division = categs[1]
-        groups = categs[2]
+            }
+        ]        
         
+        # select source (table_name)
+        df_0 = df.loc[df.table_name=='glowpick_product_info_final_version'].reset_index(drop=True)
+        df_2 = df.loc[df.table_name=='oliveyoung_product_info_final_version'].reset_index(drop=True)
+        df_1 = df.loc[(df.table_name!='glowpick_product_info_final_version') & (df.table_name!='oliveyoung_product_info_final_version')].reset_index(drop=True)
+        
+        df_list = []
+        if len(df_0) != 0:
+            categs = categ_list_0
+            df_0 = self._categ_reclassifier(df_0, categs)
+            df_list.append(df_0)
+            
+        if len(df_1) != 0:
+            categs = categ_list_1
+            df_1 = self._categ_reclassifier(df_1, categs)
+            df_list.append(df_1)
+        
+        if len(df_2) != 0:
+            categs = categ_list_2
+            df_2 = self._categ_reclassifier(df_2, categs)
+            df_list.append(df_2)
+                
+        df_categs = pd.concat(df_list).reset_index(drop=True)
+        return df_categs
+    
+    def _categ_reclassifier(self, df, categs):
         for idx in tqdm(range(len(df))):
+            selection = categs[0]
+            division = categs[1]
+            groups = categs[2]
             category = ''
             
             sel = df.loc[idx, 'selection']
             if sel in selection:
                 category = selection[sel]
-                
             else:
                 div = df.loc[idx, 'division']
                 if div in division:
                     category = division[div]
-                    
                 else:
                     grp = df.loc[idx, 'groups']
                     if grp in groups:
@@ -280,12 +318,11 @@ class TitlePreProcess:
             if category == '':
                 category = np.nan
             df.loc[idx, 'category'] = category
-            
         df = df[df.category.notnull()].reset_index(drop=True)
-        
         return df
 
-def check_duplicated(grp_df) :
+def check_duplicated(grp_df):
+    ''' 글로우픽 중복체크 '''
     
     grp_df.loc[(grp_df.status_grp == 1) | (grp_df.status_grp == 3), 'dup_check'] = 0
     grp_df.loc[(grp_df.status_grp == 1) | (grp_df.status_grp == 3), 'dup_id'] = np.nan
@@ -297,7 +334,7 @@ def check_duplicated(grp_df) :
         grp = grp_df[grp_df.status_grp == i]
         detail_grp = grp.groupby(['brand_code','prd_prepro'])
 
-        if i == 2 or i==4 :
+        if i == 2 or i == 4:
             
             #product_code가 높은것 -> 최우선 매핑 대상
             for key, item in detail_grp:
@@ -423,8 +460,5 @@ def grouping(df):
 
     final_df = check_duplicated(grouped_df_final)
     final_dfs = final_df.loc[:, ['id', 'status', 'dup_check', 'dup_id']]
-        
-    # final_dfs['dup_id'] = final_dfs['dup_id'].fillna('[]')
-    # final_dfs['dup_id'] = final_dfs.apply(lambda x : str_to_lst(x.dup_id), axis=1)
     
     return final_dfs

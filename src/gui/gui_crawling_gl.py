@@ -46,6 +46,7 @@ class CrawlingGlWindow(QMainWindow, form):
         self.division_idx = os.path.join(tbl_cache, 'division_idx.txt')
         self.path_scrape_df = os.path.join(tbl_cache, 'gl_info.csv')
         self.path_scrape_df_rev = os.path.join(tbl_cache, 'gl_info_rev.csv')
+        self.path_prg = os.path.join(tbl_cache, 'prg_dict.txt')
         
         # init class
         self.thread_crw = ThreadCrawlingGl()
@@ -147,8 +148,12 @@ class CrawlingGlWindow(QMainWindow, form):
         if not self.thread_crw.power:
             with open(tbl_cache + '/prg_dict.txt', 'wb') as f:
                 pickle.dump(prg_dict_, f)
-                
-            message = f"{int(per)}% | Progress item: {itm}  Total: {tot} | Elapsed time: {elapsed_h}:{elapsed_m}:{elapsed_s} < Remain time: {remain_h}:{remain_m}:{remain_s} **PAUSE**"
+            
+            if itm == tot:
+                message = f"{int(per)}% | Progress item: {itm}  Total: {tot} | Elapsed time: {elapsed_h}:{elapsed_m}:{elapsed_s} < Remain time: {remain_h}:{remain_m}:{remain_s} **Complete**"
+                os.remove(self.path_prg)
+            else:
+                message = f"{int(per)}% | Progress item: {itm}  Total: {tot} | Elapsed time: {elapsed_h}:{elapsed_m}:{elapsed_s} < Remain time: {remain_h}:{remain_m}:{remain_s} **PAUSE**"
             self.statusbar.showMessage(message)
         
         # ip 차단 및 db 연결 끊김 대응
@@ -156,12 +161,10 @@ class CrawlingGlWindow(QMainWindow, form):
             msg = QMessageBox()
             msg.setText("\n    ** ip 차단됨 **\n\n - VPN 나라변경 필요\n - wifi 재연결 필요")
             msg.exec_()
-            self.thread_crw.check = 0
         elif self.thread_crw.check == 2:
             msg = QMessageBox()
             msg.setText("\n    ** db 연결 끊김 **\n\n - VPN, wifi 재연결 필요\n\n - Upload 버튼 클릭 후 re-Run")
             msg.exec_()
-            self.thread_crw.check = 0
                 
     def _update_progress(self, progress):
         
@@ -375,7 +378,7 @@ class CrawlingGlWindow(QMainWindow, form):
         # db connection check
         if ck == 1:
             msg = QMessageBox()
-            msg.setText("\n    ** db 업로드 완료 **\n\n - glowpick_product_info_final_version\n\n - glowpick_product_info_final_version_review")
+            msg.setText("\n    ** db 업로드 완료 **\n\n- glowpick_product_info_final_version\n\n- glowpick_product_info_final_version_review")
             msg.exec_()
             
         elif ck == 2:
@@ -385,10 +388,10 @@ class CrawlingGlWindow(QMainWindow, form):
                     
         elif ck == -1:
             msg = QMessageBox()
-            msg.setText("\n    ** db 연결 끊김 **\n\n (Upload failed: glowpick_product_info_final_version)\n\n- VPN, wifi 재연결 필요\n\n - Upload 버튼 클릭 후 re-Run")
+            msg.setText("\n    ** db 연결 끊김 **\n\n- Upload failed: glowpick_product_info_final_version\n\n- VPN, wifi 재연결 필요\n\n- Upload 버튼 클릭 후 re-Run")
             msg.exec_()
 
         elif ck == -2:
             msg = QMessageBox()
-            msg.setText(f"\n    ** db 연결 끊김 **\n\n (Upload failed: {self.table_name_info})\n\n- VPN, wifi 재연결 필요\n\n - Upload 버튼 클릭 후 re-Run")
+            msg.setText(f"\n    ** db 연결 끊김 **\n\n- Upload failed: {self.table_name_info}\n\n- VPN, wifi 재연결 필요\n\n- Upload 버튼 클릭 후 re-Run")
             msg.exec_()

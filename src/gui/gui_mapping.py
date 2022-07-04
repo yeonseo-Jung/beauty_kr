@@ -48,8 +48,9 @@ class MappingWindow(QMainWindow, mapping_form):
         self.mapped = False
         
         # file path
-        self.tbl_0 = os.path.join(tbl_cache, 'tbl_0.csv')
-        self.tbl_1 = os.path.join(tbl_cache, 'tbl_1.csv')
+        # self.tbl_0 = os.path.join(tbl_cache, 'tbl_0.csv')
+        # self.tbl_1 = os.path.join(tbl_cache, 'tbl_1.csv')
+        self.tbl = os.path.join(tbl_cache, 'tbl.csv')
     
         # db 연결
         with open(conn_path, 'rb') as f:
@@ -118,16 +119,6 @@ class MappingWindow(QMainWindow, mapping_form):
             remain_time = 0
         
         self.pbar_1.setValue(per)
-        
-        # elapsed_h = int(elapsed // 3600)
-        # elapsed_m = int((elapsed % 3600) // 60)
-        # elapsed_s = int(elapsed - (elapsed_h * 3600 + elapsed_m * 60))
-        
-        # remain_h = int(remain_time // 3600)
-        # remain_m = int((remain_time % 3600) // 60)
-        # remain_s = int(remain_time - (remain_h * 3600 + remain_m * 60))
-        
-        # message = f"{int(per)}% | Progress item: {itm}  Total: {tot} | Elapsed time: {elapsed_h}:{elapsed_m}:{elapsed_s} < Remain time: {remain_h}:{remain_m}:{remain_s} "
         message = f"{int(per)}% | Progress item: {itm}  Total: {tot} | Elapsed time: {elapsed}s < Remain time: {remain_time}s "
         self.statusbar.showMessage(message)
     
@@ -135,6 +126,7 @@ class MappingWindow(QMainWindow, mapping_form):
         ''' db에서 매핑 대상 테이블만 가져오기 '''
         
         tables = self.db.get_tbl_name()
+        # naver
         reg = re.compile('naver_beauty_product_info_extended_v[0-9]+')
         table_list = []
         for tbl in tables:
@@ -142,18 +134,24 @@ class MappingWindow(QMainWindow, mapping_form):
             if tbl_:
                 table_list.append(tbl_.group(0))
         table_list = sorted(list(set(table_list)))
+        
+        # oliveyoung
+        table_list.append('oliveyoung_product_info_final_version')
         return table_list
         
     def _import_tbl(self):
         ''' 데이터 베이스에서 테이블 가져와서 통합하기 '''
         
         # 상품 매핑에 필요한 컬럼
-        columns_0 = ['id', 'brand_name', 'product_name', 'selection', 'division', 'groups', 'product_code', 'brand_code']
+        
+        columns = ['id', 'brand_name', 'product_name', 'selection', 'division', 'groups']
         
         # 매핑 기준 테이블 
-        tbl_0 = self.db.get_tbl('glowpick_product_info_final_version', columns_0)
+        tbl_0 = self.db.get_tbl('glowpick_product_info_final_version', columns + ['dup_check'])
         tbl_0.loc[:, 'table_name'] = 'glowpick_product_info_final_version'
-        tbl_0.to_csv(self.tbl_0, index=False)
+        # dedup
+        tbl_0 = tbl_0.loc[tbl_0.dup_check != -1].reset_index(drop=True)
+        tbl_0 = tbl_0.drop(columns='dup_check')
         
         # 매핑 대상 테이블
         tbls = []
@@ -167,11 +165,12 @@ class MappingWindow(QMainWindow, mapping_form):
             msg.exec_()
             
         else:
-            columns_1 = ['id', 'brand_name', 'product_name', 'selection', 'division', 'groups']
-            tbl_1 = self.db.integ_tbl(tbls, columns_1)
-            tbl_1.to_csv(self.tbl_1, index=False)
+            tbl_1 = self.db.integ_tbl(tbls, columns)
+            df_concat = pd.concat([tbl_0, tbl_1]).reset_index(drop=True)
+            df_concat.to_csv(self.tbl, index=False)
+            
             msg = QMessageBox()
-            msg.setText(f'Table import success')
+            msg.setText(f'Table import success!')
             msg.exec_()
             self.getter = True
             
@@ -179,8 +178,7 @@ class MappingWindow(QMainWindow, mapping_form):
         ''' 쓰레드 연결 및 전처리 수행 ''' 
         if self.getter:    
             if not self.thread_preprocess.power:
-                # dedup & category reclassify
-                self.thread_preprocess._categ_reclaasify()
+                # category reclassify & title preprocess
                 
                 # run thread
                 self.thread_preprocess.power = True
@@ -261,7 +259,7 @@ class MappingWindow(QMainWindow, mapping_form):
             msg.exec_()    
             
     def _save_0(self):
-        file_name = "tbl_1.csv"
+        file_name = "tbl.csv"
         self.msg = "테이블 가져오기 완료 후 시도하세요"
         self.save_file(file_name)
         
@@ -286,7 +284,7 @@ class MappingWindow(QMainWindow, mapping_form):
     #     self.save_file(file_name)
         
     def _viewer_0(self):
-        file_name = "tbl_1.csv"
+        file_name = "tbl.csv"
         self.msg = "테이블 가져오기 완료 후 시도하세요"
         self.tbl_viewer(file_name)
         

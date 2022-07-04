@@ -1,6 +1,7 @@
 # necessary
-import pandas as pd
+import os
 import time
+import pandas as pd
 from datetime import datetime
 
 # db connection 
@@ -142,11 +143,12 @@ class AccessDataBase:
         return dtypedict
 
     def engine_upload(self, upload_df, table_name, if_exists_option, pk=None):
-        ''' Create Table '''
+        ''' Upload Table into DB '''
         
-        # engine
         host_url = "db.ds.mycelebs.com"
         port_num = 3306
+        
+        # engine
         engine = sqlalchemy.create_engine(f'mysql+pymysql://{self.user_name}:{self.password}@{host_url}:{port_num}/{self.db_name}?charset=utf8mb4')
         
         # Create table or Replace table 
@@ -157,9 +159,10 @@ class AccessDataBase:
             engine.execute(f'ALTER TABLE {table_name} ADD PRIMARY KEY (`{pk}`);')
         else:
             pass
+        
         engine.dispose()
         print(f'\nTable Upload Success: {table_name}')
-
+                
     def table_update(self, table_name, pk, df):
         ''' Table Update from DB
         
