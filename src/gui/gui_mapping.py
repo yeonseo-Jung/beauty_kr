@@ -89,6 +89,9 @@ class MappingWindow(QMainWindow, mapping_form):
         # mapping status
         self.status.clicked.connect(self._status)
         
+        # upload table to db
+        self.Upload.clicked.connect(self._upload)
+        
     def update_progress(self, progress):
         
         prg_dict = progress.format_dict
@@ -318,6 +321,19 @@ class MappingWindow(QMainWindow, mapping_form):
             QMessageBox.about(self,
                             'Mapping Status',
                             f"** Perfect Mapping Completion ** \n- 매핑 기준 상품 수(글로우픽): {mapped_product_count}\n- 매핑 대상 상품 수: {mapping_product_count}\n")        
+        else:
+            msg = QMessageBox()
+            msg.setText(f'매핑 완료 후 시도하세요')
+            msg.exec_()
+            
+    def _upload(self):
+        file_name = "mapping_table.csv"
+        file_path = os.path.join(tbl_cache, file_name)
+        if os.path.isfile(file_path):
+            mapping_table = pd.read_csv(file_path)
+        
+            # upload table to db
+            self.db.create_table(upload_df=mapping_table, table_name='beauty_kr_mapping_table')
         else:
             msg = QMessageBox()
             msg.setText(f'매핑 완료 후 시도하세요')

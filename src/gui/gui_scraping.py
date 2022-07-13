@@ -37,6 +37,9 @@ class ScrapingWindow(QMainWindow, scraping_form):
         self.setWindowTitle('Scraping Product Info')
         self.viewer = None
         
+        # path
+        self.path_prg = os.path.join(tbl_cache + '/prg_dict.txt')
+        
         # db 연결
         with open(conn_path, 'rb') as f:
             conn = pickle.load(f)
@@ -68,19 +71,66 @@ class ScrapingWindow(QMainWindow, scraping_form):
         self.View.clicked.connect(self._viewer)
         self.Save.clicked.connect(self._save)
         
+    # def update_progress(self, progress):
+    #     if os.path.isfile(tbl_cache + '/prg_dict.txt'):
+    #         with open(tbl_cache + '/prg_dict.txt', 'rb') as f:
+    #             prg_dict_ = pickle.load(f)
+    #         itm_ = prg_dict_['n'] 
+    #         elapsed_ = round(prg_dict_['elapsed'], 0)
+            
+    #     else:
+    #         itm_, elapsed_ = 1, 0
+        
+    #     prg_dict = progress.format_dict
+    #     itm = prg_dict['n'] + itm_
+    #     tot = prg_dict['total'] + itm_ - 1
+    #     per = round((itm / tot) * 100, 0)
+    #     elapsed = round(prg_dict['elapsed'], 0) + elapsed_
+    #     prg_dict_ = {
+    #         'n': itm,
+    #         'elapsed': elapsed,
+    #     }
+                
+    #     if itm >= 1:
+    #         remain_time = round((elapsed * tot / itm) - elapsed, 0)
+    #     else:
+    #         remain_time = 0
+        
+    #     self.progressBar.setValue(per)
+        
+    #     elapsed_h = int(elapsed // 3600)
+    #     elapsed_m = int((elapsed % 3600) // 60)
+    #     elapsed_s = int(elapsed - (elapsed_h * 3600 + elapsed_m * 60))
+        
+    #     remain_h = int(remain_time // 3600)
+    #     remain_m = int((remain_time % 3600) // 60)
+    #     remain_s = int(remain_time - (remain_h * 3600 + remain_m * 60))
+        
+    #     message = f"{int(per)}% | Progress item: {itm}  Total: {tot} | Elapsed time: {elapsed_h}:{elapsed_m}:{elapsed_s} < Remain time: {remain_h}:{remain_m}:{remain_s}"
+    #     self.statusbar.showMessage(message)
+        
+    #     # pause 시에 현재까지 진행률 저장
+    #     if self.thread_scrap.power == False:
+    #         with open(tbl_cache + '/prg_dict.txt', 'wb') as f:
+    #             pickle.dump(prg_dict_, f)
+                
+    #         message = f"{int(per)}% | Progress item: {itm}  Total: {tot} | Elapsed time: {elapsed_h}:{elapsed_m}:{elapsed_s} < Remain time: {remain_h}:{remain_m}:{remain_s} **PAUSE**"
+    #         self.statusbar.showMessage(message)
+    
     def update_progress(self, progress):
-        if os.path.isfile(tbl_cache + '/prg_dict.txt'):
-            with open(tbl_cache + '/prg_dict.txt', 'rb') as f:
+    
+        if os.path.isfile(self.path_prg):
+            with open(self.path_prg, 'rb') as f:
                 prg_dict_ = pickle.load(f)
             itm_ = prg_dict_['n'] 
             elapsed_ = round(prg_dict_['elapsed'], 0)
             
         else:
-            itm_, elapsed_ = 1, 0
+            itm_, elapsed_ = 0, 0
         
         prg_dict = progress.format_dict
         itm = prg_dict['n'] + itm_
-        tot = prg_dict['total'] + itm_ - 1
+        tot = prg_dict['total'] + itm_ 
         per = round((itm / tot) * 100, 0)
         elapsed = round(prg_dict['elapsed'], 0) + elapsed_
         prg_dict_ = {
@@ -107,12 +157,27 @@ class ScrapingWindow(QMainWindow, scraping_form):
         self.statusbar.showMessage(message)
         
         # pause 시에 현재까지 진행률 저장
-        if self.thread_scrap.power == False:
-            with open(tbl_cache + '/prg_dict.txt', 'wb') as f:
+        if not self.thread_scrap.power:
+            with open(self.path_prg, 'wb') as f:
                 pickle.dump(prg_dict_, f)
                 
-            message = f"{int(per)}% | Progress item: {itm}  Total: {tot} | Elapsed time: {elapsed_h}:{elapsed_m}:{elapsed_s} < Remain time: {remain_h}:{remain_m}:{remain_s} **PAUSE**"
+            if itm == tot:
+                message = f"{int(per)}% | Progress item: {itm}  Total: {tot} | Elapsed time: {elapsed_h}:{elapsed_m}:{elapsed_s} < Remain time: {remain_h}:{remain_m}:{remain_s} **Complete**"
+                os.remove(self.path_prg)
+            else:
+                message = f"{int(per)}% | Progress item: {itm}  Total: {tot} | Elapsed time: {elapsed_h}:{elapsed_m}:{elapsed_s} < Remain time: {remain_h}:{remain_m}:{remain_s} **PAUSE**"
             self.statusbar.showMessage(message)
+        
+        # # ip 차단 및 db 연결 끊김 대응
+        # if self.thread_scrap.check == 1:
+        #     msg = QMessageBox()
+        #     msg.setText("\n    ** ip 차단됨 **\n\n - VPN 나라변경 필요\n - wifi 재연결 필요")
+        #     msg.exec_()
+            
+        # elif self.thread_scrap.check == 2:
+        #     msg = QMessageBox()
+        #     msg.setText("\n    ** db 연결 끊김 **\n\n - VPN, wifi 재연결 필요\n\n - Upload 버튼 클릭 후 re-Run")
+        #     msg.exec_()
         
     def categ_toggled(self):
         categs = []
@@ -177,19 +242,17 @@ class ScrapingWindow(QMainWindow, scraping_form):
         ''' accept category and get table '''
         
         # table load
-        file_path = os.path.join(tbl_cache, 'glowpick_product_info_final_version_for_scraping.csv')
-        if os.path.isfile(file_path):
-            df = pd.read_csv(file_path)
-        else:
-            table_name = 'glowpick_product_info_final_version'
-            columns = ['id', 'brand_name', 'product_name', 'selection']
-            df = self.db.get_tbl(table_name, columns)
-            df.to_csv(file_path)
+        table_name = 'glowpick_product_info_final_version'
+        columns = ['id', 'brand_name', 'product_name', 'selection', 'status', 'dup_check']
+        df = self.db.get_tbl(table_name, columns)
+        # dedup
+        df = df.loc[(df.dup_check!=-1) & (df.status==1)]
         
-        map_tbl = self.db.get_tbl('naver_glowpick_mapping_table', 'all')
+        # mapping table
+        map_tbl = self.db.get_tbl('beauty_kr_mapping_table', ['item_key'])
         
         # 미매핑 상품 추출하기 
-        map_tbl_ = map_tbl.loc[:, ['glowpick_product_info_final_version_id']].rename(columns={'glowpick_product_info_final_version_id': 'id'})
+        map_tbl_ = map_tbl.loc[:, ['item_key']].rename(columns={'item_key': 'id'})
         # 차집합 구하기 : {df} - {map_tbl_}
         prd_scrap = pd.concat([df, map_tbl_]).drop_duplicates(subset=['id'], keep=False).reset_index(drop=True)
         
@@ -198,7 +261,7 @@ class ScrapingWindow(QMainWindow, scraping_form):
         
         if len(categs) == 0:
             msg = QMessageBox()
-            msg.setText('한개 이상의 카테고리를 선택해주세요.')
+            msg.setText('** 한개 이상의 카테고리를 선택해주세요 **')
             msg.exec_()
             
         else:
@@ -217,12 +280,12 @@ class ScrapingWindow(QMainWindow, scraping_form):
             index_list = []
             for categ in categs:
                 index_list += prd_scrap.loc[prd_scrap.selection==categ].index.tolist()
-            prds = prd_scrap.loc[index_list].reset_index(drop=True)
+            scrap_prds = prd_scrap.loc[index_list].reset_index(drop=True)
             
-            # db에서 scrap status table 가져와서 join -> status == -1 할당 
-            status_df = self.db.get_tbl("glowpick_product_scrap_status", "all")
-            prds_mer = prds.merge(status_df)
-            scrap_prds = prds_mer.loc[prds_mer.status==-1].reset_index(drop=True)
+            # # db에서 scrap status table 가져와서 join -> status == -1 할당 
+            # status_df = self.db.get_tbl("glowpick_product_scrap_status", "all")
+            # prds_mer = prds.merge(status_df)
+            # scrap_prds = prds_mer.loc[prds_mer.status==-1].reset_index(drop=True)
             
             # 브랜드 수, 상품 수 표시 
             brd_cnt = len(scrap_prds.brand_name.unique())
@@ -233,11 +296,17 @@ class ScrapingWindow(QMainWindow, scraping_form):
             scrap_prds.to_csv(tbl_cache + '/prds_scrap.csv', index=False)
         
     def _scraping(self):
-        msg = QMessageBox()
-        msg.setText("- 인터넷 연결 확인 \n- VPN 연결 확인 \n- 자동 잠금 해제 확인")
-        msg.exec_()
-        self.thread_scrap.power = True
-        self.thread_scrap.start()
+        ''' Start Scraping thread '''
+        if os.path.isfile(tbl_cache + '/prds_scrap.csv'):
+            msg = QMessageBox()
+            msg.setText("- 인터넷 연결 확인 \n- VPN 연결 확인 \n- 자동 잠금 해제 확인")
+            msg.exec_()
+            self.thread_scrap.power = True
+            self.thread_scrap.start()
+        else:
+            msg = QMessageBox()
+            msg.setText('** Accept 완료 후 시도하세요 **')
+            msg.exec_()
         
     def save_file(self, file_name):
         ''' save csv file '''

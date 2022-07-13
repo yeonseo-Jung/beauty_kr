@@ -52,7 +52,7 @@ class ProductStatusNv:
         '''
         wd = get_url(url, window=window, image=image)
         time.sleep(2.5)
-        if wd == None:
+        if wd is None:
             page_status = -1
             
         else:
@@ -77,13 +77,13 @@ class ProductStatusNv:
         ''' get product status '''
         
         soup = BeautifulSoup(wd.page_source, 'lxml')
-        if soup.find('div', 'noPrice_product_status__2T5PM') != None:
+        if soup.find('div', 'noPrice_product_status__2T5PM') is not None:
             # 판매중단
             product_status = 0
-        elif soup.find('div', 'style_content_error__1XNYB') != None or soup.find('div', 'error layout_wide theme_trendy') != None:
+        elif soup.find('div', 'style_content_error__1XNYB') is not None or soup.find('div', 'error layout_wide theme_trendy') is not None:
             # 상품 존재 x 
             product_status = -1
-        elif soup.find('table', 'productByMall_list_seller__2-bzE') != None:
+        elif soup.find('table', 'productByMall_list_seller__2-bzE') is not None:
             # 판매중
             product_status = 1
         else:
@@ -139,13 +139,15 @@ class ProductStatusNv:
                         delivery_fees.append(delivery_fee)
                         
                         # naver pay
-                        if store.find('span', 'n_ico_npay_plus__1pi8I') != None:
+                        if store.find('span', 'n_ico_npay_plus__1pi8I') is not None:
+                            npay = 1
+                        elif store.find('span', 'n_icon__1DV3M') is not None:
                             npay = 1
                         else:
                             npay = 0
                         npays.append(npay)
                         
-                    stores = [item_key, str(store_names), str(store_urls), str(prices), str(delivery_fees), str(npays), int(product_status), int(page_status)]
+                    stores = [item_key, url, str(store_names), str(store_urls), str(prices), str(delivery_fees), str(npays), int(product_status), int(page_status)]
                 else:
                     stores = None
                     
@@ -154,15 +156,15 @@ class ProductStatusNv:
                     stores = None
                 else:
                     # All Tab
-                    if soup.find('a', '_2-uvQuRWK5') == None:
+                    if soup.find('a', '_2-uvQuRWK5') is None:
                         product_status = 0
                     else:
                         product_status = 1
                     
                     # store name
-                    if soup.find('span', 'KasFrJs3SA') != None:
+                    if soup.find('span', 'KasFrJs3SA') is not None:
                         store_name = soup.find('span', 'KasFrJs3SA').text.strip()
-                    elif soup.find('img', '_1QhZSUVBeK') != None:
+                    elif soup.find('img', '_1QhZSUVBeK') is not None:
                         store_name = soup.find('img', '_1QhZSUVBeK')['alt']
                     else:
                         store_name = np.nan
@@ -180,7 +182,7 @@ class ProductStatusNv:
                     prices.append(price)
                     
                     # delivery_fee
-                    if soup.find('span', 'bd_3uare') == None:
+                    if soup.find('span', 'bd_3uare') is None:
                         delivery_fee = 0
                     else:
                         delivery_fee = int(soup.find('span', 'bd_3uare').text.replace(',', '').replace(' ', ''))
@@ -190,7 +192,7 @@ class ProductStatusNv:
                     npay = 1
                     npays.append(npay)
                         
-                    stores = [item_key, str(store_names), str(store_urls), str(prices), str(delivery_fees), str(npays), int(product_status), int(page_status)]
+                    stores = [item_key, url, str(store_names), str(store_urls), str(prices), str(delivery_fees), str(npays), int(product_status), int(page_status)]
                         
         return product_status, stores
     
@@ -208,7 +210,7 @@ class ReviewScrapeNv:
         ''' Scraping review data '''
         
         review_soup = self.parsing(driver)
-        if review_soup == None:
+        if review_soup is None:
             status = 0
         else:
             status = 1
@@ -282,7 +284,7 @@ class ReviewScrapeNv:
         review_ratings, review_infos, review_texts = [], [], []
         
         driver = get_url(url)
-        if driver == None:
+        if driver is None:
             status = -1
             return [np.nan], [np.nan], [np.nan], status
             
@@ -291,14 +293,14 @@ class ReviewScrapeNv:
             soup = BeautifulSoup(html, 'lxml')
             
             # if page does not exist
-            if soup.find("div", {"class":"style_content_error__3Wxxj"}) != None:
+            if soup.find("div", {"class":"style_content_error__3Wxxj"}) is not None:
                 status = -2
                 driver.close()
                 driver.quit()
                 return [np.nan], [np.nan], [np.nan], status
 
             # if review does not exist 
-            elif soup.find("div", {"class":"review_section_review__1hTZD"}) == None:
+            elif soup.find("div", {"class":"review_section_review__1hTZD"}) is None:
                 status = 0
                 driver.close()
                 driver.quit()

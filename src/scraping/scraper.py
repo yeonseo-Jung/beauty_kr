@@ -4,7 +4,7 @@ import sys
 import time
 # import pickle
 import numpy as np
-# import pandas as pd
+import pandas as pd
 
 # Scrapping
 from bs4 import BeautifulSoup
@@ -50,7 +50,7 @@ except:
 
 '''TLS CA error solution'''
 def override_where():
-    """ overrides certifi.core.where to return actual location of cacert.pem"""
+    """ overrides certifi.core.where to return actual location of cacert.pem """
     # change this to match the location of cacert.pem
     return os.path.join(base_path, '_certifi', 'cacert.pem')
 
@@ -122,10 +122,9 @@ def scroll_down(wd, sleep_time, check_count):
         height = wd.execute_script("return document.body.scrollHeight")
         wd.find_element_by_tag_name('body').send_keys(Keys.END)
         time.sleep(sleep_time)
-        if int(height) == 0:
-            cnt += 1
-            if cnt == check_count:
-                break        
+        cnt += 1
+        if cnt == check_count:
+            break        
     return wd
 
 def scraper_nv(product_id, search_word):

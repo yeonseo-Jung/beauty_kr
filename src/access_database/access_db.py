@@ -229,6 +229,7 @@ class AccessDataBase:
                                         
             f'beauty_kr_{category}_info_all': f"CREATE TABLE `beauty_kr_{category}_info_all` (\
                                             `item_key` int(11) DEFAULT NULL COMMENT '매핑 기준 상품 id',\
+                                            `product_url` text COMMENT '상품 url',\
                                             `product_store` text COMMENT '상품 판매 스토어',\
                                             `product_store_url` text COMMENT '스토어 별 판매 링크',\
                                             `product_price` varchar(255) COMMENT '스토어 별 판매 가격',\
@@ -265,7 +266,15 @@ class AccessDataBase:
                                             `category` varchar (255) DEFAULT NULL COMMENT '카테고리'\
                                             ) ENGINE=InnoDB DEFAULT CHARSET=utf8;",
                                                 
-            f'beauty_kr_{category}_reviews_all': None,
+            f'beauty_kr_{category}_reviews_all': f"CREATE TABLE `beauty_kr_{category}_reviews_all` (\
+                                                    `pk` int(11) unsigned NOT NULL AUTO_INCREMENT,\
+                                                    `item_key` int(11) DEFAULT NULL COMMENT '매핑 기준 상품 id',\
+                                                    `txt_data` text COMMENT '리뷰 데이터',\
+                                                    `write_date` text COMMENT '리뷰 작성일자',\
+                                                    `regist_date` text COMMENT '데이터 업로드 일자',\
+                                                    `source` text COMMENT '데이터 출처 테이블 명',\
+                                                    PRIMARY KEY (`pk`)\
+                                                    ) ENGINE=InnoDB DEFAULT CHARSET=utf8;",
             
             'glowpick_product_info_final_version': f"CREATE TABLE `glowpick_product_info_final_version` (\
                                                 `id` int(11) DEFAULT NULL COMMENT '상품 아이디 (자체부여)',\
@@ -304,10 +313,6 @@ class AccessDataBase:
                                                         `review_date` varchar(100) DEFAULT NULL COMMENT '리뷰 작성 일자',\
                                                         `product_review` text DEFAULT NULL COMMENT '리뷰 내용'\
                                                         ) ENGINE=InnoDB DEFAULT CHARSET=utf8;",
-            'test': "CREATE TABLE `test` (\
-                    `a` int(11),\
-                    `b` int(11)\
-                    ) ENGINE=InnoDB DEFAULT CHARSET=utf8;",
         }
         
         if 'info_all' in table_name:

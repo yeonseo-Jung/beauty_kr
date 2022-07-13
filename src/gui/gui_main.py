@@ -34,7 +34,7 @@ class MainWidget(QWidget):
     
     def __init__(self):
         super().__init__()
-        self.version = "0.0.2.3"
+        self.version = "2.0.2"
         self.w0 = None
         self.w1 = None
         self.w2 = None
@@ -72,12 +72,12 @@ class MainWidget(QWidget):
         self.comb_menu = QComboBox()
         layout.addWidget(self.comb_menu, 3, 1)
         self.comb_menu.addItem('Mapping Products')
-        self.comb_menu.addItem('Crawling Naver Products')
         self.comb_menu.addItem('Update Glowpick Products')
         self.comb_menu.addItem('Update Naver Products Status')
-        self.comb_menu.addItem('Update Naver Products Review')
+        self.comb_menu.addItem('Crawling Naver Products')
+        self.comb_menu.addItem('Crawling Naver Products Review')
         self.comb_menu.addItem('Get Table from Database')
-        self.comb_menu.addItem('Upload Table to Database')
+        self.comb_menu.addItem('Upload Review Table to Database')
         self.comb_menu.move(50, 50)
         
         #
@@ -124,49 +124,56 @@ class MainWidget(QWidget):
                     self.w0 = MappingWindow()
                     self.w0.show()
                 else:
-                    pass
+                    self.w0.close()
+                    self.w0.show()
                 
             elif menu_index == 1:
                 if self.w1 is None:
-                    self.w1 = ScrapingWindow()
+                    self.w1 = CrawlingGlWindow()
                     self.w1.show()
                 else:
-                    pass
+                    self.w1.close()
+                    self.w1.show()
                 
             elif menu_index == 2:
                 if self.w2 is None:
-                    self.w2 = CrawlingGlWindow()
+                    self.w2 = CrawlingNvStatus()
                     self.w2.show()
                 else:
-                    pass
+                    self.w2.close()
+                    self.w2.show()
                 
             elif menu_index == 3:
                 if self.w3 is None:
-                    self.w3 = CrawlingNvStatus()
+                    self.w3 = ScrapingWindow()
                     self.w3.show()
                 else:
-                    pass
+                    self.w3.close()
+                    self.w3.show()
                 
             elif menu_index == 4:
                 if self.w4 is None:
                     self.w4 = CrawlingNvRevWindow()
                     self.w4.show()
                 else:
-                    pass
+                    self.w4.close()
+                    self.w4.show()
             
             elif menu_index == 5:
                 if self.w5 is None:
                     self.w5 = GetTableWindow()
                     self.w5.show()
                 else:
-                    pass
+                    self.w5.close()
+                    self.w5.show()
                 
             elif menu_index == 6:
                 if self.w6 is None:
                     self.w6 = ReviewWindow()
                     self.w6.show()
                 else:
-                    pass
+                    self.w6.close()
+                    self.w6.show()
                 
         except Exception as e:
             msg.setText(f'{e}\n\n** VPN 연결 해제 후 로그인 **')

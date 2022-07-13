@@ -2,7 +2,7 @@ import os
 import sys
 from gui.gui_main import MainWidget
 from PyQt5.QtWidgets import QApplication
-from PyQt5.QtCore import QCoreApplication
+# from PyQt5.QtCore import QCoreApplication
 
 # pyinstaller에 의한 패키징이 여부에 따른 경로 설정 
 if getattr(sys, 'frozen', False) and hasattr(sys, '_MEIPASS'):

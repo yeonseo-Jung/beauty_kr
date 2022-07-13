@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>800</width>
-    <height>419</height>
+    <height>437</height>
    </rect>
   </property>
   <property name="minimumSize">
@@ -20,10 +20,10 @@
    <string>MainWindow</string>
   </property>
   <widget class="QWidget" name="centralwidget">
-   <widget class="QPushButton" name="save_0">
+   <widget class="QPushButton" name="Save">
     <property name="geometry">
      <rect>
-      <x>460</x>
+      <x>470</x>
       <y>330</y>
       <width>72</width>
       <height>32</height>
@@ -33,10 +33,10 @@
      <string>Save</string>
     </property>
    </widget>
-   <widget class="QPushButton" name="view_table_0">
+   <widget class="QPushButton" name="View">
     <property name="geometry">
      <rect>
-      <x>380</x>
+      <x>390</x>
       <y>330</y>
       <width>72</width>
       <height>32</height>
@@ -75,10 +75,10 @@
      </rect>
     </property>
    </widget>
-   <widget class="QPushButton" name="Import">
+   <widget class="QPushButton" name="Select">
     <property name="geometry">
      <rect>
-      <x>340</x>
+      <x>490</x>
       <y>270</y>
       <width>82</width>
       <height>32</height>
@@ -299,7 +299,7 @@
    <widget class="QPushButton" name="Status">
     <property name="geometry">
      <rect>
-      <x>540</x>
+      <x>550</x>
       <y>330</y>
       <width>81</width>
       <height>32</height>
@@ -317,7 +317,7 @@
    <widget class="QPushButton" name="Upload">
     <property name="geometry">
      <rect>
-      <x>630</x>
+      <x>640</x>
       <y>330</y>
       <width>86</width>
       <height>32</height>
@@ -339,7 +339,7 @@
      <x>0</x>
      <y>0</y>
      <width>800</width>
-     <height>21</height>
+     <height>24</height>
     </rect>
    </property>
   </widget>

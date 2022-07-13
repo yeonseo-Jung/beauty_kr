@@ -178,7 +178,7 @@ class ThreadCrawlingNvStatus(QtCore.QThread, QtCore.QObject):
         df = self.db.integ_tbl(tables, columns)
         mapping_table = self.db.get_tbl('beauty_kr_mapping_table', ['item_key', 'mapped_id', 'source']).rename(columns={'mapped_id': 'id', 'source': 'table_name'})
         df_mapped = df.merge(mapping_table, on=['id', 'table_name'], how='inner')
-        df_mapped = preprocessor.categ_reclassifier(df_mapped, source=1)
+        df_mapped = preprocessor.categ_reclassifier(df_mapped)
         
         # check status
         status_df = self.db.get_tbl('naver_beauty_product_info_status')
@@ -226,8 +226,8 @@ class ThreadCrawlingNvStatus(QtCore.QThread, QtCore.QObject):
             self.db.engine_upload(status_df_dedup, 'naver_beauty_product_info_status', 'replace')
             
             '''info table'''
-            gl_info = self.db.get_tbl('glowpick_product_info_final_version', 'all').rename(columns={'id': 'item_key'})
-            columns = ['item_key', 'product_store', 'product_store_url', 'product_price', 'delivery_fee', 'naver_pay', 'product_status', 'page_status']
+            gl_info = self.db.get_tbl('glowpick_product_info_final_version', 'all').rename(columns={'id': 'item_key', 'product_url': 'product_url_glowpick'})
+            columns = ['item_key', 'product_url', 'product_store', 'product_store_url', 'product_price', 'delivery_fee', 'naver_pay', 'product_status', 'page_status']
             nv_prd_status_update = pd.DataFrame(self.store_list, columns=columns)
             nv_prd_status_update.to_csv(self.path_scrape_df, index=False)
             
@@ -408,12 +408,12 @@ class ThreadCrawlingNvInfo(QtCore.QThread, QtCore.QObject):
                 with open(tbl_cache + '/status_dict.txt', 'wb') as f:
                     pickle.dump(status_dict, f)
                     
-                # status 데이터 할당 데이터프레임
-                ids = list(status_dict.keys())
-                sts = list(status_dict.values())
-                df_ = pd.DataFrame(columns=['id', 'status'])
-                df_.loc[:, 'id'] = ids
-                df_.loc[:, 'status'] = sts
+                # # status 데이터 할당 데이터프레임
+                # ids = list(status_dict.keys())
+                # sts = list(status_dict.values())
+                # df_ = pd.DataFrame(columns=['id', 'status'])
+                # df_.loc[:, 'id'] = ids
+                # df_.loc[:, 'status'] = sts
                 
                 self.progress.emit(t)
                 break
@@ -424,18 +424,21 @@ class ThreadCrawlingNvInfo(QtCore.QThread, QtCore.QObject):
             df = pd.DataFrame(scrap_list, columns=columns)
             df.to_csv(tbl_cache + '/df_info_scrap.csv', index=False)
             
-            # status 데이터 할당 데이터프레임
-            ids = list(status_dict.keys())
-            sts = list(status_dict.values())
-            df_ = pd.DataFrame(columns=['id', 'status'])
-            df_.loc[:, 'id'] = ids
-            df_.loc[:, 'status'] = sts
+            # # status 데이터 할당 데이터프레임
+            # ids = list(status_dict.keys())
+            # sts = list(status_dict.values())
+            # df_ = pd.DataFrame(columns=['id', 'status'])
+            # df_.loc[:, 'id'] = ids
+            # df_.loc[:, 'status'] = sts
         
-            # table Update from db: glowpick_product_scrap_status 
-            table_name = "glowpick_product_scrap_status"
-            pk = "id"
-            self.db.table_update(table_name, pk, df_)
-
+            # # table Update from db: glowpick_product_scrap_status 
+            # table_name = "glowpick_product_scrap_status"
+            # pk = "id"
+            # self.db.table_update(table_name, pk, df_)
+        
+        self.progress.emit(t)
+        self.power = False
+    
     def stop(self):
         ''' Stop Thread '''
         

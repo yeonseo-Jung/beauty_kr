@@ -84,8 +84,6 @@ class DataFrameModel(QtCore.QAbstractTableModel):
         }
         return roles
     
-    
-
 class TableViewer(QWidget):
     ''' Table Viewer '''
     
@@ -103,6 +101,7 @@ class TableViewer(QWidget):
         vLayout.addWidget(self.pandasTv)
         self.loadBtn.clicked.connect(self.loadFile)
         self.pandasTv.setSortingEnabled(True)
+        self.resize(1000, 750)
 
     def loadFile(self):
         fileName, _ = QFileDialog.getOpenFileName(self, "Open File", "", "CSV Files (*.csv)")
@@ -120,7 +119,3 @@ class TableViewer(QWidget):
         df = pd.read_csv(file_path, lineterminator='\n')
         model = DataFrameModel(df)
         self.pandasTv.setModel(model)
-
-        
-        
-    
