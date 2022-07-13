@@ -38,9 +38,15 @@ class ReviewWindow(QMainWindow, review_form):
         super().__init__()    
         self.setupUi(self)
         self.setWindowTitle('Mapping Review and Upload')
-        self.viewer = None
-        self.rev_info = None
-        self.file_path = None
+        
+        # check     
+        self.select_ck = False
+        self.dup_ck = False
+        self.view_ck = None
+        
+        # path
+        self.name = 'reviews_upload.csv'
+        self.path = os.path.join(tbl_cache, self.name)
         
         # db 연결
         with open(conn_path, 'rb') as f:
@@ -52,12 +58,8 @@ class ReviewWindow(QMainWindow, review_form):
         # get table
         for table in self._get_tbl():
             item = QListWidgetItem(table)
-            item.setCheckState(Qt.Unchecked)
+            # item.setCheckState(Qt.Unchecked)
             self.TableList.addItem(item)
-            
-        self.Import.clicked.connect(self._import_tbl)
-        self.view_table_0.clicked.connect(self._viewer_0)
-        self.save_0.clicked.connect(self._save_0)
         
         self.skincare.setChecked(False)
         self.skincare.toggled.connect(self.categ_toggled)
@@ -80,12 +82,13 @@ class ReviewWindow(QMainWindow, review_form):
         self.fragrance.setChecked(False)
         self.fragrance.toggled.connect(self.categ_toggled)
         
-        # dedup # sorting
+        # connect button
+        self.Select.clicked.connect(self._select)
         self.Dup_check.clicked.connect(self._dup_check)
-        # status
-        self.Status.clicked.connect(self._status)
-        # table upload to db
-        self.Upload.clicked.connect(self._upload)
+        self.View.clicked.connect(self._view)
+        self.Save.clicked.connect(self._save)
+        # self.Status.clicked.connect(self._status)
+        # self.Upload.clicked.connect(self._upload)
         
     def _get_tbl(self):
         ''' db에서 매핑 대상 테이블만 가져오기 '''
@@ -98,42 +101,8 @@ class ReviewWindow(QMainWindow, review_form):
             if tbl_:
                 table_list.append(tbl_.group(0))
         table_list = sorted(list(set(table_list)))
+        table_list.append('oliveyoung_product_info_final_version_review')
         return table_list
-    
-    def _import_tbl(self):
-        ''' 데이터 베이스에서 테이블 가져와서 통합하기 '''
-        
-        # 매핑 대상 테이블
-        tbls = []
-        for idx in range(self.TableList.count()):
-            if self.TableList.item(idx).checkState() == Qt.Checked:
-                tbls.append(self.TableList.item(idx).text())
-        
-        if len(tbls) == 0:
-            msg = QMessageBox()
-            msg.setText(f'Please check the table')
-            msg.exec_()
-            
-        else:
-            msg = QMessageBox()
-            msg.setText(f'** 대용량 리뷰 데이터 SELECT: 10분 이상 소요됩니다 **')
-            msg.exec_()
-            
-            st = time.time()
-            # get table from db
-            map_tbl, info_0, review_0, review_1 = self.review.get_table(tbls)
-            ed = time.time()
-            print(f'\n\nImport Time: {round(ed-st, 1)}sec\n\n')
-            # mapping review
-            review_concat = self.review._mapping(map_tbl, review_0, review_1)
-            # integration table
-            outputs = self.review._integ(info_0, review_concat)
-            self.rev_info = outputs[0]
-            self.info_df = outputs[1]
-            
-            msg = QMessageBox()
-            msg.setText(f'Table SELECT success')
-            msg.exec_()
         
     def categ_toggled(self):
         categs, categs_en = [], []
@@ -180,110 +149,107 @@ class ReviewWindow(QMainWindow, review_form):
             
         return categs, categs_en
         
-    def _dup_check(self):
+    def _select(self):
+        ''' Select review table '''
+        
         categs, categs_en = self.categ_toggled()
-        
-        if len(categs) == 0:
+        if len(categs_en) == 1:
             msg = QMessageBox()
-            msg.setText('한개 이상의 카테고리를 선택해주세요')
+            msg.setText(f'** 대용량 데이터 Select **/n 5분이상 소요예정 입니다')
             msg.exec_()
-        
+            
+            self.category = categs_en[0]
+            self.review.select(self.category)
+            
+            msg = QMessageBox()
+            msg.setText('** Select table successful! **')
+            msg.exec_()
+            
+            self.select_ck = True
         else:
-            if str(type(self.rev_info)) == "<class 'pandas.core.frame.DataFrame'>":
-                # integration selected category 
-                rev_index_list = []
-                for categ in categs:    
-                    rev_index_list += self.rev_info.loc[self.rev_info.category==categ].index.tolist()
-                self.rev_info_categ = self.rev_info.loc[rev_index_list].reset_index(drop=True)
-                
-                # dup check & sorting 
-                self.dedup = self.review.dup_check(self.rev_info_categ)
-                self.upload_df = self.review.md_review_table(self.dedup)
-                self.info_df_all = self.review.md_info_table(self.info_df, categs)
-                
-                # save table to cache dir
-                self.category = "_".join(categs_en)
-                self.table_name = f"beauty_kr_{self.category}_reviews_all"
-                self.file_name = f"{self.table_name}.csv"
-                self.file_path = os.path.join(tbl_cache, self.file_name)
-                self.upload_df.to_csv(self.file_path, index=False)
-                
-                msg = QMessageBox()
-                msg.setText(f'Completion Deduplication\n\ncategory: {self.category}')
-                msg.exec_()
-            else:
-                msg = QMessageBox()
-                msg.setText(f'테이블 SELECT 완료 후 시도하세요')
-                msg.exec_()
-        
-    def tbl_viewer(self, msg_txt):
-        ''' table viewer '''
-        
-        if str(type(self.file_path)) == "<class 'NoneType'>":
             msg = QMessageBox()
-            msg.setText(msg_txt)
+            msg.setText('** 한개의 카테고리를 선택해주세요 **')
             msg.exec_()
+            
+    def _dup_check(self):
+        ''' Duplicate check & Create table '''
+        
+        msg = QMessageBox()
+        if self.select_ck:
+            self.review.dup_check()
+            self.review.create()
+            self.df = pd.read_csv(self.path, lineterminator='\n')
+            
+            msg.setText('** Duplicate check successful! **')
+            msg.exec_()
+            
+            self.select_ck = False
+            self.dup_ck = True
+        else:
+            msg.setText('** Select 완료 후 시도하세요 **')
+            msg.exec_()
+        
+    def _viewer(self, msg_txt):
+        ''' table viewer '''
             
         # 캐시에 테이블이 존재할 때 open table viewer 
-        elif os.path.isfile(self.file_path):
-            if self.viewer is None:
-                self.viewer = TableViewer()
+        if os.path.isfile(self.path):
+            if self.view_ck is None:
+                self.view_ck = TableViewer()
             else:
-                self.viewer.close()
-                self.viewer = TableViewer()
+                self.view_ck.close()
+                self.view_ck = TableViewer()
                 
-            self.viewer.show()
-            self.viewer._loadFile(self.file_name)
+            self.view_ck.show()
+            self.view_ck._loadFile(self.name)
             
         else:
             msg = QMessageBox()
             msg.setText(msg_txt)
             msg.exec_()
             
-    def save_file(self, msg_txt):
+    def _saver(self, msg_txt):
         ''' save csv file '''
         
-        if str(type(self.file_path)) == "<class 'NoneType'>":
-            msg = QMessageBox()
-            msg.setText(msg_txt)
-            msg.exec_()
-        
         # 캐시에 해당 파일이 존재할 때 저장
-        elif os.path.isfile(self.file_path):
-            df = pd.read_csv(self.file_path, lineterminator='\n')
-            file_save = QFileDialog.getSaveFileName(self, "Save File", self.table_name, "csv file (*.csv)")
+        if os.path.isfile(self.path):
+            file_save = QFileDialog.getSaveFileName(self, "Save File", f'beauty_kr_{self.category}_reviews_all', "csv file (*.csv)")
             
             if file_save[0] != "":
-                df.to_csv(file_save[0], index=False)
+                self.df.to_csv(file_save[0], index=False)
         else:
             msg = QMessageBox()
             msg.setText(msg_txt)
             msg.exec_()
         
-    def _viewer_0(self):
-        msg = "Duplicate Check 완료 후 시도하세요"
-        self.tbl_viewer(msg)
+    def _view(self):
+        msg = "** Duplicate Check 완료 후 시도하세요 **"
+        self._viewer(msg)
             
-    def _save_0(self):
-        msg = "Duplicate Check 완료 후 시도하세요"
-        self.save_file(msg)
+    def _save(self):
+        msg = "** Duplicate Check 완료 후 시도하세요 **"
+        self._saver(msg)
         
     def _status(self):
-        unique_len = len(self.upload_df.item_key.unique())
-        reviews_len = len(self.upload_df)
         msg = QMessageBox()
-        msg_txt = f"상품 수: {unique_len}\n리뷰 수: {reviews_len}"
-        msg.setText(msg_txt)
-        msg.exec_()
+        if self.df is None:
+            msg.setText("** Duplicate Check 완료 후 시도하세요 **")
+            msg.exec_()
+        else:
+            unique_len = len(self.df.item_key.unique())
+            reviews_len = len(self.df)
+            msg_txt = f"상품 수: {unique_len}\n리뷰 수: {reviews_len}"
+            msg.setText(msg_txt)
+            msg.exec_()
         
-    def _upload(self):
-        msg = QMessageBox()
-        msg_txt = f"<Create Table>\n테이블 명: {self.table_name}\n** 대용량 리뷰 데이터 업로드: 10분 이상 소요됩니다 **"
-        msg.setText(msg_txt)
-        msg.exec_()
-        self.db.engine_upload(upload_df=self.upload_df, table_name=self.table_name, if_exists_option='replace', pk='pk')
-        self.db.engine_upload(upload_df=self.info_df_all, table_name=f'glowpick_product_info_{self.category}', if_exists_option='replace', pk='id')
-        msg = QMessageBox()
-        msg_txt = f"<테이블 업로드 완료>\n\n리뷰 테이블 명: {self.table_name}\n개체 테이블 명: glowpick_product_info_{self.category}"
-        msg.setText(msg_txt)
-        msg.exec_()
+    # def _upload(self):
+    #     msg = QMessageBox()
+    #     msg_txt = f"<Create Table>\n테이블 명: {self.table_name}\n** 대용량 리뷰 데이터 업로드: 10분 이상 소요됩니다 **"
+    #     msg.setText(msg_txt)
+    #     msg.exec_()
+    #     self.db.engine_upload(upload_df=self.upload_df, table_name=self.table_name, if_exists_option='replace', pk='pk')
+    #     self.db.engine_upload(upload_df=self.info_df_all, table_name=f'glowpick_product_info_{self.category}', if_exists_option='replace', pk='id')
+    #     msg = QMessageBox()
+    #     msg_txt = f"<테이블 업로드 완료>\n\n리뷰 테이블 명: {self.table_name}\n개체 테이블 명: glowpick_product_info_{self.category}"
+    #     msg.setText(msg_txt)
+    #     msg.exec_()
