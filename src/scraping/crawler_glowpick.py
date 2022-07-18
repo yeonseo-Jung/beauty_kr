@@ -18,27 +18,20 @@ from selenium.webdriver.common.action_chains import ActionChains
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.common.exceptions import NoSuchElementException, TimeoutException
 
-
 # Exception Error Handling
 import warnings
 warnings.filterwarnings("ignore")
 
-# current directory
-cur_dir = os.path.dirname(os.path.realpath(__file__))
-
-
 if getattr(sys, 'frozen', False) and hasattr(sys, '_MEIPASS'):
-    base_path = sys._MEIPASS
-    tbl_cache = os.path.join(base_path, 'tbl_cache_')
-    conn_path = os.path.join(base_path, 'conn.txt')
-    
+    root = sys._MEIPASS
 else:
+    cur_dir = os.path.dirname(os.path.realpath(__file__))
     root = os.path.abspath(os.path.join(cur_dir, os.pardir, os.pardir))
     src = os.path.abspath(os.path.join(cur_dir, os.pardir))
-    sys.path.append(root)
     sys.path.append(src)
-    tbl_cache = os.path.join(root, 'tbl_cache')
-    conn_path = os.path.join(src, 'gui', 'conn.txt')
+
+tbl_cache = os.path.join(root, 'tbl_cache')
+conn_path = os.path.join(root, 'conn.txt')
     
 from scraping.scraper import get_url
 

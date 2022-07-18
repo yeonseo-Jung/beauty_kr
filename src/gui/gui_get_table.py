@@ -3,34 +3,29 @@ import sys
 import pickle
 import pandas as pd
 
-cur_dir = os.path.dirname(os.path.realpath(__file__))
-root = os.path.abspath(os.path.join(cur_dir, os.pardir, os.pardir))
-src = os.path.abspath(os.path.join(cur_dir, os.pardir))
-sys.path.append(root)
-sys.path.append(src)
-
-from access_database import access_db
-from gui.table_view import TableViewer
-
 from PyQt5 import uic
 from PyQt5.QtWidgets import QMainWindow, QMessageBox, QFileDialog, QListWidgetItem
 from PyQt5.QtCore import Qt
 
-
 if getattr(sys, 'frozen', False) and hasattr(sys, '_MEIPASS'):
-    base_path = sys._MEIPASS
-    tbl_cache = os.path.join(base_path, 'tbl_cache_')
-    
+    root = sys._MEIPASS
+    form_dir = os.path.join(root, 'form')
 else:
-    base_path = os.path.dirname(os.path.realpath(__file__))
-    tbl_cache = os.path.join(root, 'tbl_cache')
+    cur_dir = os.path.dirname(os.path.realpath(__file__))
+    root = os.path.abspath(os.path.join(cur_dir, os.pardir, os.pardir))
+    src = os.path.abspath(os.path.join(cur_dir, os.pardir))
+    sys.path.append(src)
+    form_dir = os.path.join(src, 'gui/form')
+    
+tbl_cache = os.path.join(root, 'tbl_cache')
+conn_path = os.path.join(root, 'conn.txt')
+form_path = os.path.join(form_dir, 'get_table_db.ui')
+form = uic.loadUiType(form_path)[0]
 
-conn_path = os.path.join(base_path, 'conn.txt')
-form_path = os.path.join(base_path, 'form/get_table_db.ui')
+from access_database.access_db import AccessDataBase
+from gui.table_view import TableViewer
 
-mapping_form = uic.loadUiType(form_path)[0]
-
-class GetTableWindow(QMainWindow, mapping_form):
+class GetTableWindow(QMainWindow, form):
     ''' Product Mapping Window '''
     
     def __init__(self):
@@ -42,7 +37,7 @@ class GetTableWindow(QMainWindow, mapping_form):
         # db 연결
         with open(conn_path, 'rb') as f:
             conn = pickle.load(f)
-        self.db = access_db.AccessDataBase(conn[0], conn[1], conn[2])
+        self.db = AccessDataBase(conn[0], conn[1], conn[2])
         
         # db에 존재하는 모든 테이블 이름 출력
         for table in self.db.get_tbl_name():

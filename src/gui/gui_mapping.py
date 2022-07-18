@@ -4,35 +4,30 @@ import sys
 import pickle
 import pandas as pd
 
-cur_dir = os.path.dirname(os.path.realpath(__file__))
-root = os.path.abspath(os.path.join(cur_dir, os.pardir, os.pardir))
-src = os.path.abspath(os.path.join(cur_dir, os.pardir))
-sys.path.append(root)
-sys.path.append(src)
+from PyQt5 import uic
+from PyQt5.QtWidgets import QMainWindow, QMessageBox, QFileDialog, QListWidgetItem
+from PyQt5.QtCore import Qt
+
+if getattr(sys, 'frozen', False) and hasattr(sys, '_MEIPASS'):
+    root = sys._MEIPASS
+    form_dir = os.path.join(root, 'form')
+else:
+    cur_dir = os.path.dirname(os.path.realpath(__file__))
+    root = os.path.abspath(os.path.join(cur_dir, os.pardir, os.pardir))
+    src = os.path.abspath(os.path.join(cur_dir, os.pardir))
+    sys.path.append(src)
+    form_dir = os.path.join(src, 'gui/form')
+    
+tbl_cache = os.path.join(root, 'tbl_cache')
+conn_path = os.path.join(root, 'conn.txt')
+form_path = os.path.join(form_dir, 'mappingWindow.ui')
+form = uic.loadUiType(form_path)[0]
 
 from access_database.access_db import AccessDataBase
 from multithreading.thread_mapping import ThreadTitlePreprocess, ThreadMapping
 from gui.table_view import TableViewer
 
-from PyQt5 import uic
-from PyQt5.QtWidgets import QMainWindow, QMessageBox, QFileDialog, QListWidgetItem
-from PyQt5.QtCore import Qt
-
-
-if getattr(sys, 'frozen', False) and hasattr(sys, '_MEIPASS'):
-    base_path = sys._MEIPASS
-    tbl_cache = os.path.join(base_path, 'tbl_cache_')
-    
-else:
-    base_path = os.path.dirname(os.path.realpath(__file__))
-    tbl_cache = os.path.join(root, 'tbl_cache')
-
-conn_path = os.path.join(base_path, 'conn.txt')
-form_path = os.path.join(base_path, 'form/mappingWindow.ui')
-
-mapping_form = uic.loadUiType(form_path)[0]
-
-class MappingWindow(QMainWindow, mapping_form):
+class MappingWindow(QMainWindow, form):
     ''' Product Mapping Window '''
     
     def __init__(self):
@@ -48,8 +43,6 @@ class MappingWindow(QMainWindow, mapping_form):
         self.mapped = False
         
         # file path
-        # self.tbl_0 = os.path.join(tbl_cache, 'tbl_0.csv')
-        # self.tbl_1 = os.path.join(tbl_cache, 'tbl_1.csv')
         self.tbl = os.path.join(tbl_cache, 'tbl.csv')
     
         # db 연결
@@ -80,11 +73,6 @@ class MappingWindow(QMainWindow, mapping_form):
         self.compare.clicked.connect(self._comparing)
         self.view_table_2.clicked.connect(self._viewer_2)
         self.save_2.clicked.connect(self._save_2)
-        
-        # # mapping
-        # self.mapping.clicked.connect(self._mapping)
-        # self.view_table_3.clicked.connect(self._viewer_3)
-        # self.save_3.clicked.connect(self._save_3)
         
         # mapping status
         self.status.clicked.connect(self._status)

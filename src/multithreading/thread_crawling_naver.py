@@ -11,27 +11,22 @@ from PyQt5 import QtCore
 import warnings
 warnings.filterwarnings("ignore")
 
-cur_dir = os.path.dirname(os.path.realpath(__file__))
-root = os.path.abspath(os.path.join(cur_dir, os.pardir, os.pardir))
-src = os.path.abspath(os.path.join(cur_dir, os.pardir))
-sys.path.append(root)
-sys.path.append(src)
+if getattr(sys, 'frozen', False) and hasattr(sys, '_MEIPASS'):
+    root = sys._MEIPASS
+else:
+    cur_dir = os.path.dirname(os.path.realpath(__file__))
+    root = os.path.abspath(os.path.join(cur_dir, os.pardir, os.pardir))
+    src = os.path.abspath(os.path.join(cur_dir, os.pardir))
+    sys.path.append(src)
 
-from access_database import access_db
+tbl_cache = os.path.join(root, 'tbl_cache')
+conn_path = os.path.join(root, 'conn.txt')
+
+from access_database.access_db import AccessDataBase
 from scraping.scraper import scraper_nv
 from scraping.crawler_naver import ReviewScrapeNv
 from mapping._preprocessing import TitlePreProcess
 from scraping.crawler_naver import ProductStatusNv
-
-if getattr(sys, 'frozen', False) and hasattr(sys, '_MEIPASS'):
-    base_path = sys._MEIPASS
-    tbl_cache = os.path.join(base_path, 'tbl_cache_')
-    conn_path = os.path.join(base_path, 'conn.txt')
-    
-else:
-    base_path = os.path.dirname(os.path.realpath(__file__))
-    tbl_cache = root + '/tbl_cache'
-    conn_path = os.path.join(src, 'gui/conn.txt')
     
 class ThreadCrawlingNvRev(QtCore.QThread, QtCore.QObject):
     ''' Thread scraping product info '''
@@ -48,7 +43,7 @@ class ThreadCrawlingNvRev(QtCore.QThread, QtCore.QObject):
         # db 연결
         with open(conn_path, 'rb') as f:
             conn = pickle.load(f)
-        self.db = access_db.AccessDataBase(conn[0], conn[1], conn[2])
+        self.db = AccessDataBase(conn[0], conn[1], conn[2])
         
     progress = QtCore.pyqtSignal(object)
     def run(self):
@@ -143,7 +138,7 @@ class ThreadCrawlingNvStatus(QtCore.QThread, QtCore.QObject):
         # db 연결
         with open(conn_path, 'rb') as f:
             conn = pickle.load(f)
-        self.db = access_db.AccessDataBase(conn[0], conn[1], conn[2])   
+        self.db = AccessDataBase(conn[0], conn[1], conn[2])   
         
         # today (regist date)
         today = datetime.today()
@@ -347,7 +342,7 @@ class ThreadCrawlingNvInfo(QtCore.QThread, QtCore.QObject):
         # db 연결
         with open(conn_path, 'rb') as f:
             conn = pickle.load(f)
-        self.db = access_db.AccessDataBase(conn[0], conn[1], conn[2])
+        self.db = AccessDataBase(conn[0], conn[1], conn[2])
         
     progress = QtCore.pyqtSignal(object)
     def run(self):

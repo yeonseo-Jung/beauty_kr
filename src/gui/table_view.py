@@ -2,23 +2,18 @@ import os
 import sys
 import pandas as pd
 
-cur_dir = os.path.dirname(os.path.realpath(__file__))
-root = os.path.abspath(os.path.join(cur_dir, os.pardir, os.pardir))
-src = os.path.abspath(os.path.join(cur_dir, os.pardir))
-sys.path.append(root)
-sys.path.append(src)
-
-import sys
 from PyQt5 import QtCore
 from PyQt5.QtWidgets import QFileDialog, QWidget, QHBoxLayout, QVBoxLayout, QPushButton, QTableView, QLineEdit, QMessageBox
 
 if getattr(sys, 'frozen', False) and hasattr(sys, '_MEIPASS'):
-    base_path = sys._MEIPASS
-    tbl_cache = os.path.join(base_path, 'tbl_cache_')
-    
+    root = sys._MEIPASS
 else:
-    base_path = os.path.dirname(os.path.realpath(__file__))
-    tbl_cache = os.path.join(root, 'tbl_cache')
+    cur_dir = os.path.dirname(os.path.realpath(__file__))
+    root = os.path.abspath(os.path.join(cur_dir, os.pardir, os.pardir))
+    src = os.path.abspath(os.path.join(cur_dir, os.pardir))
+    sys.path.append(src)
+
+tbl_cache = os.path.join(root, 'tbl_cache')
 
 class DataFrameModel(QtCore.QAbstractTableModel):
     ''' DataFrame을 pyqt5에서 출력 가능하도록 전처리 '''

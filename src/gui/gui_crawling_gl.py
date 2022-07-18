@@ -8,27 +8,25 @@ from PyQt5 import uic
 from PyQt5.QtWidgets import QMainWindow, QMessageBox, QFileDialog
 
 if getattr(sys, 'frozen', False) and hasattr(sys, '_MEIPASS'):
-    base_path = sys._MEIPASS
-    tbl_cache = os.path.join(base_path, 'tbl_cache_')
-    
+    root = sys._MEIPASS
+    form_dir = os.path.join(root, 'form')
 else:
     cur_dir = os.path.dirname(os.path.realpath(__file__))
     root = os.path.abspath(os.path.join(cur_dir, os.pardir, os.pardir))
     src = os.path.abspath(os.path.join(cur_dir, os.pardir))
-    sys.path.append(root)
     sys.path.append(src)
-    base_path = os.path.dirname(os.path.realpath(__file__))
-    tbl_cache = os.path.join(root, 'tbl_cache')
+    form_dir = os.path.join(src, 'gui/form')
     
-conn_path = os.path.join(base_path, 'conn.txt')
-form_path = os.path.join(base_path, 'form/crawlingGlInfoRevWindow.ui')
+tbl_cache = os.path.join(root, 'tbl_cache')
+conn_path = os.path.join(root, 'conn.txt')
+form_path = os.path.join(form_dir, 'crawlingGlInfoRevWindow.ui')
+form = uic.loadUiType(form_path)[0]
 
-from access_database import access_db
+from access_database.access_db import AccessDataBase
 from multithreading.thread_crawling_glowpick import ThreadCrawlingGl
 from multithreading.thread_crawling_glowpick import ThreadCrawlingProductCode
 from gui.table_view import TableViewer
 
-form = uic.loadUiType(form_path)[0]
 class CrawlingGlWindow(QMainWindow, form):
     ''' Product Info Crawling Window '''
     
@@ -69,7 +67,7 @@ class CrawlingGlWindow(QMainWindow, form):
         # connect db
         with open(conn_path, 'rb') as f:
             conn = pickle.load(f)
-        self.db = access_db.AccessDataBase(conn[0], conn[1], conn[2])
+        self.db = AccessDataBase(conn[0], conn[1], conn[2])
         
         # today (regist date)
         today = datetime.today()

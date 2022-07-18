@@ -2,12 +2,19 @@ import os
 import sys
 import pickle
 
-cur_dir = os.path.dirname(os.path.realpath(__file__))
-root = os.path.abspath(os.path.join(cur_dir, os.pardir, os.pardir))
-src = os.path.abspath(os.path.join(cur_dir, os.pardir))
-sys.path.append(root)
-sys.path.append(src)
+from PyQt5.QtWidgets import QWidget, QGridLayout, QLabel, QLineEdit, QComboBox, QPushButton, QMessageBox
 
+if getattr(sys, 'frozen', False) and hasattr(sys, '_MEIPASS'):
+    root = sys._MEIPASS
+else:
+    cur_dir = os.path.dirname(os.path.realpath(__file__))
+    root = os.path.abspath(os.path.join(cur_dir, os.pardir, os.pardir))
+    src = os.path.abspath(os.path.join(cur_dir, os.pardir))
+    sys.path.append(src)
+
+tbl_cache = os.path.join(root, 'tbl_cache')
+conn_path = os.path.join(root, 'conn.txt')
+        
 from access_database.access_db import AccessDataBase
 from gui.gui_scraping import ScrapingWindow
 from gui.gui_mapping import MappingWindow
@@ -17,18 +24,6 @@ from gui.gui_crawling_nv_rev import CrawlingNvRevWindow
 from gui.gui_crawling_gl import CrawlingGlWindow
 from gui.gui_crawling_nv_status import CrawlingNvStatus
 
-from PyQt5.QtWidgets import QWidget, QGridLayout, QLabel, QLineEdit, QComboBox, QPushButton, QMessageBox
-
-if getattr(sys, 'frozen', False) and hasattr(sys, '_MEIPASS'):
-    base_path = sys._MEIPASS
-    tbl_cache = os.path.join(base_path, 'tbl_cache_')
-    
-else:
-    base_path = os.path.dirname(os.path.realpath(__file__))
-    tbl_cache = os.path.join(root, 'tbl_cache')
-
-conn_path = os.path.join(base_path, 'conn.txt')
-        
 class MainWidget(QWidget):
     ''' Database Connect Form '''
     

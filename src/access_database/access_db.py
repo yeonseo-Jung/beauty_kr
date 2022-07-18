@@ -220,69 +220,28 @@ class AccessDataBase:
             
         query_dict = {
             'beauty_kr_mapping_table': "CREATE TABLE beauty_kr_mapping_table (\
-                                    `item_key` int(11) DEFAULT NULL COMMENT '매핑 기준 상품 id',\
-                                    `item_keep_words` varchar(255) DEFAULT NULL COMMENT '매핑 기준 상품 세부정보',\
-                                    `mapped_id` int(11) DEFAULT NULL COMMENT '매핑 대상 상품 id',\
-                                    `mapped_keep_words` varchar(255) DEFAULT NULL COMMENT '매핑 대상 상품 세부정보',\
-                                    `source` varchar(255) DEFAULT NULL COMMENT '매핑 대상 상품 소스 테이블명'\
-                                    ) ENGINE=InnoDB DEFAULT CHARSET=utf8;",
+                                        `item_key` int(11) DEFAULT NULL COMMENT '매핑 기준 상품 id',\
+                                        `item_keep_words` varchar(255) DEFAULT NULL COMMENT '매핑 기준 상품 세부정보',\
+                                        `mapped_id` int(11) DEFAULT NULL COMMENT '매핑 대상 상품 id',\
+                                        `mapped_keep_words` varchar(255) DEFAULT NULL COMMENT '매핑 대상 상품 세부정보',\
+                                        `source` varchar(255) DEFAULT NULL COMMENT '매핑 대상 상품 소스 테이블명'\
+                                        ) ENGINE=InnoDB DEFAULT CHARSET=utf8;",
                                         
             f'beauty_kr_{category}_info_all': f"CREATE TABLE `beauty_kr_{category}_info_all` (\
-                                            `item_key` int(11) DEFAULT NULL COMMENT '매핑 기준 상품 id',\
-                                            `product_url` text COMMENT '상품 url',\
-                                            `product_store` text COMMENT '상품 판매 스토어',\
-                                            `product_store_url` text COMMENT '스토어 별 판매 링크',\
-                                            `product_price` varchar(255) COMMENT '스토어 별 판매 가격',\
-                                            `delivery_fee` varchar(255) COMMENT '스토어 별 배송비',\
-                                            `naver_pay` varchar(255) COMMENT '네이버페이 유무',\
-                                            `product_status` int(11) DEFAULT NULL COMMENT '상품 판매 상태 (1: 판매중, 0: 판매중단)',\
-                                            `page_status` int(11) DEFAULT NULL COMMENT '상품 판매 페이지 상태 (1: 네이버 뷰티윈도 가격비교 탭, 2: 네이버 뷰티윈도 전체 탭, -1: 페이지 누락)',\
-                                            `product_code` int(11) DEFAULT NULL,\
-                                            `product_name` varchar(255),\
-                                            `brand_code` int(11),\
-                                            `brand_name` varchar(255),\
-                                            `product_url` text,\
-                                            `selection` varchar(255),\
-                                            `division` varchar(255),\
-                                            `groups` varchar(255),\
-                                            `descriptions` text,\
-                                            `product_keywords` varchar(255),\
-                                            `color_type` varchar(255),\
-                                            `volume` varchar(255),\
-                                            `image_source` text,\
-                                            `ingredients_all_kor` text,\
-                                            `ingredients_all_eng` text,\
-                                            `ingredients_all_desc` text,\
-                                            `ranks` varchar(255),\
-                                            `product_awards` text,\
-                                            `product_awards_sector` text,\
-                                            `product_awards_rank` text,\
-                                            `price` varchar(255) COMMENT '정가',\
-                                            `product_stores` varchar(255) COMMENT '글로우픽 기준 판매 스토어',\
-                                            `status` int(11) COMMENT '단종 여부 (0: 단종, 1: 판매중)',\
-                                            `dup_check` int(11) COMMENT '중복 여부 (0: 단일상품(중복x), -1: 종속상품(중복o), 1: 대표상품(중복o))',\
-                                            `dup_id` varchar(255) COMMENT '종속상품 id 리스트',\
-                                            `regist_date` datetime DEFAULT NULL COMMENT '개체 수집 일자',\
-                                            `category` varchar (255) DEFAULT NULL COMMENT '카테고리'\
-                                            ) ENGINE=InnoDB DEFAULT CHARSET=utf8;",
-                                                
-            f'beauty_kr_{category}_reviews_all': f"CREATE TABLE `beauty_kr_{category}_reviews_all` (\
-                                                    `pk` int(11) unsigned NOT NULL AUTO_INCREMENT,\
-                                                    `item_key` int(11) DEFAULT NULL COMMENT '매핑 기준 상품 id',\
-                                                    `txt_data` text COMMENT '리뷰 데이터',\
-                                                    `write_date` text COMMENT '리뷰 작성일자',\
-                                                    `regist_date` text COMMENT '데이터 업로드 일자',\
-                                                    `source` text COMMENT '데이터 출처 테이블 명',\
-                                                    PRIMARY KEY (`pk`)\
-                                                    ) ENGINE=InnoDB DEFAULT CHARSET=utf8;",
-            
-            'glowpick_product_info_final_version': f"CREATE TABLE `glowpick_product_info_final_version` (\
-                                                `id` int(11) DEFAULT NULL COMMENT '상품 아이디 (자체부여)',\
-                                                `product_code` int(11) DEFAULT NULL COMMENT '글로우픽 내부 상품 코드',\
+                                                `item_key` int(11) DEFAULT NULL COMMENT '매핑 기준 상품 id',\
+                                                `product_url` text COMMENT '상품 url',\
+                                                `product_store` text COMMENT '상품 판매 스토어',\
+                                                `product_store_url` text COMMENT '스토어 별 판매 링크',\
+                                                `product_price` varchar(255) COMMENT '스토어 별 판매 가격',\
+                                                `delivery_fee` varchar(255) COMMENT '스토어 별 배송비',\
+                                                `naver_pay` varchar(255) COMMENT '네이버페이 유무',\
+                                                `product_status` int(11) DEFAULT NULL COMMENT '상품 판매 상태 (1: 판매중, 0: 판매중단)',\
+                                                `page_status` int(11) DEFAULT NULL COMMENT '상품 판매 페이지 상태 (1: 네이버 뷰티윈도 가격비교 탭, 2: 네이버 뷰티윈도 전체 탭, -1: 페이지 누락)',\
+                                                `product_code` int(11) DEFAULT NULL,\
                                                 `product_name` varchar(255),\
                                                 `brand_code` int(11),\
                                                 `brand_name` varchar(255),\
-                                                `product_url` varchar(255),\
+                                                `product_url_glowpick` text,\
                                                 `selection` varchar(255),\
                                                 `division` varchar(255),\
                                                 `groups` varchar(255),\
@@ -302,17 +261,58 @@ class AccessDataBase:
                                                 `product_stores` varchar(255) COMMENT '글로우픽 기준 판매 스토어',\
                                                 `status` int(11) COMMENT '단종 여부 (0: 단종, 1: 판매중)',\
                                                 `dup_check` int(11) COMMENT '중복 여부 (0: 단일상품(중복x), -1: 종속상품(중복o), 1: 대표상품(중복o))',\
-                                                `dup_id` varchar(255) COMMENT '종속상품 id 리스트'\
+                                                `dup_id` varchar(255) COMMENT '종속상품 id 리스트',\
+                                                `regist_date` datetime DEFAULT NULL COMMENT '개체 수집 일자',\
+                                                `category` varchar (255) DEFAULT NULL COMMENT '카테고리'\
                                                 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;",
                                                 
+            f'beauty_kr_{category}_reviews_all': f"CREATE TABLE `beauty_kr_{category}_reviews_all` (\
+                                                    `pk` int(11) unsigned NOT NULL AUTO_INCREMENT,\
+                                                    `item_key` int(11) DEFAULT NULL COMMENT '매핑 기준 상품 id',\
+                                                    `txt_data` text COMMENT '리뷰 데이터',\
+                                                    `write_date` text COMMENT '리뷰 작성일자',\
+                                                    `regist_date` text COMMENT '데이터 업로드 일자',\
+                                                    `source` text COMMENT '데이터 출처 테이블 명',\
+                                                    PRIMARY KEY (`pk`)\
+                                                    ) ENGINE=InnoDB DEFAULT CHARSET=utf8;",
+            
+            'glowpick_product_info_final_version': f"CREATE TABLE `glowpick_product_info_final_version` (\
+                                                    `id` int(11) DEFAULT NULL COMMENT '상품 아이디 (자체부여)',\
+                                                    `product_code` int(11) DEFAULT NULL COMMENT '글로우픽 내부 상품 코드',\
+                                                    `product_name` varchar(255),\
+                                                    `brand_code` int(11),\
+                                                    `brand_name` varchar(255),\
+                                                    `product_url` varchar(255),\
+                                                    `selection` varchar(255),\
+                                                    `division` varchar(255),\
+                                                    `groups` varchar(255),\
+                                                    `descriptions` text,\
+                                                    `product_keywords` varchar(255),\
+                                                    `color_type` varchar(255),\
+                                                    `volume` varchar(255),\
+                                                    `image_source` text,\
+                                                    `ingredients_all_kor` text,\
+                                                    `ingredients_all_eng` text,\
+                                                    `ingredients_all_desc` text,\
+                                                    `ranks` varchar(255),\
+                                                    `product_awards` text,\
+                                                    `product_awards_sector` text,\
+                                                    `product_awards_rank` text,\
+                                                    `price` varchar(255) COMMENT '정가',\
+                                                    `product_stores` varchar(255) COMMENT '글로우픽 기준 판매 스토어',\
+                                                    `status` int(11) COMMENT '단종 여부 (0: 단종, 1: 판매중)',\
+                                                    `dup_check` int(11) COMMENT '중복 여부 (0: 단일상품(중복x), -1: 종속상품(중복o), 1: 대표상품(중복o))',\
+                                                    `dup_id` varchar(255) COMMENT '종속상품 id 리스트'\
+                                                    ) ENGINE=InnoDB DEFAULT CHARSET=utf8;",
+                                                
             'glowpick_product_info_final_version_review': f"CREATE TABLE glowpick_product_info_final_version_review (\
-                                                        `id` int(11) DEFAULT NULL COMMENT '싱품 id',\
-                                                        `product_code` int(11) DEFAULT NULL COMMENT '글로우픽 내부 상품 코드',\
-                                                        `user_id` varchar(100) DEFAULT NULL COMMENT '유저 아이디',\
-                                                        `product_rating` int(11) DEFAULT NULL COMMENT '상품 평점',\
-                                                        `review_date` varchar(100) DEFAULT NULL COMMENT '리뷰 작성 일자',\
-                                                        `product_review` text DEFAULT NULL COMMENT '리뷰 내용'\
-                                                        ) ENGINE=InnoDB DEFAULT CHARSET=utf8;",
+                                                            `id` int(11) DEFAULT NULL COMMENT '싱품 id',\
+                                                            `product_code` int(11) DEFAULT NULL COMMENT '글로우픽 내부 상품 코드',\
+                                                            `user_id` varchar(100) DEFAULT NULL COMMENT '유저 아이디',\
+                                                            `product_rating` int(11) DEFAULT NULL COMMENT '상품 평점',\
+                                                            `review_date` varchar(100) DEFAULT NULL COMMENT '리뷰 작성 일자',\
+                                                            `product_review` text DEFAULT NULL COMMENT '리뷰 내용'\
+                                                            ) ENGINE=InnoDB DEFAULT CHARSET=utf8;",
         }
         
         if 'info_all' in table_name:

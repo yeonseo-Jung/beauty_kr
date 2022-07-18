@@ -10,7 +10,6 @@ __pycache__/
 dist/
 build/
 *.egg-info/
-_exec.py
 
 # Experiments
 tmp/
@@ -45,5 +44,4 @@ config/
 *.icns
 
 # .py
-main.py
 scraper_naver.py
