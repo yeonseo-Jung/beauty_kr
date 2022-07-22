@@ -198,21 +198,6 @@ class MappingWindow(QMainWindow, form):
             msg = QMessageBox()
             msg.setText(f'매핑 대상 테이블 전처리 완료 후 시도하세요')
             msg.exec_()
-        
-    # def _mapping(self):
-    #     ''' Select mapped product '''
-    #     if self.comp:
-    #         compared_prds = pd.read_csv(tbl_cache + '/compared_prds.csv')
-    #         mapped_prds = mapping_product.select_mapped_prd(compared_prds)
-    #         mapped_prds.to_csv(tbl_cache + '/mapped_prds.csv', index=False)
-    #         mapping_table = mapping_product.md_map_tbl(mapped_prds)
-    #         mapping_table.to_csv(tbl_cache + '/mapping_table.csv', index=False)
-    #         self.compare = False
-    #         self.mapped = True
-    #     else:
-    #         msg = QMessageBox()
-    #         msg.setText(f'Compare 완료 후 시도하세요')
-    #         msg.exec_()
             
     def save_file(self, file_name):
         ''' save csv file '''
@@ -264,16 +249,6 @@ class MappingWindow(QMainWindow, form):
         self.msg = "매핑 완료 후 시도하세요"
         self.save_file(file_name)
         
-    # def _save_3(self):
-    #     file_name = "mapped_prds.csv"
-    #     self.msg = "매핑 완료 후 시도하세요"
-    #     self.save_file(file_name)
-
-    # def _save_4(self):
-    #     file_name = "mapping_table.csv"
-    #     self.msg = "매핑테이블 제작 완료 후 시도하세요"
-    #     self.save_file(file_name)
-        
     def _viewer_0(self):
         file_name = "tbl.csv"
         self.msg = "테이블 가져오기 완료 후 시도하세요"
@@ -288,16 +263,6 @@ class MappingWindow(QMainWindow, form):
         file_name = "mapping_table.csv"
         self.msg = "매핑 완료 후 시도하세요"
         self.tbl_viewer(file_name)
-        
-    # def _viewer_3(self):
-    #     file_name = "mapped_prds.csv"
-    #     self.msg = "매핑 완료 후 시도하세요"
-    #     self.tbl_viewer(file_name)
-
-    # def _viewer_4(self):
-    #     file_name = "mapping_table.csv"
-    #     self.msg = "매핑테이블 제작 완료 후 시도하세요"
-    #     self.tbl_viewer(file_name)
         
     def _status(self):
         file_name = "mapping_table.csv"
@@ -326,36 +291,3 @@ class MappingWindow(QMainWindow, form):
             msg = QMessageBox()
             msg.setText(f'매핑 완료 후 시도하세요')
             msg.exec_()
-        
-    # def _status(self):
-    #     file_name = "mapped_prds.csv"
-    #     file_path = os.path.join(tbl_cache, file_name)
-    #     if os.path.isfile(file_path):
-    #         df = pd.read_csv(file_path)
-    #         prd_0 = len(df.id_0.unique())
-    #         prd_1 = len(df)
-                
-    #         df_0 = df.loc[df.similarity==1]
-    #         prd_0_0 = len(df_0.id_0.unique())
-    #         # prd_0_1 = len(df_0.drop_duplicates(subset=['id_1', 'table_name'], keep='first'))
-    #         # print(prd_0_0, prd_0_1)
-
-    #         df_1 = df.loc[(df.similarity!=1) & (df.dependency_ratio==1)]
-    #         prd_1_0 = len(df_1.id_0.unique())
-    #         # prd_1_1 = len(df_1.drop_duplicates(subset=['id_1', 'table_name'], keep='first'))
-    #         # print(prd_1_0, prd_1_1)
-
-    #         df_2 = df.loc[(df.similarity!=1) & (df.dependency_ratio!=1)]
-    #         prd_2_0 = len(df_2.id_0.unique())
-    #         # prd_2_1 = len(df_2.drop_duplicates(subset=['id_1', 'table_name'], keep='first'))
-    #         # print(prd_2_0, prd_2_1)
-    #         QMessageBox.about(self,
-    #                         'Mapping Status',
-    #                         f"- 매핑 기준 상품 수(글로우픽): {prd_0}\n- 매핑 대상 상품 수: {prd_1}\n\n\
-    #                         - 상품명 완전일치: {prd_0_0}\n\
-    #                         - 상품명 완전종속: {prd_1_0}\n\
-    #                         - 유사도 조건충족: {prd_2_0}")
-    #     else:
-    #         msg = QMessageBox()
-    #         msg.setText("매핑 완료 후 시도하세요")
-    #         msg.exec_() 

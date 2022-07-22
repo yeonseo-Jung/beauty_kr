@@ -341,7 +341,7 @@ class CrawlingGlWindow(QMainWindow, form):
                 df.to_csv(file_save[0], index=False)
         else:
             msg = QMessageBox()
-            msg.setText('일시정지 후 다시 시도해주세요')
+            msg.setText('** 일시정지 후 다시 시도해주세요 **')
             msg.exec_()
             
     def tbl_viewer(self):
@@ -359,7 +359,7 @@ class CrawlingGlWindow(QMainWindow, form):
             self.viewer._loadFile('gl_info.csv')
         else:
             msg = QMessageBox()
-            msg.setText('일시정지 후 다시 시도해주세요')
+            msg.setText('** 일시정지 후 다시 시도해주세요 **')
             msg.exec_()
             
     def _upload_df(self):

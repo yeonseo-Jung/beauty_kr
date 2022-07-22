@@ -23,6 +23,7 @@ from gui.gui_review import ReviewWindow
 from gui.gui_crawling_nv_rev import CrawlingNvRevWindow
 from gui.gui_crawling_gl import CrawlingGlWindow
 from gui.gui_crawling_nv_status import CrawlingNvStatus
+from gui.gui_crawling_olive import CrawlingOliveWindow
 
 class MainWidget(QWidget):
     ''' Database Connect Form '''
@@ -37,6 +38,7 @@ class MainWidget(QWidget):
         self.w4 = None
         self.w5 = None
         self.w6 = None
+        self.w7 = None
         self.setWindowTitle('Connect Database')
         self.resize(475, 250)
 
@@ -73,6 +75,7 @@ class MainWidget(QWidget):
         self.comb_menu.addItem('Crawling Naver Products Review')
         self.comb_menu.addItem('Get Table from Database')
         self.comb_menu.addItem('Upload Review Table to Database')
+        self.comb_menu.addItem('Update Oliveyoung Products')
         self.comb_menu.move(50, 50)
         
         #
@@ -104,10 +107,11 @@ class MainWidget(QWidget):
         }
         db = AccessDataBase(conn[0], conn[1], conn[2])
         try:
-            curs = db.db_connect()
+            _conn, curs = db.db_connect()
+            curs.close()
+            _conn.close()
             msg.setText(f'Database Connection Successful \n - {self.lineEdit_database.text()}')
             msg.exec_()
-            curs.close()
             
             # save connect info 
             with open(conn_path, 'wb') as f:
@@ -170,6 +174,14 @@ class MainWidget(QWidget):
                     self.w6.close()
                     self.w6.show()
                 
+            elif menu_index == 7:
+                if self.w7 is None:
+                    self.w7 = CrawlingOliveWindow()
+                    self.w7.show()
+                else:
+                    self.w7.close()
+                    self.w7.show()
+                    
         except Exception as e:
             msg.setText(f'{e}\n\n** VPN 연결 해제 후 로그인 **')
             msg.exec_()
