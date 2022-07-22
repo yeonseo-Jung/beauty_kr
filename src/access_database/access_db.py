@@ -35,12 +35,30 @@ class AccessDataBase:
         port_num = 3306
         conn = pymysql.connect(host=host_url, user=self.user_name, passwd=self.password, port=port_num, db=self.db_name, charset='utf8')
         curs = conn.cursor(pymysql.cursors.DictCursor)
-        return curs
+        return conn, curs
+    
+    def insert(self, table: str, fields: tuple, values: tuple) -> None:
+        _fields = ''
+        for field in fields:
+            if _fields == '':
+                _fields +=  field
+            else:
+                _fields += ', ' + field
+        _fields_ = '(' + _fields + ')'
+
+        conn, curs = self.db_connect()
+
+        query = f"INSERT INTO `{table}`{_fields_} VALUES{str(values)};"
+        curs.execute(query)
+
+        conn.commit()
+        curs.close()
+        conn.close()
 
     def get_tbl_name(self):
         ''' db에 존재하는 모든 테이블 이름 가져오기 '''
 
-        curs = self.db_connect()
+        conn, curs = self.db_connect()
 
         # get table name list
         query = "SHOW TABLES;"
@@ -51,14 +69,16 @@ class AccessDataBase:
         for table in tables:
             tbl = list(table.values())[0]
             table_list.append(tbl)
+        
         curs.close()
+        conn.close()
         
         return table_list
 
     def get_tbl_columns(self, table_name):
         ''' 선택한 테이블 컬럼 가져오기 '''
         
-        curs = self.db_connect()
+        conn, curs = self.db_connect()
 
         # get table columns 
         query = f"SHOW FULL COLUMNS FROM {table_name};"
@@ -69,7 +89,9 @@ class AccessDataBase:
         for column in columns:
             field = column['Field']
             column_list.append(field)
+        
         curs.close()
+        conn.close()
         
         return column_list
 
@@ -78,7 +100,7 @@ class AccessDataBase:
         
         if table_name in self.get_tbl_name():
             st = time.time()
-            curs = self.db_connect()
+            conn, curs = self.db_connect()
             
             if columns == 'all':
                 query = f'SELECT * FROM {table_name};'
@@ -99,6 +121,7 @@ class AccessDataBase:
             tbl = curs.fetchall()
             df = pd.DataFrame(tbl)
             curs.close()
+            conn.close()
             
             ed = time.time()
             print(f'`{table_name}` Import Time: {round(ed-st, 1)}sec\n\n')
@@ -192,7 +215,7 @@ class AccessDataBase:
             
     def table_backup(self, table_name):
         
-        curs = self.db_connect()
+        conn, curs = self.db_connect()
         
         table_list = self.get_tbl_name()
         if table_name in table_list:
@@ -206,7 +229,10 @@ class AccessDataBase:
             curs.execute(query)
         else:
             pass
+        
+        conn.commit()
         curs.close()
+        conn.close()
         
     def create_table(self, upload_df, table_name):
         ''' Create table '''
@@ -313,6 +339,43 @@ class AccessDataBase:
                                                             `review_date` varchar(100) DEFAULT NULL COMMENT '리뷰 작성 일자',\
                                                             `product_review` text DEFAULT NULL COMMENT '리뷰 내용'\
                                                             ) ENGINE=InnoDB DEFAULT CHARSET=utf8;",
+                                                            
+            'oliveyoung_product_info_final_version': f"CREATE TABLE `oliveyoung_product_info_final_version` (\
+                                                        `id` int(11) NOT NULL,\
+                                                        `product_code` varchar(100) DEFAULT NULL,\
+                                                        `product_name` varchar(100) DEFAULT NULL,\
+                                                        `product_url` varchar(255) DEFAULT NULL,\
+                                                        `brand_name` varchar(100) DEFAULT NULL,\
+                                                        `price` int(11) DEFAULT NULL,\
+                                                        `sale_price` int(11) DEFAULT NULL,\
+                                                        `selection` varchar(100) DEFAULT NULL,\
+                                                        `division` varchar(100) DEFAULT NULL,\
+                                                        `groups` varchar(100) DEFAULT NULL,\
+                                                        `brand_code` varchar(100) DEFAULT NULL,\
+                                                        `brand_url` varchar(100) DEFAULT NULL,\
+                                                        `product_rating` float DEFAULT NULL,\
+                                                        `product_size` varchar(100) DEFAULT NULL,\
+                                                        `skin_type` varchar(100) DEFAULT NULL,\
+                                                        `expiration_date` varchar(100) DEFAULT NULL,\
+                                                        `how_to_use` text,\
+                                                        `manufacturer` varchar(100) DEFAULT NULL,\
+                                                        `manufactured_country` varchar(100) DEFAULT NULL,\
+                                                        `ingredients_all` text,\
+                                                        `status` int(11) DEFAULT NULL\
+                                                        ) ENGINE=InnoDB DEFAULT CHARSET=utf8;",
+                                                        
+            'oliveyoung_product_info_final_version_review': f"CREATE TABLE `oliveyoung_product_info_final_version_review` (\
+                                                                `pk` int(11) unsigned NOT NULL AUTO_INCREMENT,\
+                                                                `id` int(11) NOT NULL,\
+                                                                `product_code` varchar(100) DEFAULT NULL,\
+                                                                `product_url` varchar(255) DEFAULT NULL,\
+                                                                `user_id` varchar(100) DEFAULT NULL,\
+                                                                `product_rating` int(11) DEFAULT NULL,\
+                                                                `review_date` datetime DEFAULT NULL,\
+                                                                `product_review` text NOT NULL,\
+                                                                PRIMARY KEY (`pk`),\
+                                                                KEY `id` (`id`)\
+                                                                ) ENGINE=InnoDB DEFAULT CHARSET=utf8;"
         }
         
         if 'info_all' in table_name:
@@ -332,7 +395,7 @@ class AccessDataBase:
             self.table_backup(table_name)
             
             # create table
-            curs = self.db_connect()
+            conn, curs = self.db_connect()
             curs.execute(query)
             
             # upload table
@@ -343,5 +406,7 @@ class AccessDataBase:
             if  f'{table_name}_temp' in table_list:
                 curs.execute(f'DROP TABLE {table_name}_temp;')
             
-            # close cursor
+            # commit & close
+            conn.commit()
             curs.close()
+            conn.close()
