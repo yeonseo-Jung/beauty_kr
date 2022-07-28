@@ -22,10 +22,10 @@ class Errors:
             conn = pickle.load(f)
         self.db = AccessDataBase(conn[0], conn[1], conn[2])
         
-    def errors_log(self):
+    def errors_log(self, url=None):
         tb = traceback.format_exc()
         _datetime = pd.Timestamp(datetime.today())
         table = 'error_log'
-        fields = ('traceback', 'error_date')
-        values = (tb, _datetime)
+        fields = ('url', 'traceback', 'error_date')
+        values = (url, tb, _datetime)
         self.db.insert(table, fields, values)

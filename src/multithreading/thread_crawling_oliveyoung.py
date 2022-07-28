@@ -49,6 +49,7 @@ class ThreadCrawlingOlive(QtCore.QThread, QtCore.QObject):
             conn = pickle.load(f)
         self.db = AccessDataBase(conn[0], conn[1], conn[2])
         
+        # error class
         self.err = Errors()
     
     def _upload(self, comp=False):
@@ -89,14 +90,22 @@ class ThreadCrawlingOlive(QtCore.QThread, QtCore.QObject):
             info_df_mer.loc[:, 'id'] = range(start_id, len(info_df_mer) + start_id)
             rev_df_mer_mapped = info_df_mer.loc[:, ['id', 'product_code']].merge(rev_df_mer, on='product_code', how='right')
             
-            try:
-                self.db.engine_upload(info_df_mer, 'oliveyoung_product_info_final_version_test', 'append')
-                self.db.engine_upload(rev_df_mer_mapped, 'oliveyoung_product_info_final_version_review_test', 'append')
-            except Exception as e:
-                # db 연결 끊김: VPN 연결 해제 및 와이파이 재연결 필요
-                print(f'\n\nError: {str(e)}\n\n')
-                if self.power:
-                    self.stop()
+            if comp:
+                try:
+                    # upload table
+                    self.db.engine_upload(info_df_mer, 'oliveyoung_product_info_final_version', 'append')
+                    self.db.engine_upload(rev_df_mer_mapped, 'oliveyoung_product_info_final_version_review', 'append')
+                    
+                    # init cache file
+                    os.remove(self.infos_path)
+                    os.remove(self.reviews_path)
+                    os.remove(self.errors_path)
+                        
+                except Exception as e:
+                    # db 연결 끊김: VPN 연결 해제 및 와이파이 재연결 필요
+                    print(f'\n\nError: {str(e)}\n\n')
+                    if self.power:
+                        self.stop()
         
     progress = QtCore.pyqtSignal(object)
     def run(self):
@@ -133,7 +142,7 @@ class ThreadCrawlingOlive(QtCore.QThread, QtCore.QObject):
                 try:
                     self.infos, self.reviews, self.errors = crawling_oliveyoung(url, self.infos, self.reviews, self.errors)
                 except:
-                    self.err.errors_log()
+                    self.err.errors_log(url)
                 
                 idx += 1
             else:
@@ -143,16 +152,12 @@ class ThreadCrawlingOlive(QtCore.QThread, QtCore.QObject):
         with open(self.urls_path, 'wb') as f:
             pickle.dump(urls[idx:], f)
         
-        # errors log
-        try:
-            if idx == len(urls):
-                # Thread completion
-                self._upload(comp=True)
-            else:
-                # upload table into db 
-                self._upload()
-        except:
-            self.err.errors_log()
+        if idx == len(urls):
+            # Thread completion
+            self._upload(comp=True)
+        else:
+            # upload table into db 
+            self._upload()
             
         self.progress.emit(t)
         self.power = False

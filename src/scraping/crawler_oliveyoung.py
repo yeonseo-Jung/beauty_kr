@@ -446,7 +446,7 @@ def turning_page(wd, url, xpath_page):
                 btn.click()
             except ElementNotInteractableException:
                 ActionChains(wd).move_to_element(btn).click(btn).perform()
-            time.sleep(2.5)
+                time.sleep(2.5)
             review_data += scraping_review(wd, url)
             page_cnt += 1
                     
@@ -474,7 +474,7 @@ def select_rating(wd, url, xpath_filter, xpath_page):
         btn.click()
     except ElementNotInteractableException:
         ActionChains(wd).move_to_element(btn).click(btn).perform()
-    time.sleep(2.5)
+    time.sleep(5)
 
     # select rating
     try:
@@ -598,7 +598,12 @@ def crawling_oliveyoung(url, infos, reviews, error_xpath):
 
                     xpath_filter, xpath_page = get_xpath(wd)
 
-                    if cnt <= 1000:
+                    if cnt <= 10:
+                        # scroll down
+                        wd.find_element_by_tag_name('body').send_keys(Keys.END)
+                        time.sleep(1.5)
+                        reviews += scraping_review(wd, url)
+                    elif cnt <= 1000:
                         rev, status, wd = turning_page(wd, url, xpath_page)
                         reviews += rev
                         if status == -1:

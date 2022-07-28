@@ -1,4 +1,5 @@
 import os
+import re
 import sys
 import time
 import pickle
@@ -27,6 +28,7 @@ from scraping.scraper import scraper_nv
 from scraping.crawler_naver import ReviewScrapeNv
 from mapping._preprocessing import TitlePreProcess
 from scraping.crawler_naver import ProductStatusNv
+from errors import Errors
     
 class ThreadCrawlingNvRev(QtCore.QThread, QtCore.QObject):
     ''' Thread scraping product info '''
@@ -138,7 +140,10 @@ class ThreadCrawlingNvStatus(QtCore.QThread, QtCore.QObject):
         # db 연결
         with open(conn_path, 'rb') as f:
             conn = pickle.load(f)
-        self.db = AccessDataBase(conn[0], conn[1], conn[2])   
+        self.db = AccessDataBase(conn[0], conn[1], conn[2])
+        
+        # error class
+        self.err = Errors()
         
         # today (regist date)
         today = datetime.today()
@@ -166,7 +171,15 @@ class ThreadCrawlingNvStatus(QtCore.QThread, QtCore.QObject):
         }
     def _get_tbl(self):
         
-        tables = ['naver_beauty_product_info_extended_v1', 'naver_beauty_product_info_extended_v2', 'naver_beauty_product_info_extended_v3', 'naver_beauty_product_info_extended_v4', 'naver_beauty_product_info_extended_v5']
+        # naver
+        table_list = self.db.get_tbl_name()
+        reg = re.compile('naver_beauty_product_info_extended_v[0-9]+')
+        tables = []
+        for tbl in table_list:
+            tbl_ = re.match(reg, tbl)
+            if tbl_:
+                tables.append(tbl_.group(0))
+        tables = list(set(tables))
         columns = ['id', 'product_url', 'selection', 'division', 'groups']
 
         # check mapping products
@@ -246,6 +259,8 @@ class ThreadCrawlingNvStatus(QtCore.QThread, QtCore.QObject):
             # table upload
             if comp:
                 self.db.create_table(df_mer, table_name)    
+                os.remove('self.path_input_df')
+                os.remove('self.path_status_list')
             else:                
                 self.db.engine_upload(df_mer, table_name, 'replace')
             status = 1
@@ -291,8 +306,15 @@ class ThreadCrawlingNvStatus(QtCore.QThread, QtCore.QObject):
                     url = df.loc[idx, 'product_url']
                     
                     st = time.time()
-                    product_status, store_info = prd.scraping_product_stores(item_key, url, None, None)
-                    self.status_list.append([url, product_status])
+                    
+                    # errors log
+                    try:
+                        product_status, store_info = prd.scraping_product_stores(item_key, url, None, None)
+                        self.status_list.append([url, product_status])
+                    except:
+                        store_info = None
+                        self.err.errors_log(url)
+                        
                     ed = time.time()
                     if ed - st > 100:
                         # 네이버 VPM ip 차단
@@ -402,13 +424,6 @@ class ThreadCrawlingNvInfo(QtCore.QThread, QtCore.QObject):
                 
                 with open(tbl_cache + '/status_dict.txt', 'wb') as f:
                     pickle.dump(status_dict, f)
-                    
-                # # status 데이터 할당 데이터프레임
-                # ids = list(status_dict.keys())
-                # sts = list(status_dict.values())
-                # df_ = pd.DataFrame(columns=['id', 'status'])
-                # df_.loc[:, 'id'] = ids
-                # df_.loc[:, 'status'] = sts
                 
                 self.progress.emit(t)
                 break
@@ -418,18 +433,6 @@ class ThreadCrawlingNvInfo(QtCore.QThread, QtCore.QObject):
             columns = ['id','input_words','product_name','product_url','price','category','product_description','registered_date','product_reviews_count','product_rating','product_store','similarity']
             df = pd.DataFrame(scrap_list, columns=columns)
             df.to_csv(tbl_cache + '/df_info_scrap.csv', index=False)
-            
-            # # status 데이터 할당 데이터프레임
-            # ids = list(status_dict.keys())
-            # sts = list(status_dict.values())
-            # df_ = pd.DataFrame(columns=['id', 'status'])
-            # df_.loc[:, 'id'] = ids
-            # df_.loc[:, 'status'] = sts
-        
-            # # table Update from db: glowpick_product_scrap_status 
-            # table_name = "glowpick_product_scrap_status"
-            # pk = "id"
-            # self.db.table_update(table_name, pk, df_)
         
         self.progress.emit(t)
         self.power = False

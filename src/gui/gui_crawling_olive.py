@@ -46,6 +46,7 @@ class CrawlingOliveWindow(QMainWindow, form):
         self.urls_path = os.path.join(tbl_cache, 'urls.txt')
         self.info_detail_df_path = os.path.join(tbl_cache, 'info_detail_df.csv')
         self.review_df_path = os.path.join(tbl_cache, 'review_df.csv')
+        self.prg_path = os.path.join(tbl_cache, 'prg_dict.txt')
         
         # connect thread
         self.crw.progress.connect(self.update_progress)
@@ -159,8 +160,8 @@ class CrawlingOliveWindow(QMainWindow, form):
             
     def update_progress(self, progress):
         
-        if os.path.isfile(tbl_cache + '/prg_dict.txt'):
-            with open(tbl_cache + '/prg_dict.txt', 'rb') as f:
+        if os.path.isfile(self.prg_path):
+            with open(self.prg_path, 'rb') as f:
                 prg_dict_ = pickle.load(f)
             itm_ = prg_dict_['n'] 
             elapsed_ = round(prg_dict_['elapsed'], 0)
@@ -198,12 +199,12 @@ class CrawlingOliveWindow(QMainWindow, form):
         
         # pause 시에 현재까지 진행률 저장
         if not self.crw.power:
-            with open(tbl_cache + '/prg_dict.txt', 'wb') as f:
+            with open(self.prg_path, 'wb') as f:
                 pickle.dump(prg_dict_, f)
             
             if itm == tot:
                 message = f"{int(per)}% | Progress item: {itm}  Total: {tot} | Elapsed time: {elapsed_h}:{elapsed_m}:{elapsed_s} < Remain time: {remain_h}:{remain_m}:{remain_s} **Complete**"
-                os.remove(self.path_prg)
+                os.remove(self.prg_path)
             else:
                 message = f"{int(per)}% | Progress item: {itm}  Total: {tot} | Elapsed time: {elapsed_h}:{elapsed_m}:{elapsed_s} < Remain time: {remain_h}:{remain_m}:{remain_s} **PAUSE**"
             self.statusbar.showMessage(message)

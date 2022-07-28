@@ -26,6 +26,7 @@ from access_database.access_db import AccessDataBase
 from scraping.scraper import get_url
 from scraping.crawler_glowpick import CrawlInfoRevGl
 from mapping._preprocessing import grouping
+from errors import Errors
           
 crw = CrawlInfoRevGl()
 class ThreadCrawlingGl(QtCore.QThread, QtCore.QObject):
@@ -42,12 +43,14 @@ class ThreadCrawlingGl(QtCore.QThread, QtCore.QObject):
         # file path
         self.file_path = os.path.join(tbl_cache, 'product_codes.txt')
         self.path_scrape_df = os.path.join(tbl_cache, 'gl_info.csv')
-        # self.path_scrape_df_rev = os.path.join(tbl_cache, 'gl_info_rev.csv')
         
         # db 연결
         with open(conn_path, 'rb') as f:
             conn = pickle.load(f)
         self.db = AccessDataBase(conn[0], conn[1], conn[2])
+        
+        # error class
+        self.err = Errors()
         
         # today (regist date)
         today = datetime.today()
@@ -99,7 +102,6 @@ class ThreadCrawlingGl(QtCore.QThread, QtCore.QObject):
             # reivew table
             columns = ['product_code', 'user_id', 'product_rating', 'review_date', 'product_review']
             df_rev = pd.DataFrame(self.scrape_reviews, columns=columns)
-            # df_rev.to_csv(self.path_scrape_df_rev, index=False)
             
             # status table
             df_status = pd.DataFrame(self.status_list, columns=['product_code', 'status'])
@@ -157,16 +159,22 @@ class ThreadCrawlingGl(QtCore.QThread, QtCore.QObject):
                         self.db.engine_upload(gl_info_new_v, 'glowpick_product_info_update_new', 'replace')
                         self.db.create_table(_gl_info_final_v_dedup, 'glowpick_product_info_final_version')
                         self.db.create_table(df_dedup_rev, 'glowpick_product_info_final_version_review')
+                        
+                        # init cache file
+                        self.scrape_infos, self.scrape_reviews, self.status_list = [], [], []
+                        os.remove(self.file_path)
+                        
                         return 1
                     except Exception as e:
-                        print(e)
+                        # db 연결 끊김: VPN 연결 해제 및 와이파이 재연결 필요
+                        self.check = 2
                         return -1
                 else:
                     return 2
                         
             except Exception as e:
                 # db 연결 끊김: VPN 연결 해제 및 와이파이 재연결 필요
-                print(e)
+                self.check = 2
                 if self.power:
                     self.stop()
                 return -2
@@ -192,14 +200,19 @@ class ThreadCrawlingGl(QtCore.QThread, QtCore.QObject):
                     break                    
                 
                 elif status == 1:
-                    scrape, status, driver = crw.scrape_gl_info(code, driver, review_check)
-                    
-                    if status == 1:
-                        self.scrape_infos.append(scrape)
-                        if review_check == 1:
-                            reviews, rev_status = crw.crawling_review(code, driver)
-                            if rev_status == 1:
-                                self.scrape_reviews += reviews
+                    try:
+                        scrape, status, driver = crw.scrape_gl_info(code, driver, review_check)
+                        
+                        if status == 1:
+                            self.scrape_infos.append(scrape)
+                            if review_check == 1:
+                                reviews, rev_status = crw.crawling_review(code, driver)
+                                if rev_status == 1:
+                                    self.scrape_reviews += reviews
+                    except:
+                        url = f'https://www.glowpick.com/products/{code}'
+                        self.err.errors_log(url)
+                        status = -1
                             
                 self.status_list.append([code, status])
                 idx += 1

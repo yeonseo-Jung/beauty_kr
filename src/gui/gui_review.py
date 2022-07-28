@@ -84,8 +84,8 @@ class ReviewWindow(QMainWindow, form):
         self.Dup_check.clicked.connect(self._dup_check)
         self.View.clicked.connect(self._view)
         self.Save.clicked.connect(self._save)
-        # self.Status.clicked.connect(self._status)
-        # self.Upload.clicked.connect(self._upload)
+        self.Status.clicked.connect(self._status)
+        self.Upload.clicked.connect(self._upload)
         
     def _get_tbl(self):
         ''' db에서 매핑 대상 테이블만 가져오기 '''
@@ -152,7 +152,7 @@ class ReviewWindow(QMainWindow, form):
         categs, categs_en = self.categ_toggled()
         if len(categs_en) == 1:
             msg = QMessageBox()
-            msg.setText(f'** 대용량 데이터 Select **/n 5분이상 소요예정 입니다')
+            msg.setText(f'** 대용량 데이터 Select **\n 5분이상 소요예정 입니다')
             msg.exec_()
             
             self.category = categs_en[0]
@@ -239,14 +239,21 @@ class ReviewWindow(QMainWindow, form):
             msg.setText(msg_txt)
             msg.exec_()
         
-    # def _upload(self):
-    #     msg = QMessageBox()
-    #     msg_txt = f"<Create Table>\n테이블 명: {self.table_name}\n** 대용량 리뷰 데이터 업로드: 10분 이상 소요됩니다 **"
-    #     msg.setText(msg_txt)
-    #     msg.exec_()
-    #     self.db.engine_upload(upload_df=self.upload_df, table_name=self.table_name, if_exists_option='replace', pk='pk')
-    #     self.db.engine_upload(upload_df=self.info_df_all, table_name=f'glowpick_product_info_{self.category}', if_exists_option='replace', pk='id')
-    #     msg = QMessageBox()
-    #     msg_txt = f"<테이블 업로드 완료>\n\n리뷰 테이블 명: {self.table_name}\n개체 테이블 명: glowpick_product_info_{self.category}"
-    #     msg.setText(msg_txt)
-    #     msg.exec_()
+    def _upload(self):
+        if self.df is None:
+            msg = QMessageBox()
+            msg_txt = f"** 리뷰 테이블 생성 후 시도하세요 **"
+            msg.setText(msg_txt)
+            msg.exec_()
+        else:    
+            msg = QMessageBox()
+            msg_txt = f"** 대용량 리뷰 데이터 업로드: 10분 이상 소요됩니다 **"
+            msg.setText(msg_txt)
+            msg.exec_()
+        
+            table_name = f'beauty_kr_{self.category}_reviews_all'
+            self.db.create_table(self.df, table_name)
+            msg = QMessageBox()
+            msg_txt = f"<테이블 업로드 완료>\n\n리뷰 테이블 명: {table_name}"
+            msg.setText(msg_txt)
+            msg.exec_()

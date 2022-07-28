@@ -65,7 +65,7 @@ class ReviewMapping:
         # select table 
         db_table = self.db.get_tbl_name()
         df_list = []
-        curs = self.db.db_connect()
+        conn, curs = self.db.db_connect()
         for table in tqdm(indices.keys()):
             ids = tuple(groups.get_group(table).mapped_id.tolist())
             
