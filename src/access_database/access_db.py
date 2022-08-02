@@ -297,8 +297,9 @@ class AccessDataBase:
                                                     `item_key` int(11) DEFAULT NULL COMMENT '매핑 기준 상품 id',\
                                                     `txt_data` text COMMENT '리뷰 데이터',\
                                                     `write_date` text COMMENT '리뷰 작성일자',\
-                                                    `regist_date` text COMMENT '데이터 업로드 일자',\
+                                                    `product_rating` int(11) COMMENT '리뷰 평점',\
                                                     `source` text COMMENT '데이터 출처 테이블 명',\
+                                                    `regist_date` text COMMENT '데이터 업로드 일자',\
                                                     PRIMARY KEY (`pk`)\
                                                     ) ENGINE=InnoDB DEFAULT CHARSET=utf8;",
             
