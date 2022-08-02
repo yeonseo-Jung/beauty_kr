@@ -235,19 +235,30 @@ class CrawlingOliveWindow(QMainWindow, form):
             self.Time.display(time)
             
     def _run_url(self):
+        msg = QMessageBox()
+        if os.path.exists(self.category_ids_path):
+            if self.crw_url.power:
+                msg.setText('** 크롤링 진행 중입니다 **')
+            else:
+                msg.setText("- 인터넷 연결 확인 \n- VPN 연결 확인 \n- mac 자동 잠금 해제 확인")
+                self.crw_url.power = True
+                self.crw_url.start()
+        else:
+            msg.setText('** 카테고리 선택 후 진행하세요 **')
+        msg.exec_()
         
-        if self.crw_url.power:
-            pass
-        else:
-            self.crw_url.power = True
-            self.crw_url.start()
-            
     def _run(self):
-        if self.crw.power:
-            pass
+        msg = QMessageBox()
+        if os.path.exists(self.urls_path):
+            if self.crw.power:
+                msg.setText('** 스크레이핑 진행 중입니다 **')
+            else:
+                msg.setText("- 인터넷 연결 확인 \n- VPN 연결 확인 \n- mac 자동 잠금 해제 확인")
+                self.crw.power = True
+                self.crw.start()
         else:
-            self.crw.power = True
-            self.crw.start()
+            msg.setText('** url 수집 후 진행하세요 **')
+        msg.exec_()
             
     def _save_file(self):
         ''' save csv file '''

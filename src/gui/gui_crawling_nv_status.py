@@ -257,11 +257,14 @@ class CrawlingNvStatus(QMainWindow, form):
     def _upload_df(self):
         ''' Upload table into db '''    
         
-        df = pd.read_csv(self.path_input_df)
-        if len(df) == 0:
-            ck, table_name = self.thread_crw._upload_df(comp=True)
+        if os.path.exists(self.path_input_df):
+            df = pd.read_csv(self.path_input_df)
+            if len(df) == 0:
+                ck, table_name = self.thread_crw._upload_df(comp=True)
+            else:
+                ck, table_name = self.thread_crw._upload_df(comp=False)
         else:
-            ck, table_name = self.thread_crw._upload_df(comp=False)
+            ck, table_name = self.thread_crw._upload_df(comp=True)
         
         # db connection check
         if ck == 1:

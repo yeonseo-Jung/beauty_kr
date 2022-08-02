@@ -365,13 +365,16 @@ class CrawlingGlWindow(QMainWindow, form):
     def _upload_df(self):
         ''' upload table into db '''
         
-        with open(self.file_path, 'rb') as f:
-            product_codes = pickle.load(f)
+        if os.path.exists(self.file_path):
+            with open(self.file_path, 'rb') as f:
+                product_codes = pickle.load(f)
             
-        if len(product_codes) == 0:
-            ck = self.thread_crw._upload_df(comp=True)
+            if len(product_codes) == 0:
+                ck = self.thread_crw._upload_df(comp=True)
+            else:
+                ck = self.thread_crw._upload_df(comp=False)
         else:
-            ck = self.thread_crw._upload_df(comp=False)
+            ck = self.thread_crw._upload_df(comp=True)
         
         # db connection check
         if ck == 1:

@@ -40,6 +40,7 @@ class ReviewWindow(QMainWindow, form):
         self.select_ck = False
         self.dup_ck = False
         self.view_ck = None
+        self.df = None
         
         # path
         self.name = 'reviews_upload.csv'
@@ -150,13 +151,14 @@ class ReviewWindow(QMainWindow, form):
         ''' Select review table '''
         
         categs, categs_en = self.categ_toggled()
+        msg = QMessageBox()
         if len(categs_en) == 1:
-            msg = QMessageBox()
             msg.setText(f'** 대용량 데이터 Select **\n 5분이상 소요예정 입니다')
             msg.exec_()
             
             self.category = categs_en[0]
-            self.review.select(self.category)
+            category = categs[0]
+            self.review.select(category)
             
             msg = QMessageBox()
             msg.setText('** Select table successful! **')
@@ -164,7 +166,6 @@ class ReviewWindow(QMainWindow, form):
             
             self.select_ck = True
         else:
-            msg = QMessageBox()
             msg.setText('** 한개의 카테고리를 선택해주세요 **')
             msg.exec_()
             
@@ -257,3 +258,6 @@ class ReviewWindow(QMainWindow, form):
             msg_txt = f"<테이블 업로드 완료>\n\n리뷰 테이블 명: {table_name}"
             msg.setText(msg_txt)
             msg.exec_()
+           
+            # initialize
+            self.__init__()

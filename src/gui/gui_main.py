@@ -30,7 +30,7 @@ class MainWidget(QWidget):
     
     def __init__(self):
         super().__init__()
-        self.version = "2.0.2"
+        self.version = "2.1.0"
         self.w0 = None
         self.w1 = None
         self.w2 = None
