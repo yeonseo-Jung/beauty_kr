@@ -3,6 +3,7 @@ import re
 import sys
 import time
 import pickle
+import unicodedata
 from datetime import datetime
 from tqdm.auto import tqdm
 import numpy as np
@@ -25,6 +26,7 @@ conn_path = os.path.join(root, 'conn.txt')
 
 # import module inside package
 from access_database.access_db import AccessDataBase
+from mapping._preprocessing import TitlePreProcess
 
 class ReviewMapping:
     def __init__(self):
@@ -32,6 +34,9 @@ class ReviewMapping:
         with open(conn_path, 'rb') as f:
             conn = pickle.load(f)
         self.db = AccessDataBase(conn[0], conn[1], conn[2])
+        
+        # title preprocess
+        self.tp = TitlePreProcess()
         
         # path
         self.name = 'reviews_upload.csv'
@@ -52,11 +57,15 @@ class ReviewMapping:
         ''' Select Table '''
         
         map_df = self.db.get_tbl('beauty_kr_mapping_table')
-        map_df.loc[:, 'source'] = map_df.source + '_review'
-        categ_info = self.db.get_tbl(f'beauty_kr_{category}_info_all', ['item_key'])        
+        map_df.loc[:, 'source'] = map_df.source + '_review'        
+        
+        gl_info = self.db.get_tbl('glowpick_product_info_final_version', ['id', 'selection', 'division', 'groups'])
+        gl_info.loc[:, 'table_name'] = 'glowpick_product_info_final_version'
+        gl_info = self.tp.categ_reclassifier(gl_info)
+        gl_info_categ = gl_info.loc[gl_info.category==category].reset_index(drop=True)
         
         # extracting item keys
-        item_keys = categ_info.item_key.tolist()
+        item_keys = gl_info_categ.id.tolist()
 
         # grouping by source (table)
         groups = map_df.loc[map_df.item_key.isin(item_keys), ['item_key', 'mapped_id', 'source']].groupby('source')
@@ -98,27 +107,40 @@ class ReviewMapping:
         self.reviews = pd.concat([reviews_merge, df]).loc[:, ['item_key', 'user_id', 'product_rating', 'review_date', 'product_review', 'source']]
         
     def dup_check(self):
-        ''' Duplicate check '''
+        '''  Preprocessing & Duplicate check '''
+
+        # remove null values
+        reviews_data = self.reviews[self.reviews.product_review.notnull()].reset_index(drop=True)
+        
+        # encoding
+        reviews_data.loc[:, 'encoded'] = reviews_data.product_review.apply(lambda x: unicodedata.normalize('NFC', x))
+
+        # regulization
+        reg = re.compile(r'[^가-힣a-zA-Z0-9 ]')
+        reviews_data.loc[:, 'preprocessed'] = reviews_data.encoded.str.replace(reg, '').str.replace(r' +', ' ').str.strip()
+
+        # Remove missing values
+        reviews_data.loc[reviews_data.preprocessed=='', 'preprocessed'] = np.nan
+        reviews_data_notnull = reviews_data[reviews_data.preprocessed.notnull()].reset_index(drop=True)
         
         # duplicate check
-        reviews_notnull = self.reviews[self.reviews.product_review.notnull()]
-        subset = ['user_id', 'review_date', 'product_review']
-        self.reviews_dedup = reviews_notnull.drop_duplicates(subset=subset, keep='first').reset_index(drop=True)
-    
+        subset = ['item_key', 'user_id', 'preprocessed']
+        self.reviews_data_dedup = reviews_data_notnull.drop_duplicates(subset=subset, keep='first')
+            
     def create(self):
         ''' Create table '''
         
         # convert object to datetime
-        reviews_sorted = self.reviews_dedup.sort_values(by='item_key').reset_index(drop=True)
+        reviews_sorted = self.reviews_data_dedup.sort_values(by='item_key').reset_index(drop=True)
         reviews_sorted.loc[:, 'review_date'] = pd.to_datetime(reviews_sorted.review_date, errors='coerce')
         
         # columns rename
         rename = {
             'id': 'item_key',
             'review_date': 'write_date',
-            'product_review': 'txt_data',
+            'preprocessed': 'txt_data',
         }
-        columns = ['item_key', 'txt_data', 'write_date', 'source']
+        columns = ['item_key', 'txt_data', 'write_date', 'product_rating', 'source']
         self.reviews_upload = reviews_sorted.rename(columns=rename).loc[:, columns]
 
         # regist_date
