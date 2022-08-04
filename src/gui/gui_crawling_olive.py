@@ -239,26 +239,30 @@ class CrawlingOliveWindow(QMainWindow, form):
         if os.path.exists(self.category_ids_path):
             if self.crw_url.power:
                 msg.setText('** 크롤링 진행 중입니다 **')
+                msg.exec_()
             else:
                 msg.setText("- 인터넷 연결 확인 \n- VPN 연결 확인 \n- mac 자동 잠금 해제 확인")
+                msg.exec_()
                 self.crw_url.power = True
                 self.crw_url.start()
         else:
             msg.setText('** 카테고리 선택 후 진행하세요 **')
-        msg.exec_()
+            msg.exec_()
         
     def _run(self):
         msg = QMessageBox()
         if os.path.exists(self.urls_path):
             if self.crw.power:
                 msg.setText('** 스크레이핑 진행 중입니다 **')
+                msg.exec_()
             else:
                 msg.setText("- 인터넷 연결 확인 \n- VPN 연결 확인 \n- mac 자동 잠금 해제 확인")
+                msg.exec_()
                 self.crw.power = True
                 self.crw.start()
         else:
             msg.setText('** url 수집 후 진행하세요 **')
-        msg.exec_()
+            msg.exec_()
             
     def _save_file(self):
         ''' save csv file '''

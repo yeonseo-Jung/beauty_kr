@@ -131,18 +131,18 @@ class AccessDataBase:
         
         return df
     
-    def integ_tbl(self, table_name_list, columns):
+    def integ_tbl(self, table_name_list, columns='all'):
         ''' 
         db에서 컬럼이 같은 여러개 테이블 가져오기
         db에서 테이블 가져온 후 데이터 프레임 통합 (concat)
         '''
-
-        df = pd.DataFrame()
+        
+        df_list = []
         for tbl in table_name_list:
             df_ = self.get_tbl(tbl, columns)
             df_.loc[:, 'table_name'] = tbl
-            df = pd.concat([df, df_])
-        df = df.reset_index(drop=True)
+            df_list.append(df_)
+        df = pd.concat(df_list).reset_index(drop=True)
         return df
 
     def sqlcol(self, dfparam):    

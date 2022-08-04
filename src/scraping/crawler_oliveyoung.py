@@ -402,7 +402,7 @@ def get_xpath(wd):
 def turning_page(wd, url, xpath_page):
     # scroll down
     wd.find_element_by_tag_name('body').send_keys(Keys.END)
-    time.sleep(1.5)
+    time.sleep(2.5)
     
     status = 1
     page_cnt = 1

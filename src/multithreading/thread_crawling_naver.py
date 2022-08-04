@@ -259,8 +259,9 @@ class ThreadCrawlingNvStatus(QtCore.QThread, QtCore.QObject):
             # table upload
             if comp:
                 self.db.create_table(df_mer, table_name)    
-                os.remove('self.path_input_df')
-                os.remove('self.path_status_list')
+                os.remove(self.path_input_df)
+                os.remove(self.path_store_list)
+                os.remove(self.path_status_list)
             else:                
                 self.db.engine_upload(df_mer, table_name, 'replace')
             status = 1

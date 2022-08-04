@@ -186,6 +186,9 @@ class ThreadCrawlingOliveUrl(QtCore.QThread, QtCore.QObject):
             conn = pickle.load(f)
         self.db = AccessDataBase(conn[0], conn[1], conn[2])
         
+        # error class
+        self.err = Errors()
+        
     def _upload(self):
         
         columns = ['product_code', 'product_name', 'product_url', 'brand_name', 'price', 'sale_price', 'status']
@@ -217,18 +220,25 @@ class ThreadCrawlingOliveUrl(QtCore.QThread, QtCore.QObject):
             if self.power:
                 self.progress.emit(t)
                 
-                cnt = scraper_prd_cnt(category_id, page=1)
-                if cnt == -1:
-                    error.append(category_id)
-                else:
-                    pages = cnt // 24 + 1
-                    for page in range(1, pages + 1):
-                        info, status = scraper_prd_info(category_id, page)
-                        
-                        if status == -1:
-                            pass
-                        else:
-                            self.infos += info
+                try:
+                    cnt = scraper_prd_cnt(category_id, page=1)
+                    if cnt == -1:
+                        error.append(category_id)
+                    else:
+                        pages = cnt // 24 + 1
+                        for page in range(1, pages + 1):
+                            info, status = scraper_prd_info(category_id, page)
+                            
+                            if status == -1:
+                                pass
+                            else:
+                                self.infos += info
+                                
+                except:
+                    selection = category_id[0:5]
+                    division = category_id[5:9]
+                    url = f'https://www.oliveyoung.co.kr/store/display/getMCategoryList.do?dispCatNo=1000001{selection}{division}&fltDispCatNo=&prdSort=01&pageIdx={page}&rowsPerPage=24&searchTypeSort=btn_thumb&plusButtonFlag=N&isLoginCnt=0&aShowCnt=0&bShowCnt=0&cShowCnt=0&trackingCd=Cat1000001{selection}{division}_Small'
+                    self.err.errors_log(url)
             else:
                 break
         
@@ -239,19 +249,26 @@ class ThreadCrawlingOliveUrl(QtCore.QThread, QtCore.QObject):
             for category_id in t:
                 self.progress.emit(t)
                 
-                cnt = scraper_prd_cnt(category_id, page=1)
-                if cnt == -1:
-                    # url scraping failed category
-                    pass
-                else:
-                    pages = cnt // 24 + 1
-                    for page in range(1, pages + 1):
-                        info, status = scraper_prd_info(category_id, page)
-                        
-                        if status == -1:
-                            pass
-                        else:
-                            self.infos += info
+                try:
+                    cnt = scraper_prd_cnt(category_id, page=1)
+                    if cnt == -1:
+                        # url scraping failed category
+                        pass
+                    else:
+                        pages = cnt // 24 + 1
+                        for page in range(1, pages + 1):
+                            info, status = scraper_prd_info(category_id, page)
+                            
+                            if status == -1:
+                                pass
+                            else:
+                                self.infos += info
+                                
+                except:
+                    selection = category_id[0:5]
+                    division = category_id[5:9]
+                    url = f'https://www.oliveyoung.co.kr/store/display/getMCategoryList.do?dispCatNo=1000001{selection}{division}&fltDispCatNo=&prdSort=01&pageIdx={page}&rowsPerPage=24&searchTypeSort=btn_thumb&plusButtonFlag=N&isLoginCnt=0&aShowCnt=0&bShowCnt=0&cShowCnt=0&trackingCd=Cat1000001{selection}{division}_Small'
+                    self.err.errors_log(url)
         
         self._upload()    
         self.progress.emit(t)

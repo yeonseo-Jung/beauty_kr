@@ -63,10 +63,6 @@ class ThreadCrawlingGl(QtCore.QThread, QtCore.QObject):
             day = "0" + day
         self.date = year + "-" + month + "-" + day
         date = year[2:4] + month + day
-        # table name
-        self.table_name_info = f"glowpick_product_info_update_{date}"
-        self.table_name_rev = f"glowpick_product_info_update_review_{date}"
-        self.table_name_status = f"glowpick_product_info_update_status_{date}"
         
     def _get_tbl(self):
         
@@ -119,11 +115,6 @@ class ThreadCrawlingGl(QtCore.QThread, QtCore.QObject):
                     df_status = pd.concat([df_status, _df_status]).drop_duplicates('product_code', keep='first').sort_values('product_code').reset_index(drop=True)
                 else:
                     pass
-                
-                # upload table into db        
-                self.db.engine_upload(df_info, self.table_name_info, 'replace')
-                self.db.engine_upload(df_rev, self.table_name_rev, 'replace')
-                self.db.engine_upload(df_status, self.table_name_status, 'replace')
                 
                 if comp:
                     ''' Table Update (append) '''
