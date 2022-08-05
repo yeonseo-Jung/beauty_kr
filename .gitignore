@@ -10,6 +10,7 @@ __pycache__/
 dist/
 build/
 *.egg-info/
+.qt_for_python/
 
 # Experiments
 tmp/
@@ -17,7 +18,6 @@ backup/
 tbl_cache/
 
 # Jupyter notebook
-.ipynb_checkpoints
 .ipynb_checkpoints/
 *.ipynb
 

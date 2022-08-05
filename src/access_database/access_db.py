@@ -376,7 +376,16 @@ class AccessDataBase:
                                                                 `product_review` text NOT NULL,\
                                                                 PRIMARY KEY (`pk`),\
                                                                 KEY `id` (`id`)\
-                                                                ) ENGINE=InnoDB DEFAULT CHARSET=utf8;"
+                                                                ) ENGINE=InnoDB DEFAULT CHARSET=utf8;",
+                                                                
+            'beauty_kr_data_dashboard': f"CREATE TABLE `beauty_kr_data_dashboard` (\
+                                        `item_key` int(11) NOT NULL,\
+                                        `brand_name` varchar(100) DEFAULT NULL,\
+                                        `category` varchar(100) DEFAULT NULL,\
+                                        `mapping_status` tinyint(1) DEFAULT NULL,\
+                                        `available_status` tinyint(1) DEFAULT NULL,\
+                                        `review_count` int(11) DEFAULT NULL\
+                                        ) ENGINE=InnoDB DEFAULT CHARSET=utf8;"
         }
         
         if 'info_all' in table_name:
