@@ -23,7 +23,7 @@
    <widget class="Line" name="line">
     <property name="geometry">
      <rect>
-      <x>200</x>
+      <x>160</x>
       <y>0</y>
       <width>20</width>
       <height>1020</height>
@@ -39,9 +39,9 @@
    <widget class="Line" name="line_2">
     <property name="geometry">
      <rect>
-      <x>210</x>
+      <x>169</x>
       <y>50</y>
-      <width>1470</width>
+      <width>1511</width>
       <height>20</height>
      </rect>
     </property>
@@ -52,9 +52,9 @@
    <widget class="Line" name="line_3">
     <property name="geometry">
      <rect>
-      <x>210</x>
+      <x>169</x>
       <y>170</y>
-      <width>1470</width>
+      <width>1521</width>
       <height>20</height>
      </rect>
     </property>
@@ -65,7 +65,7 @@
    <widget class="QLCDNumber" name="All_Products">
     <property name="geometry">
      <rect>
-      <x>310</x>
+      <x>230</x>
       <y>130</y>
       <width>200</width>
       <height>26</height>
@@ -96,7 +96,7 @@
    <widget class="QLabel" name="label">
     <property name="geometry">
      <rect>
-      <x>340</x>
+      <x>260</x>
       <y>80</y>
       <width>140</width>
       <height>20</height>
@@ -117,7 +117,7 @@
    <widget class="Line" name="line_4">
     <property name="geometry">
      <rect>
-      <x>310</x>
+      <x>230</x>
       <y>100</y>
       <width>200</width>
       <height>20</height>
@@ -130,7 +130,7 @@
    <widget class="QLCDNumber" name="Mapping_Products">
     <property name="geometry">
      <rect>
-      <x>640</x>
+      <x>580</x>
       <y>130</y>
       <width>200</width>
       <height>26</height>
@@ -158,7 +158,7 @@
    <widget class="Line" name="line_5">
     <property name="geometry">
      <rect>
-      <x>640</x>
+      <x>580</x>
       <y>100</y>
       <width>200</width>
       <height>20</height>
@@ -171,7 +171,7 @@
    <widget class="QLabel" name="label_2">
     <property name="geometry">
      <rect>
-      <x>670</x>
+      <x>610</x>
       <y>80</y>
       <width>140</width>
       <height>20</height>
@@ -192,7 +192,7 @@
    <widget class="QLabel" name="label_3">
     <property name="geometry">
      <rect>
-      <x>1320</x>
+      <x>1300</x>
       <y>80</y>
       <width>160</width>
       <height>20</height>
@@ -213,7 +213,7 @@
    <widget class="Line" name="line_6">
     <property name="geometry">
      <rect>
-      <x>970</x>
+      <x>930</x>
       <y>100</y>
       <width>200</width>
       <height>20</height>
@@ -226,7 +226,7 @@
    <widget class="QLCDNumber" name="Available_Products">
     <property name="geometry">
      <rect>
-      <x>970</x>
+      <x>930</x>
       <y>130</y>
       <width>200</width>
       <height>26</height>
@@ -254,7 +254,7 @@
    <widget class="QLabel" name="label_4">
     <property name="geometry">
      <rect>
-      <x>1000</x>
+      <x>960</x>
       <y>80</y>
       <width>140</width>
       <height>20</height>
@@ -275,7 +275,7 @@
    <widget class="Line" name="line_7">
     <property name="geometry">
      <rect>
-      <x>1300</x>
+      <x>1280</x>
       <y>100</y>
       <width>200</width>
       <height>20</height>
@@ -288,7 +288,7 @@
    <widget class="QLCDNumber" name="Review_Products">
     <property name="geometry">
      <rect>
-      <x>1300</x>
+      <x>1280</x>
       <y>130</y>
       <width>200</width>
       <height>26</height>
@@ -337,9 +337,9 @@
    <widget class="QLabel" name="label_6">
     <property name="geometry">
      <rect>
-      <x>220</x>
+      <x>225</x>
       <y>15</y>
-      <width>221</width>
+      <width>211</width>
       <height>31</height>
      </rect>
     </property>
@@ -506,18 +506,18 @@
    <widget class="QWidget" name="widget" native="true">
     <property name="geometry">
      <rect>
-      <x>220</x>
+      <x>180</x>
       <y>240</y>
-      <width>1450</width>
-      <height>760</height>
+      <width>1491</width>
+      <height>761</height>
      </rect>
     </property>
     <widget class="QFrame" name="frame_category">
      <property name="geometry">
       <rect>
        <x>40</x>
-       <y>15</y>
-       <width>580</width>
+       <y>10</y>
+       <width>640</width>
        <height>360</height>
       </rect>
      </property>
@@ -532,7 +532,7 @@
        <rect>
         <x>10</x>
         <y>50</y>
-        <width>561</width>
+        <width>621</width>
         <height>301</height>
        </rect>
       </property>
@@ -545,7 +545,7 @@
      <widget class="QPushButton" name="select_brand">
       <property name="geometry">
        <rect>
-        <x>160</x>
+        <x>170</x>
         <y>15</y>
         <width>95</width>
         <height>27</height>
@@ -560,7 +560,7 @@
        <rect>
         <x>20</x>
         <y>15</y>
-        <width>128</width>
+        <width>135</width>
         <height>27</height>
        </rect>
       </property>
@@ -568,7 +568,7 @@
      <widget class="QPushButton" name="view_category">
       <property name="geometry">
        <rect>
-        <x>260</x>
+        <x>270</x>
         <y>15</y>
         <width>95</width>
         <height>27</height>
@@ -583,8 +583,8 @@
      <property name="geometry">
       <rect>
        <x>40</x>
-       <y>400</y>
-       <width>580</width>
+       <y>390</y>
+       <width>640</width>
        <height>360</height>
       </rect>
      </property>
@@ -599,7 +599,7 @@
        <rect>
         <x>10</x>
         <y>50</y>
-        <width>561</width>
+        <width>621</width>
         <height>301</height>
        </rect>
       </property>
@@ -612,7 +612,7 @@
      <widget class="QPushButton" name="Select_2">
       <property name="geometry">
        <rect>
-        <x>150</x>
+        <x>170</x>
         <y>15</y>
         <width>95</width>
         <height>27</height>
@@ -627,7 +627,7 @@
        <rect>
         <x>20</x>
         <y>15</y>
-        <width>120</width>
+        <width>135</width>
         <height>27</height>
        </rect>
       </property>
@@ -635,7 +635,7 @@
      <widget class="QPushButton" name="View_2">
       <property name="geometry">
        <rect>
-        <x>250</x>
+        <x>270</x>
         <y>15</y>
         <width>95</width>
         <height>27</height>
@@ -649,10 +649,10 @@
     <widget class="QFrame" name="frame_brand">
      <property name="geometry">
       <rect>
-       <x>740</x>
-       <y>15</y>
-       <width>580</width>
-       <height>360</height>
+       <x>750</x>
+       <y>10</y>
+       <width>640</width>
+       <height>740</height>
       </rect>
      </property>
      <property name="frameShape">
@@ -666,35 +666,22 @@
        <rect>
         <x>10</x>
         <y>50</y>
-        <width>561</width>
-        <height>301</height>
+        <width>621</width>
+        <height>681</height>
        </rect>
       </property>
       <layout class="QVBoxLayout" name="graph_brand">
        <property name="sizeConstraint">
-        <enum>QLayout::SetMaximumSize</enum>
+        <enum>QLayout::SetDefaultConstraint</enum>
        </property>
       </layout>
-     </widget>
-     <widget class="QPushButton" name="select_category">
-      <property name="geometry">
-       <rect>
-        <x>160</x>
-        <y>15</y>
-        <width>95</width>
-        <height>27</height>
-       </rect>
-      </property>
-      <property name="text">
-       <string>Select</string>
-      </property>
      </widget>
      <widget class="QComboBox" name="categories">
       <property name="geometry">
        <rect>
         <x>20</x>
         <y>15</y>
-        <width>128</width>
+        <width>135</width>
         <height>27</height>
        </rect>
       </property>
@@ -702,7 +689,7 @@
      <widget class="QPushButton" name="view_brand">
       <property name="geometry">
        <rect>
-        <x>260</x>
+        <x>270</x>
         <y>15</y>
         <width>95</width>
         <height>27</height>
@@ -712,41 +699,10 @@
        <string>Table View</string>
       </property>
      </widget>
-    </widget>
-    <widget class="QFrame" name="Frame_4">
-     <property name="geometry">
-      <rect>
-       <x>740</x>
-       <y>400</y>
-       <width>580</width>
-       <height>360</height>
-      </rect>
-     </property>
-     <property name="frameShape">
-      <enum>QFrame::Box</enum>
-     </property>
-     <property name="frameShadow">
-      <enum>QFrame::Raised</enum>
-     </property>
-     <widget class="QWidget" name="verticalLayoutWidget_4">
+     <widget class="QPushButton" name="select_category">
       <property name="geometry">
        <rect>
-        <x>10</x>
-        <y>50</y>
-        <width>561</width>
-        <height>301</height>
-       </rect>
-      </property>
-      <layout class="QVBoxLayout" name="Layout_4">
-       <property name="sizeConstraint">
-        <enum>QLayout::SetMaximumSize</enum>
-       </property>
-      </layout>
-     </widget>
-     <widget class="QPushButton" name="Select_4">
-      <property name="geometry">
-       <rect>
-        <x>150</x>
+        <x>170</x>
         <y>15</y>
         <width>95</width>
         <height>27</height>
@@ -754,29 +710,6 @@
       </property>
       <property name="text">
        <string>Select</string>
-      </property>
-     </widget>
-     <widget class="QComboBox" name="ComboBox_4">
-      <property name="geometry">
-       <rect>
-        <x>20</x>
-        <y>15</y>
-        <width>120</width>
-        <height>27</height>
-       </rect>
-      </property>
-     </widget>
-     <widget class="QPushButton" name="View_4">
-      <property name="geometry">
-       <rect>
-        <x>250</x>
-        <y>15</y>
-        <width>95</width>
-        <height>27</height>
-       </rect>
-      </property>
-      <property name="text">
-       <string>Table View</string>
       </property>
      </widget>
     </widget>
@@ -785,9 +718,9 @@
     <property name="geometry">
      <rect>
       <x>0</x>
-      <y>260</y>
-      <width>210</width>
-      <height>80</height>
+      <y>255</y>
+      <width>170</width>
+      <height>60</height>
      </rect>
     </property>
     <property name="frameShape">
@@ -801,8 +734,8 @@
       <rect>
        <x>0</x>
        <y>0</y>
-       <width>210</width>
-       <height>80</height>
+       <width>170</width>
+       <height>60</height>
       </rect>
      </property>
      <property name="font">
@@ -835,8 +768,8 @@
      <rect>
       <x>0</x>
       <y>640</y>
-      <width>210</width>
-      <height>80</height>
+      <width>170</width>
+      <height>55</height>
      </rect>
     </property>
     <property name="frameShape">
@@ -850,8 +783,8 @@
       <rect>
        <x>0</x>
        <y>0</y>
-       <width>210</width>
-       <height>80</height>
+       <width>170</width>
+       <height>60</height>
       </rect>
      </property>
      <property name="font">

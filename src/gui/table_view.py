@@ -114,3 +114,7 @@ class TableViewer(QWidget):
         df = pd.read_csv(file_path, lineterminator='\n')
         model = DataFrameModel(df)
         self.pandasTv.setModel(model)
+        
+    def _loadTable(self, df):
+        model = DataFrameModel(df)
+        self.pandasTv.setModel(model)
