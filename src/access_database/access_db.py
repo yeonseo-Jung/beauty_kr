@@ -385,7 +385,36 @@ class AccessDataBase:
                                         `mapping_status` tinyint(1) DEFAULT NULL,\
                                         `available_status` tinyint(1) DEFAULT NULL,\
                                         `review_count` int(11) DEFAULT NULL\
-                                        ) ENGINE=InnoDB DEFAULT CHARSET=utf8;"
+                                        ) ENGINE=InnoDB DEFAULT CHARSET=utf8;",
+
+            'glowpick_product_info_update_new': f"CREATE TABLE `glowpick_product_info_update_new` (\
+                                                `id` int(11) DEFAULT NULL COMMENT '상품 아이디 (자체부여)',\
+                                                `product_code` int(11) DEFAULT NULL COMMENT '글로우픽 내부 상품 코드',\
+                                                `product_name` varchar(255),\
+                                                `brand_code` int(11),\
+                                                `brand_name` varchar(255),\
+                                                `product_url` varchar(255),\
+                                                `selection` varchar(255),\
+                                                `division` varchar(255),\
+                                                `groups` varchar(255),\
+                                                `descriptions` text,\
+                                                `product_keywords` varchar(255),\
+                                                `color_type` varchar(255),\
+                                                `volume` varchar(255),\
+                                                `image_source` text,\
+                                                `ingredients_all_kor` text,\
+                                                `ingredients_all_eng` text,\
+                                                `ingredients_all_desc` text,\
+                                                `ranks` varchar(255),\
+                                                `product_awards` text,\
+                                                `product_awards_sector` text,\
+                                                `product_awards_rank` text,\
+                                                `price` varchar(255) COMMENT '정가',\
+                                                `product_stores` varchar(255) COMMENT '글로우픽 기준 판매 스토어',\
+                                                `crawling_status` tinyint(1) DEFAULT NULL,\
+                                                `regist_date` datetime DEFAULT NULL COMMENT '개체 수집 일자',\
+                                                ) ENGINE=InnoDB DEFAULT CHARSET=utf8;",
+                                        
         }
         
         if 'info_all' in table_name:
