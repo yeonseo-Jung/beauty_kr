@@ -14,8 +14,9 @@ build/
 
 # Experiments
 tmp/
-backup/
+bak/
 tbl_cache/
+
 
 # Jupyter notebook
 .ipynb_checkpoints/
