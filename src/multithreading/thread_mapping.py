@@ -6,6 +6,10 @@ from tqdm.auto import tqdm
 import numpy as np
 import pandas as pd
 
+# Exception Error Handling
+import warnings
+warnings.filterwarnings("ignore")
+
 if getattr(sys, 'frozen', False) and hasattr(sys, '_MEIPASS'):
     root = sys._MEIPASS
 else:

@@ -84,7 +84,7 @@ def scraper_prd_info(category_id, page):
         '''
     else:
         # scroll down
-        wd = scroll_down(wd, 1, 3)
+        wd = scroll_down(wd, 2.5, 3)
         html = wd.page_source
         soup = BeautifulSoup(html,'lxml')
         time.sleep(1.5)
@@ -401,8 +401,7 @@ def get_xpath(wd):
 '''Turning Page'''
 def turning_page(wd, url, xpath_page):
     # scroll down
-    wd.find_element_by_tag_name('body').send_keys(Keys.END)
-    time.sleep(2.5)
+    wd = scroll_down(wd, 2.5, 2)
     
     status = 1
     page_cnt = 1
@@ -600,8 +599,7 @@ def crawling_oliveyoung(url, infos, reviews, error_xpath):
 
                     if cnt <= 10:
                         # scroll down
-                        wd.find_element_by_tag_name('body').send_keys(Keys.END)
-                        time.sleep(1.5)
+                        wd = scroll_down(wd, 2.5, 2)
                         reviews += scraping_review(wd, url)
                     elif cnt <= 1000:
                         rev, status, wd = turning_page(wd, url, xpath_page)

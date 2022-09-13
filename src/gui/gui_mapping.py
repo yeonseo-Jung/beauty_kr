@@ -85,7 +85,7 @@ class MappingWindow(QMainWindow, form):
         prg_dict = progress.format_dict
         itm = prg_dict['n'] 
         tot = prg_dict['total']
-        per = round((itm / tot) * 100, 0)
+        per = int(round((itm / tot) * 100, 0))
         elapsed = int(round(prg_dict['elapsed'], 0))
         if itm >= 1:
             remain_time = int(round((elapsed * tot / itm) - elapsed, 0))
@@ -94,7 +94,7 @@ class MappingWindow(QMainWindow, form):
         
         self.pbar_0.setValue(per)
         
-        message = f"{int(per)}% | Progress item: {itm}  Total: {tot} | Elapsed time: {elapsed}s < Remain time: {remain_time}s "
+        message = f"{per}% | Progress item: {itm}  Total: {tot} | Elapsed time: {elapsed}s < Remain time: {remain_time}s "
         self.statusbar.showMessage(message)
         
     def _update_progress(self, progress):
@@ -102,7 +102,7 @@ class MappingWindow(QMainWindow, form):
         prg_dict = progress.format_dict
         itm = prg_dict['n'] 
         tot = prg_dict['total']
-        per = round((itm / tot) * 100, 0)
+        per = int(round((itm / tot) * 100, 0))
         elapsed = round(prg_dict['elapsed'], 0)
         if itm >= 1:
             remain_time = round((elapsed * tot / itm) - elapsed, 0)
@@ -110,7 +110,7 @@ class MappingWindow(QMainWindow, form):
             remain_time = 0
         
         self.pbar_1.setValue(per)
-        message = f"{int(per)}% | Progress item: {itm}  Total: {tot} | Elapsed time: {elapsed}s < Remain time: {remain_time}s "
+        message = f"{per}% | Progress item: {itm}  Total: {tot} | Elapsed time: {elapsed}s < Remain time: {remain_time}s "
         self.statusbar.showMessage(message)
     
     def _get_tbl(self):
@@ -125,11 +125,16 @@ class MappingWindow(QMainWindow, form):
             if tbl_:
                 table_list.append(tbl_.group(0))
         table_list = sorted(list(set(table_list)))
+        table_list.append('naver_beauty_product_info_final_version')
         
         # oliveyoung
         table_list.append('oliveyoung_product_info_final_version')
-        return table_list
+    
+        # lalavla
+        # table_list.append('lalavla_product_info_final_version')
         
+        return table_list
+    
     def _import_tbl(self):
         ''' 데이터 베이스에서 테이블 가져와서 통합하기 '''
         
@@ -282,12 +287,14 @@ class MappingWindow(QMainWindow, form):
     def _upload(self):
         file_name = "mapping_table.csv"
         file_path = os.path.join(tbl_cache, file_name)
+        msg = QMessageBox()
         if os.path.isfile(file_path):
             mapping_table = pd.read_csv(file_path)
         
             # upload table to db
             self.db.create_table(upload_df=mapping_table, table_name='beauty_kr_mapping_table')
+            msg.setText("\n    ** db 업로드 완료 **\n\n- beauty_kr_mapping_table")
+            msg.exec_()
         else:
-            msg = QMessageBox()
             msg.setText(f'매핑 완료 후 시도하세요')
             msg.exec_()

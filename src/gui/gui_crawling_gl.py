@@ -117,7 +117,7 @@ class CrawlingGlWindow(QMainWindow, form):
         prg_dict = progress.format_dict
         itm = prg_dict['n'] + itm_
         tot = prg_dict['total'] + itm_ 
-        per = round((itm / tot) * 100, 0)
+        per = int(round((itm / tot) * 100, 0))
         elapsed = round(prg_dict['elapsed'], 0) + elapsed_
         prg_dict_ = {
             'n': itm,
@@ -139,7 +139,7 @@ class CrawlingGlWindow(QMainWindow, form):
         remain_m = int((remain_time % 3600) // 60)
         remain_s = int(remain_time - (remain_h * 3600 + remain_m * 60))
         
-        message = f"{int(per)}% | Progress item: {itm}  Total: {tot} | Elapsed time: {elapsed_h}:{elapsed_m}:{elapsed_s} < Remain time: {remain_h}:{remain_m}:{remain_s}"
+        message = f"{per}% | Progress item: {itm}  Total: {tot} | Elapsed time: {elapsed_h}:{elapsed_m}:{elapsed_s} < Remain time: {remain_h}:{remain_m}:{remain_s}"
         self.statusbar.showMessage(message)
         
         # pause 시에 현재까지 진행률 저장
@@ -148,10 +148,10 @@ class CrawlingGlWindow(QMainWindow, form):
                 pickle.dump(prg_dict_, f)
             
             if itm == tot:
-                message = f"{int(per)}% | Progress item: {itm}  Total: {tot} | Elapsed time: {elapsed_h}:{elapsed_m}:{elapsed_s} < Remain time: {remain_h}:{remain_m}:{remain_s} **Complete**"
+                message = f"{per}% | Progress item: {itm}  Total: {tot} | Elapsed time: {elapsed_h}:{elapsed_m}:{elapsed_s} < Remain time: {remain_h}:{remain_m}:{remain_s} **Complete**"
                 os.remove(self.path_prg)
             else:
-                message = f"{int(per)}% | Progress item: {itm}  Total: {tot} | Elapsed time: {elapsed_h}:{elapsed_m}:{elapsed_s} < Remain time: {remain_h}:{remain_m}:{remain_s} **PAUSE**"
+                message = f"{per}% | Progress item: {itm}  Total: {tot} | Elapsed time: {elapsed_h}:{elapsed_m}:{elapsed_s} < Remain time: {remain_h}:{remain_m}:{remain_s} **PAUSE**"
             self.statusbar.showMessage(message)
         
         # ip 차단 및 db 연결 끊김 대응
@@ -169,7 +169,7 @@ class CrawlingGlWindow(QMainWindow, form):
         prg_dict = progress.format_dict
         itm = prg_dict['n'] 
         tot = prg_dict['total']
-        per = round((itm / tot) * 100, 0)
+        per = int(round((itm / tot) * 100, 0))
         elapsed = int(round(prg_dict['elapsed'], 0))
         if itm >= 1:
             remain_time = int(round((elapsed * tot / itm) - elapsed, 0))
@@ -178,7 +178,7 @@ class CrawlingGlWindow(QMainWindow, form):
         
         self.progressBar_2.setValue(per)
         
-        message = f"{int(per)}% | Progress item: {itm}  Total: {tot} | Elapsed time: {elapsed}s < Remain time: {remain_time}s "
+        message = f"{per}% | Progress item: {itm}  Total: {tot} | Elapsed time: {elapsed}s < Remain time: {remain_time}s "
         self.statusbar.showMessage(message)
         
         if not self.thread_code.power:
@@ -379,7 +379,9 @@ class CrawlingGlWindow(QMainWindow, form):
         # db connection check
         if ck == 1:
             msg = QMessageBox()
-            msg.setText("\n    ** db 업로드 완료 **\n\n- glowpick_product_info_final_version\n\n- glowpick_product_info_final_version_review")
+            table_name = 'glowpick_product_info_final_version'
+            table_name_review = 'glowpick_product_info_final_version_review'
+            msg.setText(f"<테이블 업로드 완료>\n- {table_name}\n- {table_name_review}")
             msg.exec_()
             
         elif ck == 2:

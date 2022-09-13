@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>698</width>
-    <height>445</height>
+    <width>720</width>
+    <height>435</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -187,7 +187,7 @@
    <widget class="QPushButton" name="Run">
     <property name="geometry">
      <rect>
-      <x>30</x>
+      <x>50</x>
       <y>310</y>
       <width>100</width>
       <height>32</height>
@@ -205,9 +205,9 @@
    <widget class="QLabel" name="label">
     <property name="geometry">
      <rect>
-      <x>370</x>
-      <y>90</y>
-      <width>181</width>
+      <x>360</x>
+      <y>170</y>
+      <width>101</width>
       <height>41</height>
      </rect>
     </property>
@@ -218,15 +218,15 @@
      </font>
     </property>
     <property name="text">
-     <string>브랜드 수: </string>
+     <string>예상 수집 시간: </string>
     </property>
    </widget>
    <widget class="QLabel" name="label_2">
     <property name="geometry">
      <rect>
-      <x>370</x>
-      <y>140</y>
-      <width>181</width>
+      <x>400</x>
+      <y>120</y>
+      <width>51</width>
       <height>41</height>
      </rect>
     </property>
@@ -243,7 +243,7 @@
    <widget class="QProgressBar" name="progressBar">
     <property name="geometry">
      <rect>
-      <x>35</x>
+      <x>45</x>
       <y>350</y>
       <width>621</width>
       <height>30</height>
@@ -259,11 +259,11 @@
      <enum>QProgressBar::TopToBottom</enum>
     </property>
    </widget>
-   <widget class="QLCDNumber" name="brand_count">
+   <widget class="QLCDNumber" name="Time">
     <property name="geometry">
      <rect>
-      <x>440</x>
-      <y>100</y>
+      <x>470</x>
+      <y>180</y>
       <width>75</width>
       <height>25</height>
      </rect>
@@ -284,11 +284,11 @@
      <double>0.000000000000000</double>
     </property>
    </widget>
-   <widget class="QLCDNumber" name="product_count">
+   <widget class="QLCDNumber" name="Products">
     <property name="geometry">
      <rect>
-      <x>440</x>
-      <y>150</y>
+      <x>470</x>
+      <y>130</y>
       <width>75</width>
       <height>25</height>
      </rect>
@@ -300,7 +300,7 @@
    <widget class="QPushButton" name="Pause">
     <property name="geometry">
      <rect>
-      <x>140</x>
+      <x>160</x>
       <y>310</y>
       <width>100</width>
       <height>32</height>
@@ -318,7 +318,7 @@
    <widget class="QPushButton" name="Save">
     <property name="geometry">
      <rect>
-      <x>360</x>
+      <x>380</x>
       <y>310</y>
       <width>100</width>
       <height>32</height>
@@ -336,7 +336,7 @@
    <widget class="QPushButton" name="View">
     <property name="geometry">
      <rect>
-      <x>250</x>
+      <x>270</x>
       <y>310</y>
       <width>100</width>
       <height>32</height>
@@ -395,7 +395,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>698</width>
+     <width>720</width>
      <height>24</height>
     </rect>
    </property>

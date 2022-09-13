@@ -86,7 +86,7 @@ class CrawlingNvStatus(QMainWindow, form):
         prg_dict = progress.format_dict
         itm = prg_dict['n'] + itm_
         tot = prg_dict['total'] + itm_ 
-        per = round((itm / tot) * 100, 0)
+        per = int(round((itm / tot) * 100, 0))
         elapsed = round(prg_dict['elapsed'], 0) + elapsed_
         prg_dict_ = {
             'n': itm,
@@ -108,7 +108,7 @@ class CrawlingNvStatus(QMainWindow, form):
         remain_m = int((remain_time % 3600) // 60)
         remain_s = int(remain_time - (remain_h * 3600 + remain_m * 60))
         
-        message = f"{int(per)}% | Progress item: {itm}  Total: {tot} | Elapsed time: {elapsed_h}:{elapsed_m}:{elapsed_s} < Remain time: {remain_h}:{remain_m}:{remain_s}"
+        message = f"{per}% | Progress item: {itm}  Total: {tot} | Elapsed time: {elapsed_h}:{elapsed_m}:{elapsed_s} < Remain time: {remain_h}:{remain_m}:{remain_s}"
         self.statusbar.showMessage(message)
         
         # pause 시에 현재까지 진행률 저장
@@ -117,10 +117,10 @@ class CrawlingNvStatus(QMainWindow, form):
                 pickle.dump(prg_dict_, f)
                 
             if itm == tot:
-                message = f"{int(per)}% | Progress item: {itm}  Total: {tot} | Elapsed time: {elapsed_h}:{elapsed_m}:{elapsed_s} < Remain time: {remain_h}:{remain_m}:{remain_s} **Complete**"
+                message = f"{per}% | Progress item: {itm}  Total: {tot} | Elapsed time: {elapsed_h}:{elapsed_m}:{elapsed_s} < Remain time: {remain_h}:{remain_m}:{remain_s} **Complete**"
                 os.remove(self.path_prg)
             else:
-                message = f"{int(per)}% | Progress item: {itm}  Total: {tot} | Elapsed time: {elapsed_h}:{elapsed_m}:{elapsed_s} < Remain time: {remain_h}:{remain_m}:{remain_s} **PAUSE**"
+                message = f"{per}% | Progress item: {itm}  Total: {tot} | Elapsed time: {elapsed_h}:{elapsed_m}:{elapsed_s} < Remain time: {remain_h}:{remain_m}:{remain_s} **PAUSE**"
             self.statusbar.showMessage(message)
         
         # ip 차단 및 db 연결 끊김 대응
@@ -269,7 +269,7 @@ class CrawlingNvStatus(QMainWindow, form):
         # db connection check
         if ck == 1:
             msg = QMessageBox()
-            msg.setText(f"\n    ** db 업로드 완료 **\n\n- {table_name}")
+            msg.setText(f"<테이블 업로드 완료>\n- {table_name}")
             msg.exec_()
             
         elif ck == -1:

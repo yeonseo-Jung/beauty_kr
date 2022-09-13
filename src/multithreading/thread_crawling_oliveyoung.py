@@ -77,7 +77,8 @@ class ThreadCrawlingOlive(QtCore.QThread, QtCore.QObject):
             # reivew table
             columns = ['product_url', 'user_id', 'product_rating', 'review_date', 'product_review']
             review_df = pd.DataFrame(self.reviews, columns=columns)
-            review_df.to_csv(self.review_df_path, index=False)
+            review_df.loc[review_df.product_review==''] = np.nan
+            # review_df.to_csv(self.review_df_path, index=False)
             
             # merge
             info_df = pd.read_csv(self.info_df_path)
@@ -90,11 +91,16 @@ class ThreadCrawlingOlive(QtCore.QThread, QtCore.QObject):
             info_df_mer.loc[:, 'id'] = range(start_id, len(info_df_mer) + start_id)
             rev_df_mer_mapped = info_df_mer.loc[:, ['id', 'product_code']].merge(rev_df_mer, on='product_code', how='right')
             
+            # dedup
+            rev_df_mer_mapped_dedup = rev_df_mer_mapped.drop_duplicates(keep='first', ignore_index=True)
+            rev_df_mer_mapped_dedup = rev_df_mer_mapped_dedup.loc[rev_df_mer_mapped_dedup.product_review.notnull()].reset_index(drop=True)
+            
             if comp:
                 try:
                     # upload table
                     self.db.engine_upload(info_df_mer, 'oliveyoung_product_info_final_version', 'append')
                     self.db.engine_upload(rev_df_mer_mapped, 'oliveyoung_product_info_final_version_review', 'append')
+                    print("Oliveyoung update complete")
                     
                     # init cache file
                     os.remove(self.infos_path)

@@ -20,28 +20,12 @@
    <enum>QTabWidget::Rounded</enum>
   </property>
   <widget class="QWidget" name="centralwidget">
-   <widget class="Line" name="line">
-    <property name="geometry">
-     <rect>
-      <x>160</x>
-      <y>0</y>
-      <width>20</width>
-      <height>1020</height>
-     </rect>
-    </property>
-    <property name="mouseTracking">
-     <bool>false</bool>
-    </property>
-    <property name="orientation">
-     <enum>Qt::Vertical</enum>
-    </property>
-   </widget>
    <widget class="Line" name="line_2">
     <property name="geometry">
      <rect>
-      <x>169</x>
+      <x>0</x>
       <y>50</y>
-      <width>1511</width>
+      <width>1680</width>
       <height>20</height>
      </rect>
     </property>
@@ -52,9 +36,9 @@
    <widget class="Line" name="line_3">
     <property name="geometry">
      <rect>
-      <x>169</x>
+      <x>0</x>
       <y>170</y>
-      <width>1521</width>
+      <width>1680</width>
       <height>20</height>
      </rect>
     </property>
@@ -65,7 +49,7 @@
    <widget class="QLCDNumber" name="All_Products">
     <property name="geometry">
      <rect>
-      <x>230</x>
+      <x>60</x>
       <y>130</y>
       <width>200</width>
       <height>26</height>
@@ -96,7 +80,7 @@
    <widget class="QLabel" name="label">
     <property name="geometry">
      <rect>
-      <x>260</x>
+      <x>90</x>
       <y>80</y>
       <width>140</width>
       <height>20</height>
@@ -117,7 +101,7 @@
    <widget class="Line" name="line_4">
     <property name="geometry">
      <rect>
-      <x>230</x>
+      <x>60</x>
       <y>100</y>
       <width>200</width>
       <height>20</height>
@@ -130,7 +114,7 @@
    <widget class="QLCDNumber" name="Mapping_Products">
     <property name="geometry">
      <rect>
-      <x>580</x>
+      <x>330</x>
       <y>130</y>
       <width>200</width>
       <height>26</height>
@@ -158,7 +142,7 @@
    <widget class="Line" name="line_5">
     <property name="geometry">
      <rect>
-      <x>580</x>
+      <x>330</x>
       <y>100</y>
       <width>200</width>
       <height>20</height>
@@ -171,7 +155,7 @@
    <widget class="QLabel" name="label_2">
     <property name="geometry">
      <rect>
-      <x>610</x>
+      <x>360</x>
       <y>80</y>
       <width>140</width>
       <height>20</height>
@@ -189,31 +173,10 @@
      <set>Qt::AlignCenter</set>
     </property>
    </widget>
-   <widget class="QLabel" name="label_3">
-    <property name="geometry">
-     <rect>
-      <x>1300</x>
-      <y>80</y>
-      <width>160</width>
-      <height>20</height>
-     </rect>
-    </property>
-    <property name="font">
-     <font>
-      <pointsize>14</pointsize>
-     </font>
-    </property>
-    <property name="text">
-     <string>Products with Review</string>
-    </property>
-    <property name="alignment">
-     <set>Qt::AlignCenter</set>
-    </property>
-   </widget>
    <widget class="Line" name="line_6">
     <property name="geometry">
      <rect>
-      <x>930</x>
+      <x>600</x>
       <y>100</y>
       <width>200</width>
       <height>20</height>
@@ -226,7 +189,7 @@
    <widget class="QLCDNumber" name="Available_Products">
     <property name="geometry">
      <rect>
-      <x>930</x>
+      <x>600</x>
       <y>130</y>
       <width>200</width>
       <height>26</height>
@@ -254,7 +217,7 @@
    <widget class="QLabel" name="label_4">
     <property name="geometry">
      <rect>
-      <x>960</x>
+      <x>630</x>
       <y>80</y>
       <width>140</width>
       <height>20</height>
@@ -272,72 +235,10 @@
      <set>Qt::AlignCenter</set>
     </property>
    </widget>
-   <widget class="Line" name="line_7">
-    <property name="geometry">
-     <rect>
-      <x>1280</x>
-      <y>100</y>
-      <width>200</width>
-      <height>20</height>
-     </rect>
-    </property>
-    <property name="orientation">
-     <enum>Qt::Horizontal</enum>
-    </property>
-   </widget>
-   <widget class="QLCDNumber" name="Review_Products">
-    <property name="geometry">
-     <rect>
-      <x>1280</x>
-      <y>130</y>
-      <width>200</width>
-      <height>26</height>
-     </rect>
-    </property>
-    <property name="focusPolicy">
-     <enum>Qt::NoFocus</enum>
-    </property>
-    <property name="frameShape">
-     <enum>QFrame::Box</enum>
-    </property>
-    <property name="smallDecimalPoint">
-     <bool>true</bool>
-    </property>
-    <property name="digitCount">
-     <number>6</number>
-    </property>
-    <property name="segmentStyle">
-     <enum>QLCDNumber::Flat</enum>
-    </property>
-    <property name="value" stdset="0">
-     <double>0.000000000000000</double>
-    </property>
-   </widget>
-   <widget class="QLabel" name="label_5">
-    <property name="geometry">
-     <rect>
-      <x>230</x>
-      <y>200</y>
-      <width>41</width>
-      <height>23</height>
-     </rect>
-    </property>
-    <property name="font">
-     <font>
-      <pointsize>14</pointsize>
-     </font>
-    </property>
-    <property name="text">
-     <string>Filter</string>
-    </property>
-    <property name="alignment">
-     <set>Qt::AlignCenter</set>
-    </property>
-   </widget>
    <widget class="QLabel" name="label_6">
     <property name="geometry">
      <rect>
-      <x>225</x>
+      <x>40</x>
       <y>15</y>
       <width>211</width>
       <height>31</height>
@@ -412,113 +313,22 @@
      <bool>false</bool>
     </property>
    </widget>
-   <widget class="Line" name="line_8">
-    <property name="geometry">
-     <rect>
-      <x>230</x>
-      <y>225</y>
-      <width>501</width>
-      <height>16</height>
-     </rect>
-    </property>
-    <property name="orientation">
-     <enum>Qt::Horizontal</enum>
-    </property>
-   </widget>
-   <widget class="Line" name="line_9">
-    <property name="geometry">
-     <rect>
-      <x>270</x>
-      <y>195</y>
-      <width>20</width>
-      <height>31</height>
-     </rect>
-    </property>
-    <property name="orientation">
-     <enum>Qt::Vertical</enum>
-    </property>
-   </widget>
-   <widget class="QCheckBox" name="check_mapping">
-    <property name="geometry">
-     <rect>
-      <x>300</x>
-      <y>200</y>
-      <width>81</width>
-      <height>23</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string>mapping</string>
-    </property>
-   </widget>
-   <widget class="QCheckBox" name="check_review">
-    <property name="geometry">
-     <rect>
-      <x>480</x>
-      <y>200</y>
-      <width>71</width>
-      <height>23</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string>review</string>
-    </property>
-   </widget>
-   <widget class="QCheckBox" name="check_available">
-    <property name="geometry">
-     <rect>
-      <x>390</x>
-      <y>200</y>
-      <width>81</width>
-      <height>23</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string>available</string>
-    </property>
-   </widget>
-   <widget class="QPushButton" name="select_filter">
-    <property name="geometry">
-     <rect>
-      <x>560</x>
-      <y>197</y>
-      <width>83</width>
-      <height>27</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string>Select</string>
-    </property>
-   </widget>
-   <widget class="QPushButton" name="reset_filter">
-    <property name="geometry">
-     <rect>
-      <x>650</x>
-      <y>197</y>
-      <width>83</width>
-      <height>27</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string>Reset</string>
-    </property>
-   </widget>
    <widget class="QWidget" name="widget" native="true">
     <property name="geometry">
      <rect>
-      <x>180</x>
-      <y>240</y>
-      <width>1491</width>
-      <height>761</height>
+      <x>10</x>
+      <y>190</y>
+      <width>1660</width>
+      <height>820</height>
      </rect>
     </property>
     <widget class="QFrame" name="frame_category">
      <property name="geometry">
       <rect>
-       <x>40</x>
-       <y>10</y>
-       <width>640</width>
-       <height>360</height>
+       <x>20</x>
+       <y>55</y>
+       <width>450</width>
+       <height>330</height>
       </rect>
      </property>
      <property name="frameShape">
@@ -531,9 +341,9 @@
       <property name="geometry">
        <rect>
         <x>10</x>
-        <y>50</y>
-        <width>621</width>
-        <height>301</height>
+        <y>40</y>
+        <width>431</width>
+        <height>281</height>
        </rect>
       </property>
       <layout class="QVBoxLayout" name="graph_category">
@@ -546,7 +356,7 @@
       <property name="geometry">
        <rect>
         <x>170</x>
-        <y>15</y>
+        <y>10</y>
         <width>95</width>
         <height>27</height>
        </rect>
@@ -559,7 +369,7 @@
       <property name="geometry">
        <rect>
         <x>20</x>
-        <y>15</y>
+        <y>10</y>
         <width>135</width>
         <height>27</height>
        </rect>
@@ -569,7 +379,7 @@
       <property name="geometry">
        <rect>
         <x>270</x>
-        <y>15</y>
+        <y>10</y>
         <width>95</width>
         <height>27</height>
        </rect>
@@ -578,81 +388,27 @@
        <string>Table View</string>
       </property>
      </widget>
-    </widget>
-    <widget class="QFrame" name="Frame_2">
-     <property name="geometry">
-      <rect>
-       <x>40</x>
-       <y>390</y>
-       <width>640</width>
-       <height>360</height>
-      </rect>
-     </property>
-     <property name="frameShape">
-      <enum>QFrame::Box</enum>
-     </property>
-     <property name="frameShadow">
-      <enum>QFrame::Raised</enum>
-     </property>
-     <widget class="QWidget" name="verticalLayoutWidget_2">
+     <widget class="QPushButton" name="save_category">
       <property name="geometry">
        <rect>
-        <x>10</x>
-        <y>50</y>
-        <width>621</width>
-        <height>301</height>
-       </rect>
-      </property>
-      <layout class="QVBoxLayout" name="Layout_2">
-       <property name="sizeConstraint">
-        <enum>QLayout::SetMaximumSize</enum>
-       </property>
-      </layout>
-     </widget>
-     <widget class="QPushButton" name="Select_2">
-      <property name="geometry">
-       <rect>
-        <x>170</x>
-        <y>15</y>
-        <width>95</width>
+        <x>370</x>
+        <y>10</y>
+        <width>73</width>
         <height>27</height>
        </rect>
       </property>
       <property name="text">
-       <string>Select</string>
-      </property>
-     </widget>
-     <widget class="QComboBox" name="ComboBox_2">
-      <property name="geometry">
-       <rect>
-        <x>20</x>
-        <y>15</y>
-        <width>135</width>
-        <height>27</height>
-       </rect>
-      </property>
-     </widget>
-     <widget class="QPushButton" name="View_2">
-      <property name="geometry">
-       <rect>
-        <x>270</x>
-        <y>15</y>
-        <width>95</width>
-        <height>27</height>
-       </rect>
-      </property>
-      <property name="text">
-       <string>Table View</string>
+       <string>Save</string>
       </property>
      </widget>
     </widget>
     <widget class="QFrame" name="frame_brand">
      <property name="geometry">
       <rect>
-       <x>750</x>
-       <y>10</y>
-       <width>640</width>
-       <height>740</height>
+       <x>490</x>
+       <y>55</y>
+       <width>450</width>
+       <height>765</height>
       </rect>
      </property>
      <property name="frameShape">
@@ -665,9 +421,9 @@
       <property name="geometry">
        <rect>
         <x>10</x>
-        <y>50</y>
-        <width>621</width>
-        <height>681</height>
+        <y>40</y>
+        <width>431</width>
+        <height>711</height>
        </rect>
       </property>
       <layout class="QVBoxLayout" name="graph_brand">
@@ -680,7 +436,7 @@
       <property name="geometry">
        <rect>
         <x>20</x>
-        <y>15</y>
+        <y>10</y>
         <width>135</width>
         <height>27</height>
        </rect>
@@ -690,7 +446,7 @@
       <property name="geometry">
        <rect>
         <x>270</x>
-        <y>15</y>
+        <y>10</y>
         <width>95</width>
         <height>27</height>
        </rect>
@@ -703,7 +459,7 @@
       <property name="geometry">
        <rect>
         <x>170</x>
-        <y>15</y>
+        <y>10</y>
         <width>95</width>
         <height>27</height>
        </rect>
@@ -712,114 +468,531 @@
        <string>Select</string>
       </property>
      </widget>
+     <widget class="QPushButton" name="save_brand">
+      <property name="geometry">
+       <rect>
+        <x>370</x>
+        <y>10</y>
+        <width>73</width>
+        <height>27</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>Save</string>
+      </property>
+     </widget>
     </widget>
-   </widget>
-   <widget class="QFrame" name="frame">
-    <property name="geometry">
-     <rect>
-      <x>0</x>
-      <y>255</y>
-      <width>170</width>
-      <height>60</height>
-     </rect>
-    </property>
-    <property name="frameShape">
-     <enum>QFrame::StyledPanel</enum>
-    </property>
-    <property name="frameShadow">
-     <enum>QFrame::Raised</enum>
-    </property>
-    <widget class="QPushButton" name="Product">
+    <widget class="QLabel" name="label_5">
      <property name="geometry">
       <rect>
-       <x>0</x>
-       <y>0</y>
-       <width>170</width>
-       <height>60</height>
+       <x>20</x>
+       <y>10</y>
+       <width>41</width>
+       <height>23</height>
       </rect>
      </property>
      <property name="font">
       <font>
-       <pointsize>17</pointsize>
+       <pointsize>14</pointsize>
       </font>
      </property>
      <property name="text">
-      <string>Product</string>
+      <string>Filter</string>
      </property>
-     <property name="checkable">
-      <bool>true</bool>
-     </property>
-     <property name="checked">
-      <bool>true</bool>
-     </property>
-     <property name="autoDefault">
-      <bool>true</bool>
-     </property>
-     <property name="default">
-      <bool>true</bool>
-     </property>
-     <property name="flat">
-      <bool>true</bool>
+     <property name="alignment">
+      <set>Qt::AlignCenter</set>
      </property>
     </widget>
-   </widget>
-   <widget class="QFrame" name="frame_2">
-    <property name="geometry">
-     <rect>
-      <x>0</x>
-      <y>640</y>
-      <width>170</width>
-      <height>55</height>
-     </rect>
-    </property>
-    <property name="frameShape">
-     <enum>QFrame::StyledPanel</enum>
-    </property>
-    <property name="frameShadow">
-     <enum>QFrame::Raised</enum>
-    </property>
-    <widget class="QPushButton" name="Review">
+    <widget class="QPushButton" name="reset_filter">
      <property name="geometry">
       <rect>
-       <x>0</x>
-       <y>0</y>
-       <width>170</width>
-       <height>60</height>
+       <x>440</x>
+       <y>7</y>
+       <width>83</width>
+       <height>27</height>
       </rect>
      </property>
-     <property name="font">
-      <font>
-       <pointsize>17</pointsize>
-      </font>
-     </property>
      <property name="text">
-      <string>Reivew</string>
-     </property>
-     <property name="iconSize">
-      <size>
-       <width>16</width>
-       <height>16</height>
-      </size>
-     </property>
-     <property name="checkable">
-      <bool>true</bool>
-     </property>
-     <property name="checked">
-      <bool>false</bool>
-     </property>
-     <property name="autoRepeat">
-      <bool>false</bool>
-     </property>
-     <property name="autoDefault">
-      <bool>true</bool>
-     </property>
-     <property name="default">
-      <bool>true</bool>
-     </property>
-     <property name="flat">
-      <bool>true</bool>
+      <string>Reset</string>
      </property>
     </widget>
+    <widget class="QPushButton" name="select_filter">
+     <property name="geometry">
+      <rect>
+       <x>350</x>
+       <y>7</y>
+       <width>83</width>
+       <height>27</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>Select</string>
+     </property>
+    </widget>
+    <widget class="Line" name="line_9">
+     <property name="geometry">
+      <rect>
+       <x>60</x>
+       <y>5</y>
+       <width>20</width>
+       <height>31</height>
+      </rect>
+     </property>
+     <property name="orientation">
+      <enum>Qt::Vertical</enum>
+     </property>
+    </widget>
+    <widget class="QCheckBox" name="check_review">
+     <property name="geometry">
+      <rect>
+       <x>270</x>
+       <y>10</y>
+       <width>71</width>
+       <height>23</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>review</string>
+     </property>
+    </widget>
+    <widget class="Line" name="line_8">
+     <property name="geometry">
+      <rect>
+       <x>20</x>
+       <y>35</y>
+       <width>500</width>
+       <height>15</height>
+      </rect>
+     </property>
+     <property name="orientation">
+      <enum>Qt::Horizontal</enum>
+     </property>
+    </widget>
+    <widget class="QCheckBox" name="check_available">
+     <property name="geometry">
+      <rect>
+       <x>180</x>
+       <y>10</y>
+       <width>81</width>
+       <height>23</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>available</string>
+     </property>
+    </widget>
+    <widget class="QCheckBox" name="check_mapping">
+     <property name="geometry">
+      <rect>
+       <x>90</x>
+       <y>10</y>
+       <width>81</width>
+       <height>23</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>mapping</string>
+     </property>
+    </widget>
+    <widget class="QFrame" name="Frame_3">
+     <property name="geometry">
+      <rect>
+       <x>960</x>
+       <y>55</y>
+       <width>680</width>
+       <height>330</height>
+      </rect>
+     </property>
+     <property name="frameShape">
+      <enum>QFrame::Box</enum>
+     </property>
+     <property name="frameShadow">
+      <enum>QFrame::Raised</enum>
+     </property>
+     <widget class="QWidget" name="verticalLayoutWidget_4">
+      <property name="geometry">
+       <rect>
+        <x>10</x>
+        <y>40</y>
+        <width>661</width>
+        <height>281</height>
+       </rect>
+      </property>
+      <layout class="QVBoxLayout" name="graph_review">
+       <property name="sizeConstraint">
+        <enum>QLayout::SetDefaultConstraint</enum>
+       </property>
+      </layout>
+     </widget>
+     <widget class="QPushButton" name="select_review">
+      <property name="geometry">
+       <rect>
+        <x>170</x>
+        <y>10</y>
+        <width>95</width>
+        <height>27</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>Select</string>
+      </property>
+     </widget>
+     <widget class="QComboBox" name="brands_review">
+      <property name="geometry">
+       <rect>
+        <x>20</x>
+        <y>10</y>
+        <width>135</width>
+        <height>27</height>
+       </rect>
+      </property>
+     </widget>
+     <widget class="QPushButton" name="view_review">
+      <property name="geometry">
+       <rect>
+        <x>270</x>
+        <y>10</y>
+        <width>95</width>
+        <height>27</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>Table View</string>
+      </property>
+     </widget>
+     <widget class="QPushButton" name="save_review">
+      <property name="geometry">
+       <rect>
+        <x>370</x>
+        <y>10</y>
+        <width>73</width>
+        <height>27</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>Save</string>
+      </property>
+     </widget>
+    </widget>
+    <widget class="QFrame" name="Frame_4">
+     <property name="geometry">
+      <rect>
+       <x>960</x>
+       <y>405</y>
+       <width>680</width>
+       <height>415</height>
+      </rect>
+     </property>
+     <property name="frameShape">
+      <enum>QFrame::Box</enum>
+     </property>
+     <property name="frameShadow">
+      <enum>QFrame::Raised</enum>
+     </property>
+     <widget class="QWidget" name="verticalLayoutWidget_6">
+      <property name="geometry">
+       <rect>
+        <x>10</x>
+        <y>40</y>
+        <width>661</width>
+        <height>361</height>
+       </rect>
+      </property>
+      <layout class="QVBoxLayout" name="graph_review_2"/>
+     </widget>
+     <widget class="QPushButton" name="Select_5">
+      <property name="geometry">
+       <rect>
+        <x>170</x>
+        <y>10</y>
+        <width>95</width>
+        <height>27</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>Select</string>
+      </property>
+     </widget>
+     <widget class="QComboBox" name="brands_review_2">
+      <property name="geometry">
+       <rect>
+        <x>20</x>
+        <y>10</y>
+        <width>135</width>
+        <height>27</height>
+       </rect>
+      </property>
+     </widget>
+     <widget class="QPushButton" name="View_5">
+      <property name="geometry">
+       <rect>
+        <x>270</x>
+        <y>10</y>
+        <width>95</width>
+        <height>27</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>Table View</string>
+      </property>
+     </widget>
+    </widget>
+    <widget class="QFrame" name="frame_category_2">
+     <property name="geometry">
+      <rect>
+       <x>20</x>
+       <y>405</y>
+       <width>450</width>
+       <height>415</height>
+      </rect>
+     </property>
+     <property name="frameShape">
+      <enum>QFrame::Box</enum>
+     </property>
+     <property name="frameShadow">
+      <enum>QFrame::Raised</enum>
+     </property>
+     <widget class="QWidget" name="verticalLayoutWidget_2">
+      <property name="geometry">
+       <rect>
+        <x>10</x>
+        <y>40</y>
+        <width>431</width>
+        <height>361</height>
+       </rect>
+      </property>
+      <layout class="QVBoxLayout" name="graph_category_2">
+       <property name="sizeConstraint">
+        <enum>QLayout::SetDefaultConstraint</enum>
+       </property>
+      </layout>
+     </widget>
+     <widget class="QPushButton" name="select_brand_2">
+      <property name="geometry">
+       <rect>
+        <x>170</x>
+        <y>10</y>
+        <width>95</width>
+        <height>27</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>Select</string>
+      </property>
+     </widget>
+     <widget class="QComboBox" name="brands_2">
+      <property name="geometry">
+       <rect>
+        <x>20</x>
+        <y>10</y>
+        <width>135</width>
+        <height>27</height>
+       </rect>
+      </property>
+     </widget>
+     <widget class="QPushButton" name="view_category_2">
+      <property name="geometry">
+       <rect>
+        <x>270</x>
+        <y>10</y>
+        <width>95</width>
+        <height>27</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>Table View</string>
+      </property>
+     </widget>
+    </widget>
+   </widget>
+   <widget class="QLabel" name="label_3">
+    <property name="geometry">
+     <rect>
+      <x>910</x>
+      <y>80</y>
+      <width>140</width>
+      <height>20</height>
+     </rect>
+    </property>
+    <property name="font">
+     <font>
+      <pointsize>14</pointsize>
+     </font>
+    </property>
+    <property name="text">
+     <string>All Reviews</string>
+    </property>
+    <property name="alignment">
+     <set>Qt::AlignCenter</set>
+    </property>
+   </widget>
+   <widget class="Line" name="line_7">
+    <property name="geometry">
+     <rect>
+      <x>880</x>
+      <y>100</y>
+      <width>200</width>
+      <height>20</height>
+     </rect>
+    </property>
+    <property name="orientation">
+     <enum>Qt::Horizontal</enum>
+    </property>
+   </widget>
+   <widget class="QLabel" name="label_8">
+    <property name="geometry">
+     <rect>
+      <x>1450</x>
+      <y>80</y>
+      <width>140</width>
+      <height>20</height>
+     </rect>
+    </property>
+    <property name="font">
+     <font>
+      <pointsize>14</pointsize>
+     </font>
+    </property>
+    <property name="text">
+     <string>Available Reviews</string>
+    </property>
+    <property name="alignment">
+     <set>Qt::AlignCenter</set>
+    </property>
+   </widget>
+   <widget class="QLCDNumber" name="Available_Reviews">
+    <property name="geometry">
+     <rect>
+      <x>1420</x>
+      <y>130</y>
+      <width>200</width>
+      <height>26</height>
+     </rect>
+    </property>
+    <property name="focusPolicy">
+     <enum>Qt::NoFocus</enum>
+    </property>
+    <property name="frameShape">
+     <enum>QFrame::Box</enum>
+    </property>
+    <property name="smallDecimalPoint">
+     <bool>true</bool>
+    </property>
+    <property name="digitCount">
+     <number>9</number>
+    </property>
+    <property name="segmentStyle">
+     <enum>QLCDNumber::Flat</enum>
+    </property>
+    <property name="value" stdset="0">
+     <double>0.000000000000000</double>
+    </property>
+   </widget>
+   <widget class="QLCDNumber" name="All_Reviews">
+    <property name="geometry">
+     <rect>
+      <x>880</x>
+      <y>130</y>
+      <width>200</width>
+      <height>26</height>
+     </rect>
+    </property>
+    <property name="focusPolicy">
+     <enum>Qt::NoFocus</enum>
+    </property>
+    <property name="frameShape">
+     <enum>QFrame::Box</enum>
+    </property>
+    <property name="smallDecimalPoint">
+     <bool>true</bool>
+    </property>
+    <property name="digitCount">
+     <number>9</number>
+    </property>
+    <property name="segmentStyle">
+     <enum>QLCDNumber::Flat</enum>
+    </property>
+    <property name="value" stdset="0">
+     <double>0.000000000000000</double>
+    </property>
+    <property name="intValue" stdset="0">
+     <number>0</number>
+    </property>
+   </widget>
+   <widget class="QLabel" name="label_9">
+    <property name="geometry">
+     <rect>
+      <x>1180</x>
+      <y>80</y>
+      <width>140</width>
+      <height>20</height>
+     </rect>
+    </property>
+    <property name="font">
+     <font>
+      <pointsize>14</pointsize>
+     </font>
+    </property>
+    <property name="text">
+     <string>Mapping Reviews</string>
+    </property>
+    <property name="alignment">
+     <set>Qt::AlignCenter</set>
+    </property>
+   </widget>
+   <widget class="Line" name="line_10">
+    <property name="geometry">
+     <rect>
+      <x>1420</x>
+      <y>100</y>
+      <width>200</width>
+      <height>20</height>
+     </rect>
+    </property>
+    <property name="orientation">
+     <enum>Qt::Horizontal</enum>
+    </property>
+   </widget>
+   <widget class="Line" name="line_11">
+    <property name="geometry">
+     <rect>
+      <x>1150</x>
+      <y>100</y>
+      <width>200</width>
+      <height>20</height>
+     </rect>
+    </property>
+    <property name="orientation">
+     <enum>Qt::Horizontal</enum>
+    </property>
+   </widget>
+   <widget class="QLCDNumber" name="Mapping_Reviews">
+    <property name="geometry">
+     <rect>
+      <x>1150</x>
+      <y>130</y>
+      <width>200</width>
+      <height>26</height>
+     </rect>
+    </property>
+    <property name="focusPolicy">
+     <enum>Qt::NoFocus</enum>
+    </property>
+    <property name="frameShape">
+     <enum>QFrame::Box</enum>
+    </property>
+    <property name="smallDecimalPoint">
+     <bool>true</bool>
+    </property>
+    <property name="digitCount">
+     <number>9</number>
+    </property>
+    <property name="segmentStyle">
+     <enum>QLCDNumber::Flat</enum>
+    </property>
+    <property name="value" stdset="0">
+     <double>0.000000000000000</double>
+    </property>
    </widget>
   </widget>
   <widget class="QMenuBar" name="menubar">

@@ -255,7 +255,7 @@ class ReviewWindow(QMainWindow, form):
             table_name = f'beauty_kr_{self.category}_reviews_all'
             self.db.create_table(self.df, table_name)
             msg = QMessageBox()
-            msg_txt = f"<테이블 업로드 완료>\n\n리뷰 테이블 명: {table_name}"
+            msg_txt = f"<테이블 업로드 완료>\n\n테이블 명: {table_name}"
             msg.setText(msg_txt)
             msg.exec_()
            

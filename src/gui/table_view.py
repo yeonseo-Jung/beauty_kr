@@ -3,7 +3,7 @@ import sys
 import pandas as pd
 
 from PyQt5 import QtCore
-from PyQt5.QtWidgets import QFileDialog, QWidget, QHBoxLayout, QVBoxLayout, QPushButton, QTableView, QLineEdit, QMessageBox
+from PyQt5.QtWidgets import QFileDialog, QWidget, QHBoxLayout, QVBoxLayout, QPushButton, QTableView, QLineEdit, QHeaderView
 
 if getattr(sys, 'frozen', False) and hasattr(sys, '_MEIPASS'):
     root = sys._MEIPASS
@@ -115,6 +115,16 @@ class TableViewer(QWidget):
         model = DataFrameModel(df)
         self.pandasTv.setModel(model)
         
+        # set table columns width
+        header = self.pandasTv.horizontalHeader()
+        for column in range(header.count()):
+            header.setSectionResizeMode(column, QHeaderView.ResizeToContents)
+        
     def _loadTable(self, df):
         model = DataFrameModel(df)
         self.pandasTv.setModel(model)
+        
+        # set table columns width
+        header = self.pandasTv.horizontalHeader()
+        for column in range(header.count()):
+            header.setSectionResizeMode(column, QHeaderView.ResizeToContents)

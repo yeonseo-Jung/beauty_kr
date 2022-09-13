@@ -17,16 +17,7 @@ class AccessDataBase:
         self.db_name = db_name
     
         # today 
-        today = datetime.today()
-        year = str(today.year)
-        month = str(today.month)
-        day = str(today.day)
-        if len(month) == 1:
-            month = "0" + month
-        if len(day) == 1:
-            day = "0" + day    
-        self.date = year[2:4] + month + day
-        self.regist_date = year + "-" + month + "-" + day
+        self.today = datetime.today().strftime('%y%m%d')
         
     def db_connect(self):
         ''' db connect '''
@@ -213,28 +204,57 @@ class AccessDataBase:
             df = df.sort_values(by=pk).reset_index(drop=True)
             self.engine_upload(df, table_name, "replace", pk=pk)
             
-    def table_backup(self, table_name):
+    # def table_backup(self, table_name):
         
-        conn, curs = self.db_connect()
+    #     conn, curs = self.db_connect()
         
-        table_list = self.get_tbl_name()
-        if table_name in table_list:
-            new_table_name = f'{table_name}_backup_{self.date}'
+    #     table_list = self.get_tbl_name()
+    #     if table_name in table_list:
+    #         backup_table_name = f'{table_name}_backup_{self.date}'
             
-            # 백업 테이블이 이미 존재하는경우 replace(drop -> insert)
-            if new_table_name in table_list:
-                curs.execute(f'DROP TABLE {new_table_name};')
+    #         # 백업 테이블이 이미 존재하는경우 rename
+    #         i = 1
+    #         while backup_table_name in table_list:
+    #             backup_table_name = backup_table_name + f'_{i}'
+    #             i += 1
                 
-            query = f'ALTER TABLE {table_name} RENAME {new_table_name};'
-            curs.execute(query)
-        else:
-            pass
+    #         query = f'ALTER TABLE {table_name} RENAME {backup_table_name};'
+    #         curs.execute(query)
+    #     else:
+    #         pass
         
-        conn.commit()
-        curs.close()
-        conn.close()
+    #     conn.commit()
+    #     curs.close()
+    #     conn.close()
+    
+    def table_backup(self, table_name, keep=False):
+            
+            conn, curs = self.db_connect()
+            
+            table_list = self.get_tbl_name()
+            if table_name in table_list:
+                backup_table_name = f'{table_name}_bak_{self.today}'
+                
+                # 백업 테이블이 이미 존재하는경우 rename
+                i = 1
+                while backup_table_name in table_list:
+                    backup_table_name = backup_table_name + f'_{i}'
+                    i += 1
+
+                if keep:
+                    query = f'CREATE TABLE {backup_table_name} SELECT * FROM {table_name};'
+                else:
+                    query = f'ALTER TABLE {table_name} RENAME {backup_table_name};'
+                curs.execute(query)
+                print(f'\n\n`{table_name}` is backuped successful!\nbackup_table_name: {backup_table_name}')
+            else:
+                print(f'\n\n`{table_name}` does not exist in db')
+            
+            conn.commit()
+            curs.close()
+            conn.close()
         
-    def create_table(self, upload_df, table_name):
+    def create_table(self, upload_df, table_name, append=False):
         ''' Create table '''
         
         if 'info_all' in table_name:
@@ -268,9 +288,9 @@ class AccessDataBase:
                                                 `brand_code` int(11),\
                                                 `brand_name` varchar(255),\
                                                 `product_url_glowpick` text,\
-                                                `selection` varchar(255),\
-                                                `division` varchar(255),\
-                                                `groups` varchar(255),\
+                                                `selection` varchar(100) DEFAULT NULL,\
+                                                `division` varchar(100) DEFAULT NULL,\
+                                                `groups` varchar(100) DEFAULT NULL,\
                                                 `descriptions` text,\
                                                 `product_keywords` varchar(255),\
                                                 `color_type` varchar(255),\
@@ -296,35 +316,35 @@ class AccessDataBase:
                                                     `pk` int(11) unsigned NOT NULL AUTO_INCREMENT,\
                                                     `item_key` int(11) DEFAULT NULL COMMENT '매핑 기준 상품 id',\
                                                     `txt_data` text COMMENT '리뷰 데이터',\
-                                                    `write_date` text COMMENT '리뷰 작성일자',\
+                                                    `write_date` datetime COMMENT '리뷰 작성일자',\
                                                     `product_rating` int(11) COMMENT '리뷰 평점',\
                                                     `source` text COMMENT '데이터 출처 테이블 명',\
-                                                    `regist_date` text COMMENT '데이터 업로드 일자',\
+                                                    `regist_date` datetime COMMENT '데이터 업로드 일자',\
                                                     PRIMARY KEY (`pk`)\
                                                     ) ENGINE=InnoDB DEFAULT CHARSET=utf8;",
             
             'glowpick_product_info_final_version': f"CREATE TABLE `glowpick_product_info_final_version` (\
-                                                    `id` int(11) DEFAULT NULL COMMENT '상품 아이디 (자체부여)',\
+                                                    `id` int(11) DEFAULT NULL COMMENT '자체부여 id: 매핑 시 item_key로 활용',\
                                                     `product_code` int(11) DEFAULT NULL COMMENT '글로우픽 내부 상품 코드',\
                                                     `product_name` varchar(255),\
-                                                    `brand_code` int(11),\
+                                                    `brand_code` int(11) COMMENT '글로우픽 내부 브랜드 코드',\
                                                     `brand_name` varchar(255),\
                                                     `product_url` varchar(255),\
-                                                    `selection` varchar(255),\
-                                                    `division` varchar(255),\
-                                                    `groups` varchar(255),\
-                                                    `descriptions` text,\
-                                                    `product_keywords` varchar(255),\
-                                                    `color_type` varchar(255),\
-                                                    `volume` varchar(255),\
-                                                    `image_source` text,\
-                                                    `ingredients_all_kor` text,\
-                                                    `ingredients_all_eng` text,\
-                                                    `ingredients_all_desc` text,\
-                                                    `ranks` varchar(255),\
-                                                    `product_awards` text,\
-                                                    `product_awards_sector` text,\
-                                                    `product_awards_rank` text,\
+                                                    `selection` varchar(100) DEFAULT NULL,\
+                                                    `division` varchar(100) DEFAULT NULL,\
+                                                    `groups` varchar(100) DEFAULT NULL,\
+                                                    `descriptions` text COMMENT '상품 설명',\
+                                                    `product_keywords` varchar(255) COMMENT '상품 키워드',\
+                                                    `color_type` varchar(255) COMMENT '색상 or 타입',\
+                                                    `volume` varchar(255) COMMENT '용량',\
+                                                    `image_source` text COMMENT '상품 이미지 소스',\
+                                                    `ingredients_all_kor` text COMMENT '성분명(한글)',\
+                                                    `ingredients_all_eng` text COMMENT '성분명(영문)',\
+                                                    `ingredients_all_desc` text COMMENT '성분 설명',\
+                                                    `ranks` varchar(255) COMMENT '카테고리별 상품 랭킹',\
+                                                    `product_awards` text COMMENT '글로우픽 어워드명',\
+                                                    `product_awards_sector` text COMMENT '글로우픽 어워드 카테고리',\
+                                                    `product_awards_rank` text COMMENT '글로우픽 어워드 랭킹',\
                                                     `price` varchar(255) COMMENT '정가',\
                                                     `product_stores` varchar(255) COMMENT '글로우픽 기준 판매 스토어',\
                                                     `status` int(11) COMMENT '단종 여부 (0: 단종, 1: 판매중)',\
@@ -333,7 +353,7 @@ class AccessDataBase:
                                                     ) ENGINE=InnoDB DEFAULT CHARSET=utf8;",
                                                 
             'glowpick_product_info_final_version_review': f"CREATE TABLE glowpick_product_info_final_version_review (\
-                                                            `id` int(11) DEFAULT NULL COMMENT '싱품 id',\
+                                                            `id` int(11) DEFAULT NULL COMMENT '자체부여 id: 매핑 시 item_key로 활용',\
                                                             `product_code` int(11) DEFAULT NULL COMMENT '글로우픽 내부 상품 코드',\
                                                             `user_id` varchar(100) DEFAULT NULL COMMENT '유저 아이디',\
                                                             `product_rating` int(11) DEFAULT NULL COMMENT '상품 평점',\
@@ -342,7 +362,7 @@ class AccessDataBase:
                                                             ) ENGINE=InnoDB DEFAULT CHARSET=utf8;",
                                                             
             'oliveyoung_product_info_final_version': f"CREATE TABLE `oliveyoung_product_info_final_version` (\
-                                                        `id` int(11) NOT NULL,\
+                                                        `id` int(11) NOT NULL COMMENT '자체부여 id: 매핑 시 item_key로 활용',\
                                                         `product_code` varchar(100) DEFAULT NULL,\
                                                         `product_name` varchar(100) DEFAULT NULL,\
                                                         `product_url` varchar(255) DEFAULT NULL,\
@@ -367,7 +387,7 @@ class AccessDataBase:
                                                         
             'oliveyoung_product_info_final_version_review': f"CREATE TABLE `oliveyoung_product_info_final_version_review` (\
                                                                 `pk` int(11) unsigned NOT NULL AUTO_INCREMENT,\
-                                                                `id` int(11) NOT NULL,\
+                                                                `id` int(11) NOT NULL COMMENT '자체부여 id: 매핑 시 item_key로 활용,\
                                                                 `product_code` varchar(100) DEFAULT NULL,\
                                                                 `product_url` varchar(255) DEFAULT NULL,\
                                                                 `user_id` varchar(100) DEFAULT NULL,\
@@ -388,33 +408,72 @@ class AccessDataBase:
                                         ) ENGINE=InnoDB DEFAULT CHARSET=utf8;",
 
             'glowpick_product_info_update_new': f"CREATE TABLE `glowpick_product_info_update_new` (\
-                                                `id` int(11) DEFAULT NULL COMMENT '상품 아이디 (자체부여)',\
+                                                `id` int(11) DEFAULT NULL COMMENT '자체부여 id: 매핑 시 item_key로 활용',\
                                                 `product_code` int(11) DEFAULT NULL COMMENT '글로우픽 내부 상품 코드',\
                                                 `product_name` varchar(255),\
-                                                `brand_code` int(11),\
+                                                `brand_code` int(11) COMMENT '글로우픽 내부 브랜드 코드',\
                                                 `brand_name` varchar(255),\
                                                 `product_url` varchar(255),\
-                                                `selection` varchar(255),\
-                                                `division` varchar(255),\
-                                                `groups` varchar(255),\
-                                                `descriptions` text,\
-                                                `product_keywords` varchar(255),\
-                                                `color_type` varchar(255),\
-                                                `volume` varchar(255),\
-                                                `image_source` text,\
-                                                `ingredients_all_kor` text,\
-                                                `ingredients_all_eng` text,\
-                                                `ingredients_all_desc` text,\
-                                                `ranks` varchar(255),\
-                                                `product_awards` text,\
-                                                `product_awards_sector` text,\
-                                                `product_awards_rank` text,\
+                                                `selection` varchar(100) DEFAULT NULL,\
+                                                `division` varchar(100) DEFAULT NULL,\
+                                                `groups` varchar(100) DEFAULT NULL,\
+                                                `descriptions` text COMMENT '상품 설명',\
+                                                `product_keywords` varchar(255) COMMENT '상품 키워드',\
+                                                `color_type` varchar(255) COMMENT '색상 or 타입',\
+                                                `volume` varchar(255) COMMENT '용량',\
+                                                `image_source` text COMMENT '상품 이미지 소스',\
+                                                `ingredients_all_kor` text COMMENT '성분명(한글)',\
+                                                `ingredients_all_eng` text COMMENT '성분명(영문)',\
+                                                `ingredients_all_desc` text COMMENT '성분 설명',\
+                                                `ranks` varchar(255) COMMENT '카테고리별 상품 랭킹',\
+                                                `product_awards` text COMMENT '글로우픽 어워드명',\
+                                                `product_awards_sector` text COMMENT '글로우픽 어워드 카테고리',\
+                                                `product_awards_rank` text COMMENT '글로우픽 어워드 랭킹',\
                                                 `price` varchar(255) COMMENT '정가',\
                                                 `product_stores` varchar(255) COMMENT '글로우픽 기준 판매 스토어',\
-                                                `crawling_status` tinyint(1) DEFAULT NULL,\
-                                                `regist_date` datetime DEFAULT NULL COMMENT '개체 수집 일자',\
+                                                `crawling_status` tinyint(1) DEFAULT NULL COMMENT '네이버 크롤링 여부',\
+                                                `regist_date` datetime DEFAULT NULL COMMENT '개체 수집 일자'\
                                                 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;",
-                                        
+                                                
+            'naver_beauty_product_info_final_version': f"CREATE TABLE `naver_beauty_product_info_final_version` (\
+                                                        `id` int(11) unsigned NOT NULL AUTO_INCREMENT COMMENT '자체부여 id: 매핑 시 item_key로 활용',\
+                                                        `product_url` text,\
+                                                        `product_name` varchar(255),\
+                                                        `brand_name` varchar(255),\
+                                                        `review_count` int(11) DEFAULT NULL,\
+                                                        `product_rating` float DEFAULT NULL,\
+                                                        `selection` varchar(100) DEFAULT NULL,\
+                                                        `division` varchar(100) DEFAULT NULL,\
+                                                        `groups` varchar(100) DEFAULT NULL,\
+                                                        `gruop_details` varchar(100) DEFAULT NULL,\
+                                                        `volume` varchar(100) DEFAULT NULL,\
+                                                        `main_feature` varchar(100) DEFAULT NULL,\
+                                                        `detail_feature` varchar(100) DEFAULT NULL,\
+                                                        `pa_factor` varchar(100) DEFAULT NULL,\
+                                                        `sun_protectiom_factor` varchar(100) DEFAULT NULL,\
+                                                        `skin_type` varchar(100) DEFAULT NULL,\
+                                                        `usage_area` varchar(100) DEFAULT NULL,\
+                                                        `usage_time` varchar(100) DEFAULT NULL,\
+                                                        `color` varchar(100) DEFAULT NULL,\
+                                                        `type` varchar(100) DEFAULT NULL,\
+                                                        `review_status` tinyint(1) DEFAULT NULL COMMENT '리뷰 존재(수집) 여부',\
+                                                        `regist_date` datetime DEFAULT NULL,\
+                                                        PRIMARY KEY (`id`)\
+                                                        ) ENGINE=InnoDB DEFAULT CHARSET=utf8;",
+
+            'lalavla_product_info_final_version': f"CREATE TABLE `lalavla_product_info_final_version` (\
+                                                    `id` int(11) unsigned NOT NULL AUTO_INCREMENT COMMENT '자체부여 id: 매핑 시 item_key로 활용',\
+                                                    `brand_name` varchar(100),\
+                                                    `product_name` varchar(100),\
+                                                    `price` int(11) DEFAULT NULL,\
+                                                    `sale_price` int(11) DEFAULT NULL,\
+                                                    `product_code` int(11) DEFAULT NULL,\
+                                                    `product_url` varchar(255) NOT NULL,\
+                                                    `selection` varchar(100) DEFAULT NULL,\
+                                                    `division` varchar(100) DEFAULT NULL,\
+                                                    `groups` varchar(100) DEFAULT NULL,\
+                                                    PRIMARY KEY (`id`)\
+                                                    ) ENGINE=InnoDB DEFAULT CHARSET=utf8;",
         }
         
         if 'info_all' in table_name:
@@ -430,18 +489,25 @@ class AccessDataBase:
         if query == None:
             print('query is None')
         else:
-            # backup table
-            self.table_backup(table_name)
-            
-            # create table
+            table_list = self.get_tbl_name()
             conn, curs = self.db_connect()
-            curs.execute(query)
+            if not append:
+                # backup table
+                self.table_backup(table_name)
+            
+                # create table
+                curs.execute(query)
+            else:
+                if table_name in table_list:
+                    pass
+                else:
+                    # create table
+                    curs.execute(query)
             
             # upload table
             self.engine_upload(upload_df, table_name, if_exists_option='append')
             
             # drop temporary table
-            table_list = self.get_tbl_name()
             if  f'{table_name}_temp' in table_list:
                 curs.execute(f'DROP TABLE {table_name}_temp;')
             

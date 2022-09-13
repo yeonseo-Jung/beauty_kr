@@ -16,7 +16,10 @@ add_module = [
 add_file = [
     './src/gui/form/*.ui:form',
     f'{ua_data}/*.json:user_agent/data',
-    './src/cacert.pem:/_certifi',
+]
+
+exclude_module = [
+    'django',
 ]
 
 icon = './src/mycelebs_CI.icns'
@@ -26,20 +29,26 @@ name = "DataManager"
 _py = "./src/_main.py"
 
 # init command
-command = "pyinstaller -F"
+command = "pyinstaller -F" # onefile
+# command = "pyinstaller"
 
-# add module
-for md in add_module:
-    _md = f' --path "{md}"'
-    command += _md
+# # add module
+# for md in add_module:
+#     _md = f' --path "{md}"'
+#     command += _md
     
 # add file
 for f in add_file:
     _f = f' --add-data "{f}"'
     command += _f
 
-# set icon
-command += f' --i={icon}'
+# # set icon
+# command += f' --i={icon}'
+
+# # exclude module
+# for md in exclude_module:
+#     _md = f' --exclude "{md}"'
+#     command += _md
 
 # name
 command += f' --name "{name}"'

@@ -172,7 +172,7 @@ class CrawlingOliveWindow(QMainWindow, form):
         prg_dict = progress.format_dict
         itm = prg_dict['n'] + itm_
         tot = prg_dict['total'] + itm_ 
-        per = round((itm / tot) * 100, 0)
+        per = int(round((itm / tot) * 100, 0))
         elapsed = round(prg_dict['elapsed'], 0) + elapsed_
         prg_dict_ = {
             'n': itm,
@@ -194,7 +194,7 @@ class CrawlingOliveWindow(QMainWindow, form):
         remain_m = int((remain_time % 3600) // 60)
         remain_s = int(remain_time - (remain_h * 3600 + remain_m * 60))
         
-        message = f"{int(per)}% | Progress item: {itm}  Total: {tot} | Elapsed time: {elapsed_h}:{elapsed_m}:{elapsed_s} < Remain time: {remain_h}:{remain_m}:{remain_s}"
+        message = f"{per}% | Progress item: {itm}  Total: {tot} | Elapsed time: {elapsed_h}:{elapsed_m}:{elapsed_s} < Remain time: {remain_h}:{remain_m}:{remain_s}"
         self.statusbar.showMessage(message)
         
         # pause 시에 현재까지 진행률 저장
@@ -203,10 +203,10 @@ class CrawlingOliveWindow(QMainWindow, form):
                 pickle.dump(prg_dict_, f)
             
             if itm == tot:
-                message = f"{int(per)}% | Progress item: {itm}  Total: {tot} | Elapsed time: {elapsed_h}:{elapsed_m}:{elapsed_s} < Remain time: {remain_h}:{remain_m}:{remain_s} **Complete**"
+                message = f"{per}% | Progress item: {itm}  Total: {tot} | Elapsed time: {elapsed_h}:{elapsed_m}:{elapsed_s} < Remain time: {remain_h}:{remain_m}:{remain_s} **Complete**"
                 os.remove(self.prg_path)
             else:
-                message = f"{int(per)}% | Progress item: {itm}  Total: {tot} | Elapsed time: {elapsed_h}:{elapsed_m}:{elapsed_s} < Remain time: {remain_h}:{remain_m}:{remain_s} **PAUSE**"
+                message = f"{per}% | Progress item: {itm}  Total: {tot} | Elapsed time: {elapsed_h}:{elapsed_m}:{elapsed_s} < Remain time: {remain_h}:{remain_m}:{remain_s} **PAUSE**"
             self.statusbar.showMessage(message)
                 
     def _update_progress(self, progress):
@@ -214,7 +214,7 @@ class CrawlingOliveWindow(QMainWindow, form):
         prg_dict = progress.format_dict
         itm = prg_dict['n'] 
         tot = prg_dict['total']
-        per = round((itm / tot) * 100, 0)
+        per = int(round((itm / tot) * 100, 0))
         elapsed = int(round(prg_dict['elapsed'], 0))
         if itm >= 1:
             remain_time = int(round((elapsed * tot / itm) - elapsed, 0))
@@ -223,7 +223,7 @@ class CrawlingOliveWindow(QMainWindow, form):
         
         self.progressBar_2.setValue(per)
         
-        message = f"{int(per)}% | Progress item: {itm}  Total: {tot} | Elapsed time: {elapsed}s < Remain time: {remain_time}s "
+        message = f"{per}% | Progress item: {itm}  Total: {tot} | Elapsed time: {elapsed}s < Remain time: {remain_time}s "
         self.statusbar.showMessage(message)
         
         if not self.crw_url.power:

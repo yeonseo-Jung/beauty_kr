@@ -2,7 +2,9 @@ import re
 import os
 import sys
 import pickle
-from tokenize import group
+import warnings
+warnings.filterwarnings("ignore")
+
 import numpy as np
 import pandas as pd
 
@@ -13,7 +15,7 @@ from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 
 # Pyqt5
 from PyQt5 import uic
-from PyQt5.QtWidgets import QMainWindow, QMessageBox
+from PyQt5.QtWidgets import QMainWindow, QMessageBox, QFileDialog
 from PyQt5.QtCore import Qt
 from PyQt5.QtWidgets import QApplication
 
@@ -29,8 +31,7 @@ else:
     
 tbl_cache = os.path.join(root, 'tbl_cache')
 conn_path = os.path.join(root, 'conn.txt')
-# form_path = os.path.join(form_dir, 'dashboardWindow.ui')
-form_path = os.path.join(form_dir, 'dashboardWindow_test.ui')
+form_path = os.path.join(form_dir, 'dashboardWindow.ui')
 form = uic.loadUiType(form_path)[0]
 
 from access_database.access_db import AccessDataBase
@@ -97,9 +98,14 @@ class DashboardWindow(QMainWindow, form):
         self.select_brand.clicked.connect(self.initUI_category)
         self.select_category.clicked.connect(self.initUI_brand)
         self.select_review.clicked.connect(self.initUI_review)
+        
         self.view_category.clicked.connect(lambda: self.tbl_viewer(self.category_group_count_df))
         self.view_brand.clicked.connect(lambda: self.tbl_viewer(self.brand_group_count_df))
         self.view_review.clicked.connect(lambda: self.tbl_viewer(self.review_group_count_df))
+        
+        self.save_category.clicked.connect(lambda: self.save_file(self.category_group_count_df))
+        self.save_brand.clicked.connect(lambda: self.save_file(self.brand_group_count_df))
+        self.save_review.clicked.connect(lambda: self.save_file(self.review_group_count_df))
         
     def initUI_category(self):
         ''' init UI (category) '''
@@ -162,7 +168,7 @@ class DashboardWindow(QMainWindow, form):
         else:
             select_dict = {'category': category}
         
-        ax, canvas, group_count_df, status = self.visualizer(group_by, select_dict, min_length=25)
+        ax, canvas, group_count_df, status = self.visualizer(group_by, select_dict, min_length=20)
         
         self.graph_brand.takeAt(0)
         if status == 0:
@@ -170,7 +176,7 @@ class DashboardWindow(QMainWindow, form):
             msg.setText("** Empty Data **")
             msg.exec_()
             self.initCombox(category=True)
-            ax, canvas, group_count_df, status = self.visualizer(group_by, None, min_length=25)
+            ax, canvas, group_count_df, status = self.visualizer(group_by, None, min_length=20)
             
         self.graph_brand.addWidget(canvas)
         canvas.draw()
@@ -367,14 +373,14 @@ class DashboardWindow(QMainWindow, form):
         if _group_count_df.empty:
             status = 0
         else:
-            # visualization bar plot & calculate sum
+            status = 1
+            # visualization bar plot & calculate total count
             if review:
                 sns.barplot(ax=ax, x=_count, y=group_by, data=_group_count_df)
                 group_count_df.loc[len(group_count_df)] = 'Total', group_count_df[_count].sum()
             else:
                 sns.barplot(ax=ax, x=_count, y=_group_count_df.index, data=_group_count_df)
                 group_count_df.loc['Total', _count] = group_count_df[_count].sum()
-            status = 1
 
         return ax, canvas, group_count_df, status
     
@@ -410,6 +416,20 @@ class DashboardWindow(QMainWindow, form):
                 
         self.viewer.show()
         self.viewer._loadTable(df)
+        
+    def save_file(self, df):
+            ''' save csv file '''
+            
+            # 캐시에 해당 파일이 존재할 때 저장
+            if df is None:
+                msg = QMessageBox()
+                msg.setText('일시정지 후 다시 시도해주세요')
+                msg.exec_()
+            else:
+                file_save = QFileDialog.getSaveFileName(self, "Save File", "", "csv file (*.csv)")
+                
+                if file_save[0] != "":
+                    df.to_csv(file_save[0], index=False)
         
 if __name__ == "__main__":
     app = QApplication(sys.argv)

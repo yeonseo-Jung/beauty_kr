@@ -1,6 +1,7 @@
 import os
 import sys
 import pickle
+import numpy as np
 import pandas as pd
 from tqdm.auto import tqdm
 from datetime import datetime
@@ -93,29 +94,16 @@ class ThreadCrawlingGl(QtCore.QThread, QtCore.QObject):
                        'price', 'product_stores']
             df_info = pd.DataFrame(self.scrape_infos, columns=columns)
             df_info.loc[:, 'regist_date'] = self.date
+            df_info = df_info.drop_duplicates('product_code', keep='first')
             df_info.to_csv(self.path_scrape_df, index=False)
             
             # reivew table
             columns = ['product_code', 'user_id', 'product_rating', 'review_date', 'product_review']
             df_rev = pd.DataFrame(self.scrape_reviews, columns=columns)
-            
-            # status table
-            df_status = pd.DataFrame(self.status_list, columns=['product_code', 'status'])
+            df_rev = df_rev.loc[df_rev.product_review==''] = np.nan
+            df_rev = df_rev.drop_duplicates(keep='first', ignore_index=True)
             
             try:
-                # dup check
-                db_tables = self.db.get_tbl_name()
-                if self.table_name_info in db_tables:
-                    _df_info = self.db.get_tbl(self.table_name_info, 'all')
-                    _df_rev = self.db.get_tbl(self.table_name_rev, 'all')
-                    _df_status = self.db.get_tbl(self.table_name_status, 'all')
-                    
-                    df_info = pd.concat([df_info, _df_info]).drop_duplicates('product_code', keep='first').sort_values('product_code').reset_index(drop=True)
-                    df_rev = pd.concat([df_rev, _df_rev]).drop_duplicates(keep='first').sort_values('product_code').reset_index(drop=True)
-                    df_status = pd.concat([df_status, _df_status]).drop_duplicates('product_code', keep='first').sort_values('product_code').reset_index(drop=True)
-                else:
-                    pass
-                
                 if comp:
                     ''' Table Update (append) '''
                     # glowpick_product_info_final_version
@@ -141,13 +129,15 @@ class ThreadCrawlingGl(QtCore.QThread, QtCore.QObject):
                     # glowpick_product_info_final_version_review
                     gl_rev_final_v = self.db.get_tbl('glowpick_product_info_final_version_review')
                     df_mer_rev = _gl_info_final_v_dedup.loc[:, ['id', 'product_code']].merge(df_rev, on='product_code', how='inner')
-                    df_dedup_rev = pd.concat([df_mer_rev, gl_rev_final_v]).drop_duplicates(keep='first').sort_values('id').reset_index(drop=True)
+                    df_dedup_rev = pd.concat([df_mer_rev, gl_rev_final_v]).drop_duplicates(keep='first').sort_values(by='id', ignore_index=True)
+                    df_dedup_rev = df_dedup_rev.loc[df_dedup_rev.product_review.notnull()].reset_index(drop=True)
                     
                     try:
                         # upload table into db
-                        df_new = self.db.get_tbl('glowpick_product_info_update_new')
-                        gl_info_new_v = pd.concat([gl_info_new_v, df_new]).drop_duplicates('product_code', keep='first').sort_values('id').reset_index(drop=True)
-                        self.db.engine_upload(gl_info_new_v, 'glowpick_product_info_update_new', 'replace')
+                        # df_new = self.db.get_tbl('glowpick_product_info_update_new')
+                        # gl_info_new_v = pd.concat([gl_info_new_v, df_new]).drop_duplicates('product_code', keep='first').sort_values('id').reset_index(drop=True)
+                        gl_info_new_v.loc[:, 'crawling_status'] = 0
+                        self.db.create_table(gl_info_new_v, 'glowpick_product_info_update_new', append=True)
                         self.db.create_table(_gl_info_final_v_dedup, 'glowpick_product_info_final_version')
                         self.db.create_table(df_dedup_rev, 'glowpick_product_info_final_version_review')
                         
@@ -249,6 +239,9 @@ class ThreadCrawlingProductCode(QtCore.QThread, QtCore.QObject):
             conn = pickle.load(f)
         self.db = AccessDataBase(conn[0], conn[1], conn[2])
         
+        # error log
+        self.err = Errors()
+        
     def find_category_index(self):
         ''' Crawling & Save category index dictionary '''
         
@@ -301,20 +294,23 @@ class ThreadCrawlingProductCode(QtCore.QThread, QtCore.QObject):
             if self.power:
                 self.progress.emit(t)
             
-                if i < len(sel_idx):
-                    # Scraping rank products
-                    idx = sel_idx[i]
-                    url = f"https://www.glowpick.com/categories/{idx}?tab=ranking"    # glowpick ranking products page 
-                    wd = get_url(url)
-                    urls += crw.scraping_prds_rank(wd)
-                    
-                else:
-                    # Scraping new products
-                    i -= len(sel_idx)
-                    idx = div_idx[i]
-                    url = f"https://www.glowpick.com/products/brand-new?cate1Id={idx}"    # glowpick new products page 
-                    wd = get_url(url)
-                    urls += crw.scraping_prds_new(wd)
+                try:
+                    if i < len(sel_idx):
+                        # Scraping rank products
+                        idx = sel_idx[i]
+                        url = f"https://www.glowpick.com/categories/{idx}?tab=ranking"    # glowpick ranking products page 
+                        wd = get_url(url)
+                        urls += crw.scraping_prds_rank(wd)
+                        
+                    else:
+                        # Scraping new products
+                        i -= len(sel_idx)
+                        idx = div_idx[i]
+                        url = f"https://www.glowpick.com/products/brand-new?cate1Id={idx}"    # glowpick new products page 
+                        wd = get_url(url)
+                        urls += crw.scraping_prds_new(wd)
+                except:
+                    self.err.errors_log(url)        
             else:
                 break
                 

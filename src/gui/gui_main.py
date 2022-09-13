@@ -1,6 +1,8 @@
 import os
 import sys
 import pickle
+import warnings
+warnings.filterwarnings("ignore")
 
 from PyQt5.QtWidgets import QWidget, QGridLayout, QLabel, QLineEdit, QComboBox, QPushButton, QMessageBox
 
@@ -30,7 +32,7 @@ class MainWidget(QWidget):
     
     def __init__(self):
         super().__init__()
-        self.version = "2.1.0"
+        self.version = "3.0.0"
         self.w0 = None
         self.w1 = None
         self.w2 = None
