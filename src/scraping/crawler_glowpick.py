@@ -35,7 +35,6 @@ conn_path = os.path.join(root, 'conn.txt')
     
 from scraping.scraper import get_url
 
-
 class CrawlInfoRevGl():
     def __init__(self):
         pass
@@ -128,7 +127,8 @@ class CrawlInfoRevGl():
                 # remove popup
                 try:
                     popup_xpath = '/html/body/div/div/div/div/div[1]/span/div/div[2]/div[2]/button[1]'
-                    wd.find_element_by_xpath(popup_xpath).click()
+                    wd.find_element(By.XPATH, popup_xpath).click()
+                    
                 except NoSuchElementException:
                     pass
                 
@@ -161,7 +161,7 @@ class CrawlInfoRevGl():
                 # remove popup
                 try:
                     popup_xpath = '/html/body/div/div/div/div/div[1]/span/div/div[2]/div[2]/button[1]'
-                    wd.find_element_by_xpath(popup_xpath).click()
+                    wd.find_element(By.XPATH, popup_xpath).click()
                 except NoSuchElementException:
                     pass
                 
@@ -188,7 +188,7 @@ class CrawlInfoRevGl():
             # remove popup
             try:
                 popup_xpath = '/html/body/div/div/div/div/div[1]/span/div/div[2]/div[2]/button[1]'
-                wd.find_element_by_xpath(popup_xpath).click()
+                wd.find_element(By.XPATH, popup_xpath).click()
             except NoSuchElementException:
                 pass
             
@@ -199,7 +199,7 @@ class CrawlInfoRevGl():
             if n >= 2:
                 try:
                     groups_xpath = '/html/body/div/div/div/div/div[2]/div/div/div[3]/div/div[2]'
-                    wd.find_element_by_xpath(groups_xpath).click()
+                    wd.find_element(By.XPATH, groups_xpath).click()
                     try:
                         wait_xpath = '/html/body/div/div/div/div/main/div/div[2]/div/div/div[1]/div/div/ul/li[1]'
                         WebDriverWait(wd, 30).until(EC.element_to_be_clickable((By.XPATH, wait_xpath)))
@@ -242,7 +242,7 @@ class CrawlInfoRevGl():
             # remove popup
             try:
                 popup_xpath = '/html/body/div/div/div/div/div[1]/span/div/div[2]/div[2]/button[1]'
-                wd.find_element_by_xpath(popup_xpath).click()
+                wd.find_element(By.XPATH, popup_xpath).click()
             except NoSuchElementException:
                 pass
             
@@ -253,7 +253,7 @@ class CrawlInfoRevGl():
             if n >= 2:
                 try:
                     groups_xpath = '/html/body/div/div/div/div/div[2]/div/div/div[3]/div/div[2]'
-                    wd.find_element_by_xpath(groups_xpath).click()
+                    wd.find_element(By.XPATH, groups_xpath).click()
                     
                     try:
                         wait_xpath = '/html/body/div/div/div/div/main/div/div[2]/div/div/div[1]/div/div/ul/li[1]'
@@ -339,7 +339,7 @@ class CrawlInfoRevGl():
                 pass
             else:
                 open_xpath = f'/html/body/div/div/div/div/main/div/section/div[3]/article[{i}]/h3/button'
-                driver.find_element_by_xpath(open_xpath).click()
+                driver.find_element(By.XPATH, open_xpath).click()
                 time.sleep(1.5)
                 soup = BeautifulSoup(driver.page_source, 'lxml')
                 
@@ -355,12 +355,12 @@ class CrawlInfoRevGl():
                 product_awards_sector =  str(product_awards_sector)
                 product_awards_rank = str(product_awards_rank)
                 
-                driver.find_element_by_xpath(close_xpath).click()
+                driver.find_element(By.XPATH, close_xpath).click()
                 i += 1
             
             # ingredient    
             open_xpath = f'/html/body/div/div/div/div/main/div/section/div[3]/article[{i}]/h3/button'
-            driver.find_element_by_xpath(open_xpath).click()
+            driver.find_element(By.XPATH, open_xpath).click()
             time.sleep(1.5)
             soup = BeautifulSoup(driver.page_source, 'lxml')
             
@@ -390,7 +390,7 @@ class CrawlInfoRevGl():
                 ingredients_all_kor = str(ingredients_all_kor)
                 ingredients_all_eng =  str(ingredients_all_eng)
                 ingredients_all_desc = str(ingredients_all_desc)
-            driver.find_element_by_xpath(close_xpath).click()
+            driver.find_element(By.XPATH, close_xpath).click()
             i += 1
                 
             # image source
@@ -405,7 +405,7 @@ class CrawlInfoRevGl():
                     
             # descriptions
             open_xpath = f'/html/body/div/div/div/div/main/div/section/div[3]/article[{i}]/h3/button'
-            driver.find_element_by_xpath(open_xpath).click()
+            driver.find_element(By.XPATH, open_xpath).click()
             time.sleep(1.5)
             soup = BeautifulSoup(driver.page_source, 'lxml')
 
@@ -473,7 +473,7 @@ class CrawlInfoRevGl():
                 for store in stores:
                     _stores.append(store.text.strip())
                 _stores = str(_stores)
-            driver.find_element_by_xpath(close_xpath).click()
+            driver.find_element(By.XPATH, close_xpath).click()
             
             status = 1
             product_scrapes = [int(product_code), product_name, brand_code, brand_name, url,
@@ -538,7 +538,7 @@ class CrawlInfoRevGl():
                         status = -1
                 else:
                     # scroll down to select rating 
-                    tag = driver.find_element_by_xpath('/html/body/div/div/div/div/main/div/section/section/div[4]')
+                    tag = driver.find_element(By.XPATH, '/html/body/div/div/div/div/main/div/section/section/div[4]')
                     action = ActionChains(driver)
                     action.move_to_element(tag).perform()
                     time.sleep(3)
@@ -549,14 +549,14 @@ class CrawlInfoRevGl():
                         # click rating button
                         try:
                             rating_xpath = f'/html/body/div/div/div/div/main/div/section/section/div[2]/div[2]/div/div/div[{i}]/span'
-                            driver.find_element_by_xpath(rating_xpath).click()
+                            driver.find_element(By.XPATH, rating_xpath).click()
                             time.sleep(3)
                         except:
                             continue
                         
                         # remove popup
                         try:
-                            driver.find_element_by_xpath('/html/body/div/div/div/div/div[1]/span/div/div[2]/div/div/div/button[2]').click()
+                            driver.find_element(By.XPATH, '/html/body/div/div/div/div/div[1]/span/div/div[2]/div/div/div/button[2]').click()
                             time.sleep(3)
                         except:
                             pass
