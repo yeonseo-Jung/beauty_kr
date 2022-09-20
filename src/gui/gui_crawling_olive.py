@@ -268,12 +268,24 @@ class CrawlingOliveWindow(QMainWindow, form):
         ''' save csv file '''
         
         # 캐시에 해당 파일이 존재할 때 저장
+        
+        # # dup
+        # path = os.path.join(tbl_cache, '_info_df.csv')
+        # if os.path.isfile(path):
+        #     df = pd.read_csv(path)
+        #     file_save = QFileDialog.getSaveFileName(self, "Save File", "", "csv file (*.csv)")
+            
+        #     if file_save[0] != "":
+        #         df.to_csv(file_save[0], index=False)
+        
+        # dedup
         if os.path.isfile(self.info_df_path):
             df = pd.read_csv(self.info_df_path)
             file_save = QFileDialog.getSaveFileName(self, "Save File", "", "csv file (*.csv)")
             
             if file_save[0] != "":
                 df.to_csv(file_save[0], index=False)
+        
         else:
             msg = QMessageBox()
             msg.setText('** 일시정지 후 다시 시도해주세요 **')

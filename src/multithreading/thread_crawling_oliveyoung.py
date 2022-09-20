@@ -197,8 +197,17 @@ class ThreadCrawlingOliveUrl(QtCore.QThread, QtCore.QObject):
         
     def _upload(self):
         
+        if len(self.status) == 0:
+            pass
+        else:
+            columns = ['url', 'status']
+            status_df = pd.DataFrame(self.status, columns=columns)
+            self.db.engine_upload(upload_df=status_df, table_name='oliveyoung_url_status', if_exists_option='append')
+
         columns = ['product_code', 'product_name', 'product_url', 'brand_name', 'price', 'sale_price', 'status']
         info_df = pd.DataFrame(self.infos, columns=columns).drop_duplicates('product_code', keep='first', ignore_index=True)
+        path = os.path.join(tbl_cache, '_info_df.csv')
+        info_df.to_csv(path, index=False)
         
         # dup check
         product_code = self.db.get_tbl('oliveyoung_product_info_final_version', ['product_code'])
@@ -220,61 +229,46 @@ class ThreadCrawlingOliveUrl(QtCore.QThread, QtCore.QObject):
         with open(self.category_ids_path, 'rb') as f:
             category_ids = pickle.load(f)
         
-        self.infos, error = [], [] 
+        self.infos, self.status = [], [] 
         t = tqdm(category_ids)
         for category_id in t:
             if self.power:
                 self.progress.emit(t)
                 
+                selection = category_id[0:5]
+                division = category_id[5:9]
+                cnt = None
                 try:
                     cnt = scraper_prd_cnt(category_id, page=1)
-                    if cnt == -1:
-                        error.append(category_id)
-                    else:
-                        pages = cnt // 24 + 1
-                        for page in range(1, pages + 1):
-                            info, status = scraper_prd_info(category_id, page)
-                            
-                            if status == -1:
-                                pass
-                            else:
-                                self.infos += info
-                                
                 except:
-                    selection = category_id[0:5]
-                    division = category_id[5:9]
+                    page = 1
                     url = f'https://www.oliveyoung.co.kr/store/display/getMCategoryList.do?dispCatNo=1000001{selection}{division}&fltDispCatNo=&prdSort=01&pageIdx={page}&rowsPerPage=24&searchTypeSort=btn_thumb&plusButtonFlag=N&isLoginCnt=0&aShowCnt=0&bShowCnt=0&cShowCnt=0&trackingCd=Cat1000001{selection}{division}_Small'
                     self.err.errors_log(url)
+                
+                if cnt is None:
+                    pass
+                elif cnt == -1:
+                    pass
+                else:
+                    pages = cnt // 24 + 1
+                    for page in range(1, pages + 1):
+                        status = None
+                        url = f'https://www.oliveyoung.co.kr/store/display/getMCategoryList.do?dispCatNo=1000001{selection}{division}&fltDispCatNo=&prdSort=01&pageIdx={page}&rowsPerPage=24&searchTypeSort=btn_thumb&plusButtonFlag=N&isLoginCnt=0&aShowCnt=0&bShowCnt=0&cShowCnt=0&trackingCd=Cat1000001{selection}{division}_Small'
+                        try:
+                            info, status = scraper_prd_info(category_id, page)
+                        except:
+                            self.err.errors_log(url)
+                        
+                        if status is None:
+                            status = -2
+                        elif status == -1:
+                            pass
+                        else:
+                            self.infos += info
+                        
+                        self.status.append([url, status])
             else:
                 break
-        
-        if len(error) == 0:
-            pass
-        else:
-            t = tqdm(error)
-            for category_id in t:
-                self.progress.emit(t)
-                
-                try:
-                    cnt = scraper_prd_cnt(category_id, page=1)
-                    if cnt == -1:
-                        # url scraping failed category
-                        pass
-                    else:
-                        pages = cnt // 24 + 1
-                        for page in range(1, pages + 1):
-                            info, status = scraper_prd_info(category_id, page)
-                            
-                            if status == -1:
-                                pass
-                            else:
-                                self.infos += info
-                                
-                except:
-                    selection = category_id[0:5]
-                    division = category_id[5:9]
-                    url = f'https://www.oliveyoung.co.kr/store/display/getMCategoryList.do?dispCatNo=1000001{selection}{division}&fltDispCatNo=&prdSort=01&pageIdx={page}&rowsPerPage=24&searchTypeSort=btn_thumb&plusButtonFlag=N&isLoginCnt=0&aShowCnt=0&bShowCnt=0&cShowCnt=0&trackingCd=Cat1000001{selection}{division}_Small'
-                    self.err.errors_log(url)
         
         self._upload()    
         self.progress.emit(t)
