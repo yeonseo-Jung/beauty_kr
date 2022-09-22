@@ -8,7 +8,7 @@ from datetime import datetime
 import pymysql
 import sqlalchemy
 
-class AccessDataBase:
+class AccessDataBase: 
     
     def __init__(self, user_name, password, db_name):
         # user info & db
@@ -203,31 +203,8 @@ class AccessDataBase:
             print(e)
             df = df.sort_values(by=pk).reset_index(drop=True)
             self.engine_upload(df, table_name, "replace", pk=pk)
-            
-    # def table_backup(self, table_name):
-        
-    #     conn, curs = self.db_connect()
-        
-    #     table_list = self.get_tbl_name()
-    #     if table_name in table_list:
-    #         backup_table_name = f'{table_name}_backup_{self.date}'
-            
-    #         # 백업 테이블이 이미 존재하는경우 rename
-    #         i = 1
-    #         while backup_table_name in table_list:
-    #             backup_table_name = backup_table_name + f'_{i}'
-    #             i += 1
-                
-    #         query = f'ALTER TABLE {table_name} RENAME {backup_table_name};'
-    #         curs.execute(query)
-    #     else:
-    #         pass
-        
-    #     conn.commit()
-    #     curs.close()
-    #     conn.close()
     
-    def table_backup(self, table_name, keep=False):
+    def _backup(self, table_name, keep=False):
             
             conn, curs = self.db_connect()
             
@@ -493,7 +470,7 @@ class AccessDataBase:
             conn, curs = self.db_connect()
             if not append:
                 # backup table
-                self.table_backup(table_name)
+                self._backup(table_name)
             
                 # create table
                 curs.execute(query)

@@ -15,6 +15,7 @@ warnings.filterwarnings("ignore")
 if getattr(sys, 'frozen', False) and hasattr(sys, '_MEIPASS'):
     root = sys._MEIPASS
 else:
+    
     cur_dir = os.path.dirname(os.path.realpath(__file__))
     root = os.path.abspath(os.path.join(cur_dir, os.pardir, os.pardir))
     src = os.path.abspath(os.path.join(cur_dir, os.pardir))

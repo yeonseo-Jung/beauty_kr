@@ -75,11 +75,12 @@ def scraper_prd_info(category_id, page):
     wd = get_url(url)
     if wd is None:
         # status when parsing url fails
-        status = -1 
+        page_status = -2
         '''
-            status
-                * -1: url parsing failed
-                *  0: sold out
+            page_status
+                * -2: url parsing failed
+                * -1: scraping failed
+                *  0: Product does not exist
                 *  1: normal
         '''
     else:
@@ -91,15 +92,16 @@ def scraper_prd_info(category_id, page):
         
         if soup.find('p', 'cate_info_tx').find('span').text.strip() == '0':
             # status when parsing url fails
-            status = -1
+            page_status = -1
         
         else:
             # 전체 프로덕트 리스트
             prd_list = soup.find_all('div', 'prd_info')
             if len(prd_list) == 0:
                 # status when parsing url fails
-                status = -1
+                page_status = 0
             else:
+                page_status = 1
                 for prd in prd_list:
                     # 올리브영 프로덕트 코드
                     product_code =prd.find('a', 'prd_thumb goodsList')['data-ref-goodsno'] 
@@ -112,7 +114,12 @@ def scraper_prd_info(category_id, page):
                         status = 1 # 판매중
                     else:
                         status = 0 # 일시품절
-
+                        '''
+                            status
+                                *  0: sold out
+                                *  1: normal
+                        '''          
+                        
                     # 상품명
                     product_name = prd.find('p', 'tx_name').text
 
@@ -130,7 +137,7 @@ def scraper_prd_info(category_id, page):
                     
         wd.quit()
         
-    return scraps, status
+    return scraps, page_status
 
 def scraper_info_detail(url):
     ''' 올리브영 상품 세부정보 스크레이핑 '''
@@ -439,7 +446,7 @@ def turning_page(wd, url, xpath_page):
                 break
         
         for i in range(start_idx, page_n+1):
-            btn = wd.find_element_by_xpath(f'{xpath_page}/a[{i}]')
+            btn = wd.find_element(By.XPATH, f'{xpath_page}/a[{i}]')
             wd.implicitly_wait(5)
             try:
                 btn.click()
@@ -496,7 +503,7 @@ def select_rating(wd, url, xpath_filter, xpath_page):
     if status == 1:
         i = 2
         _xpath_rating = f'{xpath_rating}/li[{i}]/label'
-        btn = wd.find_element_by_xpath(_xpath_rating)
+        btn = wd.find_element(By.XPATH, _xpath_rating)
         wd.implicitly_wait(5)
         try:
             btn.click()
@@ -505,7 +512,7 @@ def select_rating(wd, url, xpath_filter, xpath_page):
         time.sleep(2.5)
 
         # apply option
-        btn = wd.find_element_by_xpath(xpath_apply)
+        btn = wd.find_element(By.XPATH, xpath_apply)
         wd.implicitly_wait(5)
         try:
             btn.click()
@@ -530,7 +537,7 @@ def select_rating(wd, url, xpath_filter, xpath_page):
 
             # select rating
             _xpath_rating = f'{xpath_rating}/li[{i-1}]/label'
-            btn = wd.find_element_by_xpath(_xpath_rating)
+            btn = wd.find_element(By.XPATH, _xpath_rating)
             wd.implicitly_wait(5)
             try:
                 btn.click()
@@ -539,7 +546,7 @@ def select_rating(wd, url, xpath_filter, xpath_page):
             time.sleep(2.5)
             
             _xpath_rating = f'{xpath_rating}/li[{i}]/label'
-            btn = wd.find_element_by_xpath(_xpath_rating)
+            btn = wd.find_element(By.XPATH, _xpath_rating)
             wd.implicitly_wait(5)
             try:
                 btn.click()
@@ -548,7 +555,7 @@ def select_rating(wd, url, xpath_filter, xpath_page):
             time.sleep(2.5)
 
             # apply option
-            btn = wd.find_element_by_xpath(xpath_apply)
+            btn = wd.find_element(By.XPATH, xpath_apply)
             wd.implicitly_wait(5)
             try:
                 btn.click()
