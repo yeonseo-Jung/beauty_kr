@@ -100,8 +100,8 @@ class ThreadCrawlingGl(QtCore.QThread, QtCore.QObject):
             # reivew table
             columns = ['product_code', 'user_id', 'product_rating', 'review_date', 'product_review']
             df_rev = pd.DataFrame(self.scrape_reviews, columns=columns)
-            df_rev = df_rev.loc[df_rev.product_review==''] = np.nan
-            df_rev = df_rev.drop_duplicates(keep='first', ignore_index=True)
+            df_rev.loc[df_rev.product_review==''] = np.nan
+            df_rev.drop_duplicates(keep='first', ignore_index=True)
             
             try:
                 if comp:

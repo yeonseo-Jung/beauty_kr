@@ -112,7 +112,7 @@ class CrawlInfoRevGl():
                 
         return urls
     
-    def find_division_rank(self):
+    def find_division_rank(self, window=None, image=None):
         ''' find division index '''
         
         divisions = {}
@@ -121,7 +121,7 @@ class CrawlInfoRevGl():
         while error_cnt < 10:
             url = f"https://www.glowpick.com/categories/{idx}?tab=ranking"
             try:
-                wd = get_url(url)
+                wd = get_url(url, window=window, image=image)
                 wait_xpath = '/html/body/div/div/div/div/main/div/div[2]/div/div/div[1]/div/div/ul/li[1]'
                 WebDriverWait(wd, 30).until(EC.element_to_be_clickable((By.XPATH, wait_xpath)))
                 
@@ -145,7 +145,7 @@ class CrawlInfoRevGl():
             
         return divisions
     
-    def find_selection_new(self):
+    def find_selection_new(self, window=None, image=None):
         ''' find selection index '''
         selections = {}
         error = []
@@ -154,7 +154,7 @@ class CrawlInfoRevGl():
             url = f"https://www.glowpick.com/products/brand-new?cate1Id={idx}"
             try:
                 # wait for page
-                wd = get_url(url)
+                wd = get_url(url, window=window, image=image)
                 wait_xpath = '/html/body/div/div/div/div/main/div/div[2]/div/div/div[1]/div/div/ul/li[1]'
                 WebDriverWait(wd, 30).until(EC.element_to_be_clickable((By.XPATH, wait_xpath)))
                 
