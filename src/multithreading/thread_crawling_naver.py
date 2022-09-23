@@ -403,14 +403,14 @@ class ThreadCrawlingNvInfo(QtCore.QThread, QtCore.QObject):
             scraping_data = pickle.load(f)
 
         # assign dataframe        
-        columns = ['id','input_words','product_name','product_url','price','category','product_description','registered_date','review_count','product_rating','product_store']
+        columns = ['id','input_words','product_name','product_url','price','category','product_description','registered_date']
         scrape_df = pd.DataFrame(scraping_data, columns=columns)
 
         if not comp:
             return scrape_df
         else:
             # dup check
-            _sorting = ['product_name', 'review_count']
+            _sorting = ['product_name']
             scrape_df = scrape_df.sort_values(by=_sorting, ascending=False, ignore_index=True)
             subset = ['product_name', 'category']
             df_dedup = scrape_df.drop_duplicates(subset=subset, keep='first', ignore_index=True)
@@ -514,7 +514,7 @@ class ThreadCrawlingNvInfo(QtCore.QThread, QtCore.QObject):
             _info_detail_rename = info_detail_rename.loc[:, _columns]
 
             # merge & sorting
-            df_merge = df_dedup.loc[:, ['product_url', 'product_name', 'brand_name', 'review_count', 'product_rating']].merge(_info_detail_rename, on='product_url', how='left')
+            df_merge = df_dedup.loc[:, ['product_url', 'product_name', 'brand_name']].merge(_info_detail_rename, on='product_url', how='left')
             upload_df = df_merge[(df_merge.brand_name.notnull()) & (df_merge.selection=='화장품/미용')].sort_values(['brand_name', 'division', 'groups'], ignore_index=True)
 
             return upload_df

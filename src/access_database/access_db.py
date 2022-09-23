@@ -417,8 +417,6 @@ class AccessDataBase:
                                                         `product_url` text,\
                                                         `product_name` varchar(255),\
                                                         `brand_name` varchar(255),\
-                                                        `review_count` int(11) DEFAULT NULL,\
-                                                        `product_rating` float DEFAULT NULL,\
                                                         `selection` varchar(100) DEFAULT NULL,\
                                                         `division` varchar(100) DEFAULT NULL,\
                                                         `groups` varchar(100) DEFAULT NULL,\
@@ -451,6 +449,32 @@ class AccessDataBase:
                                                     `groups` varchar(100) DEFAULT NULL,\
                                                     PRIMARY KEY (`id`)\
                                                     ) ENGINE=InnoDB DEFAULT CHARSET=utf8;",
+                                                    
+            'ewg_ingredients_all': f"CREATE TABLE `ewg_ingredients_all` (\
+                                    `ewg_url` varchar(255) DEFAULT NULL COMMENT 'ewg 성분 상세 페이지 url',\
+                                    `ewg_score` int(11) DEFAULT NULL COMMENT 'ewg 등급',\
+                                    `ewg_ingredient_name` varchar(1000) DEFAULT NULL COMMENT 'ewg 기준 성분명',\
+                                    `availability` varchar(100) DEFAULT NULL COMMENT 'ewg 등급 유효셩',\
+                                    `score_img_src` varchar(255) DEFAULT NULL COMMENT 'ewg 등급 이미지 source',\
+                                    ) ENGINE=InnoDB DEFAULT CHARSET=utf8;",
+                                    
+            'beauty_kr_ingredients_all': f"CREATE TABLE `beauty_kr_ingredients_all` (\
+                                        `ingredient_key` int(11) unsigned NOT NULL AUTO_INCREMENT COMMENT '성분 key값 (개체 테이블과 조인 시 사용되는 key)',\
+                                        `ingredient_en` varchar(1000) DEFAULT NULL COMMENT '영문 성분명',\
+                                        `ingredient_ko` varchar(1000) DEFAULT NULL COMMENT '한글 성분명',\
+                                        `ingredient_desc` varchar(1000) DEFAULT NULL COMMENT '성분 설명',\
+                                        `ewg_url` varchar(255) DEFAULT NULL COMMENT 'ewg 성분 상세 페이지 url',\
+                                        `ewg_ingredient_name` varchar(1000) DEFAULT NULL COMMENT 'ewg 기준 성분명',\
+                                        `availability` varchar(100) DEFAULT NULL COMMENT 'ewg 등급 유효셩',\
+                                        `score_img_src` varchar(255) DEFAULT NULL COMMENT 'ewg 등급 이미지 source',\
+                                        `ewg_score` int(11) DEFAULT NULL COMMENT 'ewg 등급',\
+                                        PRIMARY KEY (`ingredient_key`)\
+                                        ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='성분 테이블';",
+                                        
+            'beauty_kr_ingredients_bridge_table': f"CREATE TABLE `beauty_kr_ingredients_bridge_table` (\
+                                                `item_key` int(11) NOT NULL COMMENT 'glowpick_product_info_final_version id (자체부여 상품 id)',\
+                                                `ingredient_key` int(11) NOT NULL COMMENT 'beauty_kr_ingredients_all ingredient_key (자체부여 성분 key)'\
+                                                ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='성분테이블, 글로우픽 개체 테이블간의 bridge_table';",
         }
         
         if 'info_all' in table_name:

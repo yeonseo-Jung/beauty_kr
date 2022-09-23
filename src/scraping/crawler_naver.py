@@ -218,6 +218,17 @@ def crawler_nv(product_id, search_word):
     - scraps: 스크레이핑한 상품 정보 리스트
     - status: 스크레이핑 상태 변수 (-1: 아직 스크레이핑 안됨(defalt), 0: 검색결과 없음, 1: 검색결과 존재
     '''
+    tags_dict = {
+        'item_divs': ['div', {'class': 'basicList_inner__xCM3J'}],
+        'product_name': ['div', {'class': 'basicList_title__VfX3c'}],
+        'price': ['span', {'class': 'price_num__S2p_v'}],
+        'category': ['div', {'class': 'basicList_depth__SbZWF'}],
+        'description': ['div', {'class': 'basicList_detail_box__OoXKt'}],
+        'registered_date': ['span', {'class': 'basicList_etc__LSkN_'}],
+        # 'product_reviews_count': ['', {'': ''}],
+        # 'product_rating': ['', {'': ''}],
+        # 'product_store': ['', {'': ''}],
+    }
     
     input_data = search_word.replace('[단종]', '') # '[단종]' 제거 
     input_txt = re.sub(r'[\(\)\{\}\[\]\/]', ' ', input_data) # bracket 제거
@@ -237,9 +248,12 @@ def crawler_nv(product_id, search_word):
         # scroll_down(wd)
         html = wd.page_source
         soup = BeautifulSoup(html,'lxml') 
-        item_divs = soup.find_all('div',class_='basicList_inner__eY_mq')
-        scraps = []
         
+        # item divs
+        tags = tags_dict['item_divs']
+        item_divs = soup.find_all(tags[0], tags[1])
+        
+        scraps = []
         if len(item_divs) == 0:
             pass
         
@@ -248,7 +262,9 @@ def crawler_nv(product_id, search_word):
             for item_div in item_divs:
 
                 # product name
-                product_name = item_div.find('div',class_='basicList_title__3P9Q7').text 
+                tags = tags_dict['product_name']
+                if item_div.find(tags[0], tags[1]) is not None:
+                    product_name = item_div.find(tags[0], tags[1]).text 
 
                 # # 문자열 유사도 스코어 확인 (levenshtein distance 활용)
                 # # input 값이 title과 50%이상 일치하면 수집 
@@ -263,72 +279,99 @@ def crawler_nv(product_id, search_word):
                     product_url = item_div.find('a')['href']
 
                     # price
-                    if item_div.find('span',class_='price_num__2WUXn') != None:
-                        price = item_div.find('span',class_='price_num__2WUXn').text 
+                    tags = tags_dict['price']
+                    if item_div.find(tags[0], tags[1]) is not None:
+                        price = item_div.find(tags[0], tags[1]).text 
                     else:
                         price = np.nan
 
                     # category
-                    if item_div.find('div',class_='basicList_depth__2QIie') != None:
-                        category = item_div.find('div',class_='basicList_depth__2QIie')
-                        category_ = [ctg.text for ctg in category] 
+                    tags = tags_dict['category']
+                    if item_div.find(tags[0], tags[1]) is not None:
+                        category = item_div.find(tags[0], tags[1])
+                        category_ = [ctg.text for ctg in category]
+                    else:
+                        category_ = np.nan
 
-                    # product_description
-                    if item_div.find('div',class_='basicList_detail_box__3ta3h') != None:
-                        descriptions = item_div.find('div',class_='basicList_detail_box__3ta3h')
-                        if descriptions.find('a', class_='basicList_detail__27Krk') != None:
-                            descriptions_ = descriptions.text.split('|')
+                    # description
+                    tags = tags_dict['description']
+                    if item_div.find(tags[0], tags[1]) is not None:
+                        descriptions = item_div.find(tags[0], tags[1]).text.strip()
+                        if descriptions == '':
+                            product_description = np.nan
+                        else:
+                            descriptions_ = descriptions.split('|')
                             desc_dict = {}
                             for desc in descriptions_:
                                 key = desc.split(':')[0].replace(' ', '')
                                 value = desc.split(':')[1].replace(' ', '')    
                                 desc_dict[key] = value
                             product_description = str(desc_dict)
-
-                        elif descriptions.text != '':
-                            desc_dict = {}
-                            desc = descriptions.text
-                            key = desc.split(':')[0].replace(' ', '')
-                            value = desc.split(':')[1].replace(' ', '')    
-                            desc_dict[key] = value
-                            product_description = str(desc_dict)
-                        else:
-                            product_description = np.nan
-
                     else:
                         product_description = np.nan
+                        
+                    # if item_div.find('div',class_='basicList_detail_box__3ta3h') != None:
+                    #     descriptions = item_div.find('div',class_='basicList_detail_box__3ta3h')
+                    #     if descriptions.find('a', class_='basicList_detail__27Krk') != None:
+                    #         descriptions_ = descriptions.text.split('|')
+                    #         desc_dict = {}
+                    #         for desc in descriptions_:
+                    #             key = desc.split(':')[0].replace(' ', '')
+                    #             value = desc.split(':')[1].replace(' ', '')    
+                    #             desc_dict[key] = value
+                    #         product_description = str(desc_dict)
+
+                    #     elif descriptions.text != '':
+                    #         desc_dict = {}
+                    #         desc = descriptions.text
+                    #         key = desc.split(':')[0].replace(' ', '')
+                    #         value = desc.split(':')[1].replace(' ', '')    
+                    #         desc_dict[key] = value
+                    #         product_description = str(desc_dict)
+                    #     else:
+                    #         product_description = np.nan
+
+                    # else:
+                    #     product_description = np.nan
 
                     # registered_date (모든 제품은 등록일을 가지고 있고, 등록일은 동일 클래스 태그 중 맨 항상 맨 앞에 위치)
-                    if item_div.find('span',class_='basicList_etc__2uAYO') != None: 
-                        registered_date = item_div.find('span',class_='basicList_etc__2uAYO').text
+                    tags = tags_dict['registered_date']
+                    if item_div.find(tags[0], tags[1]) is not None:
+                        registered_date = item_div.find(tags[0], tags[1]).text
                         registered_date_ = registered_date.split('등록일')[-1].rstrip('.')
                     else:
                         registered_date_ = np.nan
-
-                    # product_reviews_count
-                    if item_div.find_all('a',class_='basicList_etc__2uAYO') != []:
-                        url_boxes = item_div.find_all('a',class_='basicList_etc__2uAYO')
-                        url_box = [x for x in url_boxes if '리뷰' in x.text]
-                        if len(url_box) != 0:
-                            product_reviews_count = url_box[0].find('em',class_='basicList_num__1yXM9').text.replace(',', '')
-                        else:
-                            product_reviews_count = 0
-                    else:
-                        product_reviews_count = 0
-
-                    # product_rating
-                    if item_div.find('span',class_='basicList_star__3NkBn') != None:
-                        product_rating = float(item_div.find('span',class_='basicList_star__3NkBn').text.split('별점')[-1])
-                    else:
-                        product_rating = np.nan
-
-                    # product_store
-                    if item_div.find_all('span',class_='basicList_mall_name__1XaKA') != []:
-                        product_store = item_div.find_all('span',class_='basicList_mall_name__1XaKA')[0].text # 최저가 판매처
-                    else:
-                        product_store = np.nan
                     
-                    scraps.append([int(product_id), str(input_txt_), str(product_name), str(product_url), str(price), str(category_), str(product_description), str(registered_date_), int(product_reviews_count), float(product_rating), str(product_store)])
+                    # if item_div.find('span',class_='basicList_etc__2uAYO') != None: 
+                    #     registered_date = item_div.find('span',class_='basicList_etc__2uAYO').text
+                    #     registered_date_ = registered_date.split('등록일')[-1].rstrip('.')
+                    # else:
+                    #     registered_date_ = np.nan
+
+                    # # product_reviews_count
+                    # if item_div.find_all('a',class_='basicList_etc__2uAYO') != []:
+                    #     url_boxes = item_div.find_all('a',class_='basicList_etc__2uAYO')
+                    #     url_box = [x for x in url_boxes if '리뷰' in x.text]
+                    #     if len(url_box) != 0:
+                    #         product_reviews_count = url_box[0].find('em',class_='basicList_num__1yXM9').text.replace(',', '')
+                    #     else:
+                    #         product_reviews_count = 0
+                    # else:
+                    #     product_reviews_count = 0
+
+                    # # product_rating
+                    # if item_div.find('span',class_='basicList_star__3NkBn') != None:
+                    #     product_rating = float(item_div.find('span',class_='basicList_star__3NkBn').text.split('별점')[-1])
+                    # else:
+                    #     product_rating = np.nan
+
+                    # # product_store
+                    # if item_div.find_all('span',class_='basicList_mall_name__1XaKA') != []:
+                    #     product_store = item_div.find_all('span',class_='basicList_mall_name__1XaKA')[0].text # 최저가 판매처
+                    # else:
+                    #     product_store = np.nan
+                    
+                    scraps.append([int(product_id), str(input_txt_), str(product_name), str(product_url), str(price), str(category_), str(product_description), str(registered_date_)])
                     cnt += 1
                     
                 else:
