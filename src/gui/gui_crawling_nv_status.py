@@ -272,7 +272,7 @@ class CrawlingNvStatus(QMainWindow, form):
             msg.setText(f"<테이블 업로드 완료>\n- {table_name}")
             msg.exec_()
             
-        elif ck == -1:
+        elif ck == 0:
             msg = QMessageBox()
             msg.setText(f"\n    ** db 연결 끊김 **\n\n- Upload failed: {table_name}\n\n- VPN, wifi 재연결 필요\n\n- Upload 버튼 클릭 후 re-Run")
             msg.exec_()

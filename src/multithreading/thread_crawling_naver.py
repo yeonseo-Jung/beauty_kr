@@ -211,50 +211,56 @@ class ThreadCrawlingNvStatus(QtCore.QThread, QtCore.QObject):
         else:
             self.categ = '카테고리'
             self.categ_eng = 'category'
+            
+    def _preprocess(self):
+        
+        '''status table''' 
+        status_df = pd.DataFrame(self.status_list, columns=['product_url', 'status'])
+    
+        # dup check
+        _status_df = self.db.get_tbl('naver_beauty_product_info_status')
+        if _status_df is None:
+            status_df_dedup = status_df.copy()
+        else:
+            status_df_dedup = pd.concat([status_df, _status_df]).drop_duplicates('product_url', keep='first')
+        
+        '''info table'''
+        gl_info = self.db.get_tbl('glowpick_product_info_final_version', 'all').rename(columns={'id': 'item_key', 'product_url': 'product_url_glowpick'})
+        columns = ['item_key', 'product_url', 'product_store', 'product_store_url', 'product_price', 'delivery_fee', 'naver_pay', 'product_status', 'page_status']
+        nv_prd_status_update = pd.DataFrame(self.store_list, columns=columns)
+        nv_prd_status_update.to_csv(self.path_scrape_df, index=False)
+        
+        _nv_prd_status_update = nv_prd_status_update[nv_prd_status_update.product_status==1]    # 판매 중 상품
+        _nv_prd_status_update_price = _nv_prd_status_update.loc[_nv_prd_status_update.page_status==1]    # 네이버 뷰티윈도 가격비교 탭 상품
+        _nv_prd_status_update_all = _nv_prd_status_update.loc[_nv_prd_status_update.page_status==2]    # 네이버 뷰티윈도 전체 탭 상품
+        _nv_prd_status_update_dedup = pd.concat([_nv_prd_status_update_price, _nv_prd_status_update_all]).drop_duplicates('item_key', keep='first')
+        
+        # merge naver info & glowpick info
+        df_mer = _nv_prd_status_update_dedup.merge(gl_info, on='item_key', how='left').sort_values(by='item_key', ignore_index=True)
+        
+        # category 
+        df_mer.loc[:, 'category'] = self.categ
+        # regist date
+        df_mer.loc[:, 'regist_date'] = pd.Timestamp(self.date)
+        
+        # concat temp table & dup check 
+        df_temp = self.db.get_tbl(f'beauty_kr_{self.categ_eng}_info_all_temp')
+        if df_temp is None:
+            pass
+        else:
+            df_mer = pd.concat([df_mer, df_temp]).drop_duplicates('item_key', keep='first').sort_values(by='item_key', ignore_index=True)
+        
+        return status_df_dedup, df_mer
         
     def _upload_df(self, comp=False):
         ''' table upload into db '''
         
         table_name = f'beauty_kr_{self.categ_eng}_info_all'
         try:
-            '''status table''' 
-            status_df = pd.DataFrame(self.status_list, columns=['product_url', 'status'])
-        
-            # dup check
-            _status_df = self.db.get_tbl('naver_beauty_product_info_status')
-            if _status_df is None:
-                status_df_dedup = status_df.copy()
-            else:
-                status_df_dedup = pd.concat([status_df, _status_df]).drop_duplicates('product_url', keep='first')
+            status_df_dedup, df_mer = self._preprocess()
                 
-            # update table
+            # update status table
             self.db.engine_upload(status_df_dedup, 'naver_beauty_product_info_status', 'replace')
-            
-            '''info table'''
-            gl_info = self.db.get_tbl('glowpick_product_info_final_version', 'all').rename(columns={'id': 'item_key', 'product_url': 'product_url_glowpick'})
-            columns = ['item_key', 'product_url', 'product_store', 'product_store_url', 'product_price', 'delivery_fee', 'naver_pay', 'product_status', 'page_status']
-            nv_prd_status_update = pd.DataFrame(self.store_list, columns=columns)
-            nv_prd_status_update.to_csv(self.path_scrape_df, index=False)
-            
-            _nv_prd_status_update = nv_prd_status_update[nv_prd_status_update.product_status==1]    # 판매 중 상품
-            _nv_prd_status_update_price = _nv_prd_status_update.loc[_nv_prd_status_update.page_status==1]    # 네이버 뷰티윈도 가격비교 탭 상품
-            _nv_prd_status_update_all = _nv_prd_status_update.loc[_nv_prd_status_update.page_status==2]    # 네이버 뷰티윈도 전체 탭 상품
-            _nv_prd_status_update_dedup = pd.concat([_nv_prd_status_update_price, _nv_prd_status_update_all]).drop_duplicates('item_key', keep='first')
-            
-            # merge naver info & glowpick info
-            df_mer = _nv_prd_status_update_dedup.merge(gl_info, on='item_key', how='left').sort_values(by='item_key', ignore_index=True)
-            
-            # category 
-            df_mer.loc[:, 'category'] = self.categ
-            # regist date
-            df_mer.loc[:, 'regist_date'] = pd.Timestamp(self.date)
-            
-            # concat temp table & dup check 
-            df_temp = self.db.get_tbl(f'beauty_kr_{self.categ_eng}_info_all_temp')
-            if df_temp is None:
-                pass
-            else:
-                df_mer = pd.concat([df_mer, df_temp]).drop_duplicates('item_key', keep='first').sort_values(by='item_key', ignore_index=True)
             
             # table upload
             if comp:
@@ -273,7 +279,7 @@ class ThreadCrawlingNvStatus(QtCore.QThread, QtCore.QObject):
             if self.power:
                 self.stop()
             self.check = 2
-            status = -1
+            status = 0
         
         return status, table_name
             
