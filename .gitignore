@@ -33,8 +33,8 @@ config/
 *.ipynb
 *.xlsx
 *.csv
-*.txt
 *.zip
+conn.txt
 
 # pem
 *.pem
@@ -46,3 +46,6 @@ config/
 
 # .py
 scraper_naver.py
+
+# venv
+venv

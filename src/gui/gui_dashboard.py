@@ -2,8 +2,6 @@ import re
 import os
 import sys
 import pickle
-import warnings
-warnings.filterwarnings("ignore")
 
 import numpy as np
 import pandas as pd
