@@ -33,7 +33,6 @@ form_path = os.path.join(form_dir, 'dashboardWindow.ui')
 form = uic.loadUiType(form_path)[0]
 
 from access_database.access_db import AccessDataBase
-from multithreading.thread_mapping import ThreadTitlePreprocess, ThreadMapping
 from gui.table_view import TableViewer
 from mapping._preprocessing import TitlePreProcess
 

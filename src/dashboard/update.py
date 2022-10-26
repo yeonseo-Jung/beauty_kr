@@ -21,6 +21,8 @@ password = "jys9807"
 db_name = "beauty_kr"
 db = AccessDataBase(user_name, password, db_name)
 
+''' Update Data for Dashboard '''
+
 category_list = [
     'skin_care',
     'makeup',
@@ -33,7 +35,6 @@ category_list = [
     'beauty_tool',
     'fragrance',
 ]
-''' Update Data for Dashboard '''
 
 if __name__ == 'main':
     # Maaping Status
@@ -88,4 +89,5 @@ if __name__ == 'main':
     dashboard_df_merge = dashboard_df.merge(review_count_df, left_on='item_key', right_on=review_count_df.index, how='left')
     
     # create table
-    db.create_table(dashboard_df_merge, 'beauty_kr_data_dashboard')
+    # db.create_table(dashboard_df_merge, 'beauty_kr_data_dashboard')
+    print(dashboard_df_merge.tail())
