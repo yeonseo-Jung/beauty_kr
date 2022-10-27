@@ -2,7 +2,8 @@ import os
 import re
 import sys
 import time
-# import pickle
+import json
+import requests
 import numpy as np
 import pandas as pd
 
@@ -92,9 +93,9 @@ def get_url(url, window=None, image=None):
         except Exception as e:
             print(f'\n\nError: {str(e)}\n\n')
             
-            # # tls ca error solution
-            # if 'TLS CA' in str(e):
-            #     replace_certifi()
+            # tls ca error solution
+            if 'TLS CA' in str(e):
+                print("\n\n\t ** TLS CA 인증서 유효성 만료됨: DataManager 재시작이 필요합니다. **\n\n")
             
             time.sleep(300)
             try:
@@ -117,3 +118,31 @@ def scroll_down(wd, sleep_time, check_count):
         if cnt == check_count:
             break        
     return wd
+
+def get_headers():
+    userAgent = generate_user_agent(os=('mac', 'linux'), navigator='chrome', device_type='desktop')
+    headers = {
+        "user-agent": userAgent,
+        "Accept": "application/json",
+    }
+    return headers
+
+def json_iterator(url, iterations=5, headers=True):
+    
+    if headers:
+        headers = get_headers()
+    else:
+        headers = None
+    cnt = 0
+    res_data = None
+    while cnt <= iterations:
+        try:
+            res = requests.get(url, headers=headers)
+            status = res.status_code
+            res_data = json.loads(res.text)
+            break
+        except Exception as e:
+            print(f'Error: {e}')
+        cnt += 1
+        
+    return res_data, status
