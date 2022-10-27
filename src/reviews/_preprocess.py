@@ -43,15 +43,7 @@ class ReviewMapping:
         self.path = os.path.join(tbl_cache, self.name)
         
         # day
-        today = datetime.today()
-        year = str(today.year)
-        month = str(today.month)
-        day = str(today.day)
-        if len(month) == 1:
-            month = "0" + month
-        if len(day) == 1:
-            day = "0" + day
-        self.date = year + "-" + month + "-" + day
+        self.today = datetime.today().strftime('%Y-%m-%d')
         
     def select(self, category):
         ''' Select Table '''
@@ -101,7 +93,9 @@ class ReviewMapping:
         df = pd.DataFrame(tbl)
         df.loc[:, 'source'] = table
         df = df.rename(columns={'id': 'item_key'})
+        
         curs.close()
+        conn.close()
         
         # concat
         self.reviews = pd.concat([reviews_merge, df]).loc[:, ['item_key', 'user_id', 'product_rating', 'review_date', 'product_review', 'source']]
@@ -130,7 +124,7 @@ class ReviewMapping:
     def create(self):
         ''' Create table '''
         
-        # convert object to datetime
+        # sorting & convert object to datetime
         reviews_sorted = self.reviews_data_dedup.sort_values(by='item_key').reset_index(drop=True)
         reviews_sorted.loc[:, 'review_date'] = pd.to_datetime(reviews_sorted.review_date, errors='coerce')
         
@@ -144,11 +138,10 @@ class ReviewMapping:
         self.reviews_upload = reviews_sorted.rename(columns=rename).loc[:, columns]
 
         # regist_date
-        today = datetime.today()
-        y = today.year
-        m = today.month
-        d = today.day
-        self.reviews_upload.loc[:, 'regist_date'] = pd.Timestamp(f'{y}-{m}-{d}')
+        today = datetime.today().strftime('%Y-%m-%d')
+        self.reviews_upload.loc[:, 'regist_date'] = pd.Timestamp(today)
         
         # save file
         self.reviews_upload.to_csv(self.path, index=False)
+        
+        return self.reviews_upload

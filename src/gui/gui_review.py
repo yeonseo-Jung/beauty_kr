@@ -36,12 +36,6 @@ class ReviewWindow(QMainWindow, form):
         self.setupUi(self)
         self.setWindowTitle('Mapping Review and Upload')
         
-        # check     
-        self.select_ck = False
-        self.dup_ck = False
-        self.view_ck = None
-        self.df = None
-        
         # path
         self.name = 'reviews_upload.csv'
         self.path = os.path.join(tbl_cache, self.name)
@@ -51,7 +45,11 @@ class ReviewWindow(QMainWindow, form):
             conn = pickle.load(f)
         self.db = AccessDataBase(conn[0], conn[1], conn[2])
         
+        # review mapping 
         self.review = ReviewMapping()
+        
+        # init ck
+        self.init_ck()
         
         # get table
         for table in self._get_tbl():
@@ -87,6 +85,25 @@ class ReviewWindow(QMainWindow, form):
         self.Save.clicked.connect(self._save)
         self.Status.clicked.connect(self._status)
         self.Upload.clicked.connect(self._upload)
+    
+    def init_ck(self):
+        # check     
+        self.select_ck = False
+        self.dup_ck = False
+        self.view_ck = None
+        self.df = None
+    
+    def init_categ(self):
+        self.skincare.setCheckState(Qt.Unchecked)
+        self.bodycare.setCheckState(Qt.Unchecked)
+        self.makeup.setCheckState(Qt.Unchecked)
+        self.skincare.setCheckState(Qt.Unchecked)
+        self.haircare.setCheckState(Qt.Unchecked)
+        self.cleansing.setCheckState(Qt.Unchecked)
+        self.suncare.setCheckState(Qt.Unchecked)
+        self.maskpack.setCheckState(Qt.Unchecked)
+        self.beauty_tool.setCheckState(Qt.Unchecked)
+        self.fragrance.setCheckState(Qt.Unchecked)
         
     def _get_tbl(self):
         ''' db에서 매핑 대상 테이블만 가져오기 '''
@@ -151,6 +168,7 @@ class ReviewWindow(QMainWindow, form):
         ''' Select review table '''
         
         categs, categs_en = self.categ_toggled()
+        print('\n\n', categs_en, '\n\n')
         msg = QMessageBox()
         if len(categs_en) == 1:
             msg.setText(f'** 대용량 데이터 Select **\n 5분이상 소요예정 입니다')
@@ -172,18 +190,19 @@ class ReviewWindow(QMainWindow, form):
     def _dup_check(self):
         ''' Duplicate check & Create table '''
         
-        msg = QMessageBox()
         if self.select_ck:
             self.review.dup_check()
-            self.review.create()
-            self.df = pd.read_csv(self.path, lineterminator='\n')
+            self.df = self.review.create()
+            # self.df = pd.read_csv(self.path, lineterminator='\n')
             
+            msg = QMessageBox()
             msg.setText('** Duplicate check successful! **')
             msg.exec_()
             
             self.select_ck = False
             self.dup_ck = True
         else:
+            msg = QMessageBox()
             msg.setText('** Select 완료 후 시도하세요 **')
             msg.exec_()
         
@@ -229,14 +248,15 @@ class ReviewWindow(QMainWindow, form):
         self._saver(msg)
         
     def _status(self):
-        msg = QMessageBox()
         if self.df is None:
+            msg = QMessageBox()
             msg.setText("** Duplicate Check 완료 후 시도하세요 **")
             msg.exec_()
         else:
             unique_len = len(self.df.item_key.unique())
             reviews_len = len(self.df)
             msg_txt = f"상품 수: {unique_len}\n리뷰 수: {reviews_len}"
+            msg = QMessageBox()
             msg.setText(msg_txt)
             msg.exec_()
         
@@ -255,9 +275,10 @@ class ReviewWindow(QMainWindow, form):
             table_name = f'beauty_kr_{self.category}_reviews_all'
             self.db.create_table(self.df, table_name)
             msg = QMessageBox()
-            msg_txt = f"<테이블 업로드 완료>\n\n테이블 명: {table_name}"
+            msg_txt = f"** 테이블 업로드 완료 **\n\n테이블 명: {table_name}"
             msg.setText(msg_txt)
             msg.exec_()
            
             # initialize
-            self.__init__()
+            self.init_ck()
+            self.init_categ()
