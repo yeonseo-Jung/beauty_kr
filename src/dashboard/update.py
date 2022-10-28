@@ -36,7 +36,7 @@ category_list = [
     'fragrance',
 ]
 
-if __name__ == 'main':
+if __name__ == '__main__':
     # Maaping Status
     mapping_table = db.get_tbl('beauty_kr_mapping_table')
     gl_info = db.integ_tbl(['glowpick_product_info_final_version'], ['id', 'product_code', 'brand_name', 'selection', 'division', 'groups', 'dup_check'])
@@ -89,5 +89,5 @@ if __name__ == 'main':
     dashboard_df_merge = dashboard_df.merge(review_count_df, left_on='item_key', right_on=review_count_df.index, how='left')
     
     # create table
-    # db.create_table(dashboard_df_merge, 'beauty_kr_data_dashboard')
+    db.create_table(dashboard_df_merge, 'beauty_kr_data_dashboard')
     print(dashboard_df_merge.tail())
