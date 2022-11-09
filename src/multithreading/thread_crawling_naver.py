@@ -146,17 +146,6 @@ class ThreadCrawlingNvStatus(QtCore.QThread, QtCore.QObject):
         # error class
         self.err = Errors()
         
-        # today (regist date)
-        today = datetime.today()
-        year = str(today.year)
-        month = str(today.month)
-        day = str(today.day)
-        if len(month) == 1:
-            month = "0" + month
-        if len(day) == 1:
-            day = "0" + day
-        self.date = year + "-" + month + "-" + day
-        
         # category dict
         self.categ_dict = {
             '스킨케어': 'skin_care',
@@ -170,6 +159,7 @@ class ThreadCrawlingNvStatus(QtCore.QThread, QtCore.QObject):
             '뷰티툴': 'beauty_tool',
             '프래그런스': 'fragrance',        
         }
+    
     def _get_tbl(self):
         
         # naver
@@ -241,7 +231,7 @@ class ThreadCrawlingNvStatus(QtCore.QThread, QtCore.QObject):
         # category 
         df_mer.loc[:, 'category'] = self.categ
         # regist date
-        df_mer.loc[:, 'regist_date'] = pd.Timestamp(self.date)
+        df_mer.loc[:, 'regist_date'] = pd.Timestamp(datetime.today().strftime("%Y-%m-%d"))
         
         # concat temp table & dup check 
         df_temp = self.db.get_tbl(f'beauty_kr_{self.categ_eng}_info_all_temp')
@@ -530,7 +520,7 @@ class ThreadCrawlingNvInfo(QtCore.QThread, QtCore.QObject):
         
         df = self._preprocess(comp)
         df.loc[:, 'review_status'] = False
-        df.loc[:, 'regist_date'] = pd.Timestamp(datetime.today())
+        df.loc[:, 'regist_date'] = pd.Timestamp(datetime.today().strftime("%Y-%m-%d"))
         df.to_csv(self.scraping_data_df, index=False)
         
         if not comp:

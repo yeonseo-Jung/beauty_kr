@@ -372,7 +372,7 @@ def check_duplicated(grp_df):
                 df.loc[df.id.isin(dup_ids), 'dup_id'] = np.nan
                 df_l.append(df)
                 
-    final_df=pd.concat([grp_df[grp_df.status_grp == 1], grp_df[grp_df.status_grp == 3], pd.concat(df_l)]).sort_values('id').reset_index(drop=True)
+    final_df = pd.concat([grp_df[grp_df.status_grp == 1], grp_df[grp_df.status_grp == 3], pd.concat(df_l)]).sort_values('id', ignore_index=True)
     
     return final_df
 

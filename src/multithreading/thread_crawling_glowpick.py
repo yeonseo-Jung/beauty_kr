@@ -54,18 +54,6 @@ class ThreadCrawlingGl(QtCore.QThread, QtCore.QObject):
         # error class
         self.err = Errors()
         
-        # today (regist date)
-        today = datetime.today()
-        year = str(today.year)
-        month = str(today.month)
-        day = str(today.day)
-        if len(month) == 1:
-            month = "0" + month
-        if len(day) == 1:
-            day = "0" + day
-        self.date = year + "-" + month + "-" + day
-        date = year[2:4] + month + day
-        
     def _get_tbl(self):
         
         tables = ['glowpick_product_info_final_version']
@@ -94,8 +82,8 @@ class ThreadCrawlingGl(QtCore.QThread, QtCore.QObject):
                        'ranks', 'product_awards', 'product_awards_sector', 'product_awards_rank',
                        'price', 'product_stores']
             df_info = pd.DataFrame(self.scrape_infos, columns=columns)
-            df_info.loc[:, 'regist_date'] = self.date
             df_info = df_info.drop_duplicates('product_code', keep='first')
+            df_info.loc[:, 'regist_date'] = pd.Timestamp(datetime.today().strftime("%Y-%m-%d"))
             df_info.to_csv(self.path_scrape_df, index=False)
             
             # reivew table
@@ -103,10 +91,13 @@ class ThreadCrawlingGl(QtCore.QThread, QtCore.QObject):
             df_rev = pd.DataFrame(self.scrape_reviews, columns=columns)
             df_rev.loc[df_rev.product_review==''] = np.nan
             df_rev.drop_duplicates(keep='first', ignore_index=True)
+            df_rev.loc[:, 'regist_date'] = pd.Timestamp(datetime.today().strftime("%Y-%m-%d"))
             
             try:
                 if comp:
                     ''' Table Update (append) '''
+                    os.remove(self.file_path)
+                    
                     # glowpick_product_info_final_version
                     gl_info_final_v = self.db.get_tbl('glowpick_product_info_final_version', 'all')
                     
@@ -117,11 +108,11 @@ class ThreadCrawlingGl(QtCore.QThread, QtCore.QObject):
                     df_dedup = pd.concat([df_mer, gl_info_final_v]).drop_duplicates('id', keep='first').sort_values('id')
                     
                     # 신규상품 추출
-                    gl_info_new_v = pd.concat([df_mer, df_info]).drop_duplicates('product_code', keep=False).reset_index(drop=True)
+                    gl_info_new_v = pd.concat([df_mer, df_info]).drop_duplicates('product_code', keep=False, ignore_index=True)
                     
                     # 신규 상품 id 부여
                     gl_info_new_v.loc[:, 'id'] = range(len(df_dedup), len(df_dedup) + len(gl_info_new_v))
-                    _gl_info_final_v = pd.concat([df_dedup, gl_info_new_v]).drop(columns='regist_date').reset_index(drop=True)
+                    _gl_info_final_v = pd.concat([df_dedup, gl_info_new_v], ignore_index=True)
                     gl_dup_ck = grouping(_gl_info_final_v.loc[:, ['id', 'product_name', 'product_code', 'brand_code']])    # dup check 
                     if 'status' in _gl_info_final_v.columns:
                         _gl_info_final_v = _gl_info_final_v.drop(columns=['status', 'dup_check', 'dup_id'])
@@ -130,13 +121,12 @@ class ThreadCrawlingGl(QtCore.QThread, QtCore.QObject):
                     # glowpick_product_info_final_version_review
                     gl_rev_final_v = self.db.get_tbl('glowpick_product_info_final_version_review')
                     df_mer_rev = _gl_info_final_v_dedup.loc[:, ['id', 'product_code']].merge(df_rev, on='product_code', how='inner')
-                    df_dedup_rev = pd.concat([df_mer_rev, gl_rev_final_v]).drop_duplicates(keep='first').sort_values(by='id', ignore_index=True)
+                    subset = ['product_code', 'user_id', 'product_rating', 'review_date', 'product_review']
+                    df_dedup_rev = pd.concat([df_mer_rev, gl_rev_final_v]).drop_duplicates(subset=subset, keep='first').sort_values(by='id', ignore_index=True)
                     df_dedup_rev = df_dedup_rev.loc[df_dedup_rev.product_review.notnull()].reset_index(drop=True)
                     
                     try:
                         # upload table into db
-                        # df_new = self.db.get_tbl('glowpick_product_info_update_new')
-                        # gl_info_new_v = pd.concat([gl_info_new_v, df_new]).drop_duplicates('product_code', keep='first').sort_values('id').reset_index(drop=True)
                         gl_info_new_v.loc[:, 'crawling_status'] = 0
                         self.db.create_table(gl_info_new_v, 'glowpick_product_info_update_new', append=True)
                         self.db.create_table(_gl_info_final_v_dedup, 'glowpick_product_info_final_version')
@@ -144,7 +134,6 @@ class ThreadCrawlingGl(QtCore.QThread, QtCore.QObject):
                         
                         # init cache file
                         self.scrape_infos, self.scrape_reviews, self.status_list = [], [], []
-                        os.remove(self.file_path)
                         
                         return 1
                     except Exception as e:
@@ -316,7 +305,8 @@ class ThreadCrawlingProductCode(QtCore.QThread, QtCore.QObject):
                 break
                 
         # url -> product_code
-        urls = list(set(urls))    # dedup
+        # dedup
+        urls = list(set(urls))    
         product_codes = []
         for url in urls:
             product_code = url.replace('https://www.glowpick.com/products/', '')
