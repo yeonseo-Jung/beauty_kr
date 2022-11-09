@@ -55,7 +55,7 @@ class CrawlInfoRevGl():
         while (status != 1) & (status != 404) & (cnt < 5):
             driver = get_url(url=url, window=None, image=1)
             
-            if driver == None:
+            if driver is None:
                 status = -1
             
             else:
@@ -84,7 +84,7 @@ class CrawlInfoRevGl():
                         # Wait for page parsing to complete
                         WebDriverWait(driver, 20).until(EC.element_to_be_clickable((By.XPATH, '//*[@id="contents"]/section/div[2]/p[1]/button')))
                         soup = BeautifulSoup(driver.page_source, 'lxml')
-                        if soup.find('div', 'error-page__contents error-page__404') == None:
+                        if soup.find('div', 'error-page__contents error-page__404') is None:
                             # Product exists
                             status = 1
                         else:
@@ -104,7 +104,7 @@ class CrawlInfoRevGl():
         urls = []
         for a in soup.find_all('script'):
             url = re.search(r'https://www.glowpick.com/products/[0-9]*', str(a))
-            if url == None:
+            if url is None:
                 pass
             else:
                 urls.append(url.group(0))
@@ -294,7 +294,7 @@ class CrawlInfoRevGl():
         
         url = f'https://www.glowpick.com/products/{product_code}'
         
-        if driver == None:
+        if driver is None:
             # page parsing failed
             product_scrapes = np.nan
             status = -1
@@ -302,23 +302,31 @@ class CrawlInfoRevGl():
         else: 
             soup = BeautifulSoup(driver.page_source, 'lxml')
             
+            '''
+            ** 주의사항 **
+            brand, product_name은 필수정보이기에 널값처리하지 않습니다.
+            만약 html 구조 및 테그명 변경이 되었다면 AttributeError 발생합니다.
+            `ds > beauty_kr > error_log`에 insert 됩니다.
+            이때 직접 url로 들어가서 변경된 테그명을 찾아서 코드 수정을 해야합니다.
+            '''
+            
             # brand
             brand_name = soup.find('button', 'product__summary__brand__name').text.strip()
             brand_code_source = soup.find_all('script',  type="application/ld+json")[-1].text
             brand_url = re.search(r'https://www.glowpick.com/brands/[0-9]*', brand_code_source)
-            if brand_url == None:
+            if brand_url is None:
                 pass
             else:
                 brand_url = brand_url.group(0)
                 brand_code = int(re.search(r'[0-9]+', brand_url).group(0).strip())
 
             # product_name
-            product_name = soup.find('p', 'product__summary__name').text.strip()
+            product_name = soup.find('h1', 'product__summary__name').text.strip()
 
             close_xpath = '/html/body/div/div/div/div/div[1]/span/div/div[2]/h1/button'
             i = 1
             # ranking
-            if soup.find('article', 'info__article rank-pd') == None:
+            if soup.find('article', 'info__article rank-pd') is None:
                 rank_dict = np.nan
                 pass
             else:
@@ -332,7 +340,7 @@ class CrawlInfoRevGl():
                 i += 1
                 
             # awards
-            if soup.find('article', 'info__article award') == None:
+            if soup.find('article', 'info__article award') is None:
                 product_awards = np.nan
                 product_awards_sector = np.nan 
                 product_awards_rank = np.nan
@@ -364,7 +372,7 @@ class CrawlInfoRevGl():
             time.sleep(1.5)
             soup = BeautifulSoup(driver.page_source, 'lxml')
             
-            if soup.find('li', 'ingredient__list__item item') == None:
+            if soup.find('li', 'ingredient__list__item item') is None:
                 ingredients_all_kor, ingredients_all_eng, ingredients_all_desc = np.nan, np.nan, np.nan
             else:
                 ingredients_all_kor, ingredients_all_eng, ingredients_all_desc = [], [], []
@@ -395,7 +403,7 @@ class CrawlInfoRevGl():
                 
             # image source
             soup = BeautifulSoup(driver.page_source, 'lxml')
-            if soup.find('div', 'product__image-wrapper') == None:
+            if soup.find('div', 'product__image-wrapper') is None:
                 img_src = np.nan
             else:
                 try:
@@ -410,7 +418,7 @@ class CrawlInfoRevGl():
             soup = BeautifulSoup(driver.page_source, 'lxml')
 
             # product pre descriptions
-            if soup.find('pre', 'descriptions__article__pre') == None:
+            if soup.find('pre', 'descriptions__article__pre') is None:
                 desc_pre = np.nan
             else:
                 desc_pre = soup.find('pre', 'descriptions__article__pre').text.strip()
@@ -421,7 +429,7 @@ class CrawlInfoRevGl():
                     desc_pre = re.sub(' +', ' ', desc_pre).strip()
             
             # product keywords
-            if soup.find('p', 'descriptions__article__keywords') == None:
+            if soup.find('p', 'descriptions__article__keywords') is None:
                 desc_keywords = np.nan
             else:
                 desc_keywords = soup.find('p', 'descriptions__article__keywords').text.strip()
@@ -440,7 +448,7 @@ class CrawlInfoRevGl():
                 color_type = np.nan
                 
             # volume & price
-            if soup.find('p', 'font-spoqa') == None:
+            if soup.find('p', 'font-spoqa') is None:
                 volume = np.nan
                 price = np.nan
             else:
