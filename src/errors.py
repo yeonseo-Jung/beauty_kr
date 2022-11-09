@@ -1,5 +1,6 @@
 import os
 import sys
+import time
 import pickle
 import traceback
 from datetime import datetime
@@ -17,6 +18,9 @@ conn_path = os.path.join(root, 'conn.txt')
 
 class Errors:
     def __init__(self):
+        self.init_db()
+    
+    def init_db(self):
         # db 연결
         with open(conn_path, 'rb') as f:
             conn = pickle.load(f)
@@ -28,4 +32,12 @@ class Errors:
         table = 'error_log'
         fields = ('url', 'traceback', 'error_date')
         values = (url, tb, _datetime)
-        self.db.insert(table, fields, values)
+        
+        while True:
+            try:
+                self.db.insert(table, fields, values)
+                break
+            except Exception as e:
+                print(e)
+                time.sleep(100)
+                self.init_db()
