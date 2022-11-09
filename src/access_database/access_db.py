@@ -326,16 +326,21 @@ class AccessDataBase:
                                                     `product_stores` varchar(255) COMMENT '글로우픽 기준 판매 스토어',\
                                                     `status` int(11) COMMENT '단종 여부 (0: 단종, 1: 판매중)',\
                                                     `dup_check` int(11) COMMENT '중복 여부 (0: 단일상품(중복x), -1: 종속상품(중복o), 1: 대표상품(중복o))',\
-                                                    `dup_id` varchar(255) COMMENT '종속상품 id 리스트'\
+                                                    `dup_id` varchar(255) COMMENT '종속상품 id 리스트',\
+                                                    `regist_date` datetime DEFAULT NULL COMMENT '개체 수집 일자'\
                                                     ) ENGINE=InnoDB DEFAULT CHARSET=utf8;",
                                                 
             'glowpick_product_info_final_version_review': f"CREATE TABLE glowpick_product_info_final_version_review (\
+                                                            `pk` int(11) unsigned NOT NULL AUTO_INCREMENT,\
                                                             `id` int(11) DEFAULT NULL COMMENT '자체부여 id: 매핑 시 item_key로 활용',\
                                                             `product_code` int(11) DEFAULT NULL COMMENT '글로우픽 내부 상품 코드',\
                                                             `user_id` varchar(100) DEFAULT NULL COMMENT '유저 아이디',\
                                                             `product_rating` int(11) DEFAULT NULL COMMENT '상품 평점',\
                                                             `review_date` varchar(100) DEFAULT NULL COMMENT '리뷰 작성 일자',\
-                                                            `product_review` text DEFAULT NULL COMMENT '리뷰 내용'\
+                                                            `product_review` text DEFAULT NULL COMMENT '리뷰 내용',\
+                                                            `regist_date` datetime DEFAULT NULL COMMENT '개체 수집 일자',\
+                                                            PRIMARY KEY (`pk`),\
+                                                            KEY `id` (`id`)\
                                                             ) ENGINE=InnoDB DEFAULT CHARSET=utf8;",
                                                             
             'oliveyoung_product_info_final_version': f"CREATE TABLE `oliveyoung_product_info_final_version` (\
@@ -359,7 +364,8 @@ class AccessDataBase:
                                                         `manufacturer` varchar(100) DEFAULT NULL,\
                                                         `manufactured_country` varchar(100) DEFAULT NULL,\
                                                         `ingredients_all` text,\
-                                                        `status` int(11) DEFAULT NULL\
+                                                        `status` int(11) DEFAULT NULL,\
+                                                        `regist_date` datetime DEFAULT NULL COMMENT '개체 수집 일자'\
                                                         ) ENGINE=InnoDB DEFAULT CHARSET=utf8;",
                                                         
             'oliveyoung_product_info_final_version_review': f"CREATE TABLE `oliveyoung_product_info_final_version_review` (\
@@ -371,6 +377,7 @@ class AccessDataBase:
                                                                 `product_rating` int(11) DEFAULT NULL,\
                                                                 `review_date` datetime DEFAULT NULL,\
                                                                 `product_review` text NOT NULL,\
+                                                                `regist_date` datetime DEFAULT NULL COMMENT '개체 수집 일자',\
                                                                 PRIMARY KEY (`pk`),\
                                                                 KEY `id` (`id`)\
                                                                 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;",
