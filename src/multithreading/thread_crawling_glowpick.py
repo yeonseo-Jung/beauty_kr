@@ -45,6 +45,9 @@ class ThreadCrawlingGl(QtCore.QThread, QtCore.QObject):
         # file path
         self.file_path = os.path.join(tbl_cache, 'product_codes.txt')
         self.path_scrape_df = os.path.join(tbl_cache, 'gl_info.csv')
+        self.path_scrape_df_rev = os.path.join(tbl_cache, 'gl_info_rev.csv')
+        self.scrape_infos_path = os.path.join(tbl_cache, 'scrape_infos.txt')
+        self.scrape_reviews_path = os.path.join(tbl_cache, 'scrape_reviews.txt')
         
         # db 연결
         with open(conn_path, 'rb') as f:
@@ -70,29 +73,58 @@ class ThreadCrawlingGl(QtCore.QThread, QtCore.QObject):
         
         return df_mapped
     
-    def _upload_df(self, comp=False):
-        ''' Upload Table to Database '''
-        
+    def _preprocess(self):
+        df_info, df_rev = None, None
         if (len(self.scrape_infos) != 0) & (len(self.scrape_reviews) != 0):
             # info table
-            columns = ['product_code', 'product_name', 'brand_code', 'brand_name', 'product_url',
-                       'selection', 'division', 'groups', 
-                       'descriptions', 'product_keywords', 'color_type', 'volume', 'image_source', 
-                       'ingredients_all_kor', 'ingredients_all_eng', 'ingredients_all_desc',
-                       'ranks', 'product_awards', 'product_awards_sector', 'product_awards_rank',
-                       'price', 'product_stores']
-            df_info = pd.DataFrame(self.scrape_infos, columns=columns)
-            df_info = df_info.drop_duplicates('product_code', keep='first')
+            columns = ['product_code', 'product_url', 'product_name', 'brand', 'brand_url', 'brand_code', 'groups', 'product_awards', 'ingredients_all_kor', 'rating', 'review_counts', 'offers']
+            info_df = pd.DataFrame(self.scrape_infos, columns=columns)
+            info_df.loc[info_df.product_awards=="[]", 'product_awards'] = None
+            info_df.loc[info_df.ingredients_all_kor=="[]", 'ingredients_all_kor'] = None
+            price_size_df = pd.DataFrame(info_df.offers.tolist())
+            concat_df = pd.concat([info_df, price_size_df], axis=1)
+            
+            # insert category (selection, division, groups)
+            query = "SELECT DISTINCT selection, division, groups FROM glowpick_product_info_final_version"
+            data = self.db._execute(query)
+            categ_df = pd.DataFrame(data)
+            concat_df_notnull = concat_df[concat_df.groups.notnull()].reset_index(drop=True)
+            
+            # merge (insert data)
+            mer_df = concat_df_notnull.merge(categ_df, on="groups", how="left")
+            mer_df_notnull = mer_df[mer_df.selection.notnull()]
+            mer_df_null = mer_df[mer_df.selection.isnull()].drop(columns="selection")
+            mer_df_null.loc[:, "division"] = mer_df_null.loc[:, "groups"]
+            mer_df_null.loc[:, "groups"] = None
+            mer_df_null = mer_df_null.merge(categ_df.loc[:, ["selection", "division"]], on="division",  how="inner")
+            concat_df = pd.concat([mer_df_notnull, mer_df_null], ignore_index=True)
+            
+            # dedup & save
+            columns = ['product_code', 'product_name', 'product_url', 'brand', 'brand_url', 'brand_code', 'selection', 'division', 'groups', 'product_awards', 'ingredients_all_kor', 'price', 'size']
+            df_info = concat_df.loc[:, columns]
+            df_info = df_info.drop_duplicates('product_code', keep='first', ignore_index=True)
             df_info.loc[:, 'regist_date'] = pd.Timestamp(datetime.today().strftime("%Y-%m-%d"))
             df_info.to_csv(self.path_scrape_df, index=False)
             
             # reivew table
             columns = ['product_code', 'user_id', 'product_rating', 'review_date', 'product_review']
             df_rev = pd.DataFrame(self.scrape_reviews, columns=columns)
-            df_rev.loc[df_rev.product_review==''] = np.nan
-            df_rev.drop_duplicates(keep='first', ignore_index=True)
-            df_rev.loc[:, 'regist_date'] = pd.Timestamp(datetime.today().strftime("%Y-%m-%d"))
+            df_rev = df_rev.loc[df_rev.product_code.isin(df_info.product_code.unique())]
+            df_rev.loc[df_rev.product_review==''] = None
+            df_rev = df_rev.loc[df_rev.product_review.notnull()]
+            df_rev_dedup = df_rev.drop_duplicates(subset=columns, keep='first', ignore_index=True)
+            df_rev_dedup.loc[:, 'regist_date'] = pd.Timestamp(datetime.today().strftime("%Y-%m-%d"))
+            df_rev_dedup.to_csv(self.path_scrape_df_rev, index=False)
+        else:
+            print("\n\n수집된 데이터가 없습니다.\nds > beauty_kr > `error_log`를 확인해주세요.\n\n")
             
+        return df_info, df_rev_dedup
+            
+    def _upload_df(self, comp=False):
+        ''' Upload Table to Database '''
+        
+        df_info, df_rev = self._preprocess()
+        if df_info is not None and df_rev is not None:
             try:
                 if comp:
                     ''' Table Update (append) '''
@@ -132,7 +164,7 @@ class ThreadCrawlingGl(QtCore.QThread, QtCore.QObject):
                         self.db.create_table(_gl_info_final_v_dedup, 'glowpick_product_info_final_version')
                         self.db.create_table(df_dedup_rev, 'glowpick_product_info_final_version_review')
                         
-                        # init cache file
+                        # init cache file목
                         self.scrape_infos, self.scrape_reviews, self.status_list = [], [], []
                         
                         return 1
@@ -141,6 +173,20 @@ class ThreadCrawlingGl(QtCore.QThread, QtCore.QObject):
                         self.check = 2
                         return -1
                 else:
+                    # 수집 도중 일시정지 되었습니다.
+                    # 데이터 임시저장 및 백업 진행됩니다.
+                    with open(self.scrape_infos_path, 'wb') as f:
+                        pickle.dump(self.scrape_infos, f)
+                        
+                    with open(self.scrape_reviews_path, 'wb') as f:
+                        pickle.dump(self.scrape_reviews, f)
+                    try:
+                        self.db.engine_upload(df_info, "glowpick_product_info_final_version_temp", if_exists_option="append")
+                        self.db.engine_upload(df_info, "glowpick_product_info_final_version_review_temp", if_exists_option="append")
+                    except Exception as e:
+                        # db 연결 끊김: VPN 연결 해제 및 와이파이 재연결 필요
+                        self.check = 2
+                        return -1
                     return 2
                         
             except Exception as e:
@@ -149,14 +195,27 @@ class ThreadCrawlingGl(QtCore.QThread, QtCore.QObject):
                 if self.power:
                     self.stop()
                 return -2
-        
+        else:
+            return 0
+                
     progress = QtCore.pyqtSignal(object)
     def run(self):
         ''' Run Thread '''
         
-        review_check = 1
+        review_check = 1 # 리뷰 수집 여부
+        
+        # 일시정지 후 이어서 수집할 때
         with open(self.file_path, 'rb') as f:
             product_codes = pickle.load(f)
+        
+        if os.path.exists(self.scrape_infos_path):
+            with open(self.scrape_infos_path, 'rb') as f:
+                self.scrape_infos = pickle.load(f)
+        
+        if os.path.exists(self.scrape_reviews_path):
+            with open(self.scrape_reviews_path, 'rb') as f:
+                self.scrape_reviews = pickle.load(f)
+            
         idx = 0
         t = tqdm(product_codes)
         for code in t:
@@ -172,7 +231,7 @@ class ThreadCrawlingGl(QtCore.QThread, QtCore.QObject):
                 
                 elif status == 1:
                     try:
-                        scrape, status, driver = crw.scrape_gl_info(code, driver, review_check)
+                        scrape, status, driver = crw.scrape_gl_info(code, driver)
                         
                         if status == 1:
                             self.scrape_infos.append(scrape)
@@ -180,6 +239,10 @@ class ThreadCrawlingGl(QtCore.QThread, QtCore.QObject):
                                 reviews, rev_status = crw.crawling_review(code, driver)
                                 if rev_status == 1:
                                     self.scrape_reviews += reviews
+                            else:
+                                driver.quit()
+                        else:
+                            driver.quit()
                     except:
                         url = f'https://www.glowpick.com/products/{code}'
                         self.err.errors_log(url)

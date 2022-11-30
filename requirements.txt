@@ -24,7 +24,6 @@ jedi==0.18.1
 jupyter_client==7.4.3
 jupyter_core==4.11.2
 kiwisolver==1.4.4
-lxml==4.9.1
 macholib==1.16.2
 matplotlib==3.6.0
 matplotlib-inline==0.1.6

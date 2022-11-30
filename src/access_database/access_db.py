@@ -28,6 +28,16 @@ class AccessDataBase:
         curs = conn.cursor(pymysql.cursors.DictCursor)
         return conn, curs
     
+    def _execute(self, query):
+        conn, curs = self.db_connect()
+        curs.execute(query)
+        data = curs.fetchall()
+        conn.commit()
+        curs.close()
+        conn.close()
+        
+        return data
+    
     def insert(self, table: str, fields: tuple, values: tuple) -> None:
         _fields = ''
         for field in fields:
