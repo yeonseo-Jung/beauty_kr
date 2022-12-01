@@ -1,5 +1,4 @@
 import os
-from re import L
 import sys
 import pickle
 import pandas as pd
@@ -89,7 +88,7 @@ class ThreadCrawlingOlive(QtCore.QThread, QtCore.QObject):
             info_final_v = self.db.get_tbl('oliveyoung_product_info_final_version', ['id'])
             start_id = info_final_v.id.tolist()[-1] + 1
             info_df_mer.loc[:, 'id'] = range(start_id, len(info_df_mer) + start_id)
-            rev_df_mer_mapped = info_df_mer.loc[:, ['id', 'product_code']].merge(rev_df_mer, on='product_code', how='right', ignore_index=True)
+            rev_df_mer_mapped = info_df_mer.loc[:, ['id', 'product_code']].merge(rev_df_mer, on='product_code', how='right')
             
             # dedup
             rev_df_mer_mapped_dedup = rev_df_mer_mapped.drop_duplicates(keep='first', ignore_index=True)
