@@ -1,6 +1,7 @@
 import os
 import re
 import sys
+import json
 import time
 import pickle
 import numpy as np
@@ -289,213 +290,260 @@ class CrawlInfoRevGl():
             pass
         return urls
     
-    def scrape_gl_info(self, product_code, driver, review_check):
-        ''' glowpick product info detail scraping '''    
+    """
+    글로우픽 페이지 구조 변경으로 인해 스크레이핑 코드가 수정되었습니다.
+    이전 코드는 백업용도로 주석처리 합니다.
+    """    
+    # def scrape_gl_info(self, product_code, driver, review_check):
+    #     ''' glowpick product info detail scraping '''    
         
-        url = f'https://www.glowpick.com/products/{product_code}'
+    #     url = f'https://www.glowpick.com/products/{product_code}'
         
-        if driver is None:
-            # page parsing failed
-            product_scrapes = np.nan
-            status = -1
+    #     if driver is None:
+    #         # page parsing failed
+    #         product_scrapes = np.nan
+    #         status = -1
             
-        else: 
-            soup = BeautifulSoup(driver.page_source, 'lxml')
+    #     else: 
+    #         soup = BeautifulSoup(driver.page_source, 'lxml')
             
-            '''
-            ** 주의사항 **
-            brand, product_name은 필수정보이기에 널값처리하지 않습니다.
-            만약 html 구조 및 테그명 변경이 되었다면 AttributeError 발생합니다.
-            `ds > beauty_kr > error_log`에 insert 됩니다.
-            이때 직접 url로 들어가서 변경된 테그명을 찾아서 코드 수정을 해야합니다.
-            '''
+    #         '''
+    #         ** 주의사항 **
+    #         brand, product_name은 필수정보이기에 널값처리하지 않습니다.
+    #         만약 html 구조 및 테그명 변경이 되었다면 AttributeError 발생합니다.
+    #         `ds > beauty_kr > error_log`에 insert 됩니다.
+    #         이때 직접 url로 들어가서 변경된 테그명을 찾아서 코드 수정을 해야합니다.
+    #         '''
             
-            # brand
-            brand_name = soup.find('button', 'product__summary__brand__name').text.strip()
-            brand_code_source = soup.find_all('script',  type="application/ld+json")[-1].text
-            brand_url = re.search(r'https://www.glowpick.com/brands/[0-9]*', brand_code_source)
-            if brand_url is None:
-                pass
-            else:
-                brand_url = brand_url.group(0)
-                brand_code = int(re.search(r'[0-9]+', brand_url).group(0).strip())
+    #         # brand
+    #         brand_name = soup.find('button', 'product__summary__brand__name').text.strip()
+    #         brand_code_source = soup.find_all('script',  type="application/ld+json")[-1].text
+    #         brand_url = re.search(r'https://www.glowpick.com/brands/[0-9]*', brand_code_source)
+    #         if brand_url is None:
+    #             pass
+    #         else:
+    #             brand_url = brand_url.group(0)
+    #             brand_code = int(re.search(r'[0-9]+', brand_url).group(0).strip())
 
-            # product_name
-            product_name = soup.find('h1', 'product__summary__name').text.strip()
+    #         # product_name
+    #         product_name = soup.find('h1', 'product__summary__name').text.strip()
 
-            close_xpath = '/html/body/div/div/div/div/div[1]/span/div/div[2]/h1/button'
-            i = 1
-            # ranking
-            if soup.find('article', 'info__article rank-pd') is None:
-                rank_dict = np.nan
-                pass
-            else:
-                rank_dict = {}
-                ranks = soup.find_all('li', 'info__article__ul__li rank-item')
-                for rank in ranks:
-                    rank_name = rank.find('span', 'rank-item__name').text.strip()
-                    ranking = rank.find('span', 'rank-item__rank').text.strip()
-                    rank_dict[rank_name] = ranking
-                rank_dict = str(rank_dict)
-                i += 1
+    #         close_xpath = '/html/body/div/div/div/div/div[1]/span/div/div[2]/h1/button'
+    #         i = 1
+    #         # ranking
+    #         if soup.find('article', 'info__article rank-pd') is None:
+    #             rank_dict = np.nan
+    #             pass
+    #         else:
+    #             rank_dict = {}
+    #             ranks = soup.find_all('li', 'info__article__ul__li rank-item')
+    #             for rank in ranks:
+    #                 rank_name = rank.find('span', 'rank-item__name').text.strip()
+    #                 ranking = rank.find('span', 'rank-item__rank').text.strip()
+    #                 rank_dict[rank_name] = ranking
+    #             rank_dict = str(rank_dict)
+    #             i += 1
                 
-            # awards
-            if soup.find('article', 'info__article award') is None:
-                product_awards = np.nan
-                product_awards_sector = np.nan 
-                product_awards_rank = np.nan
-                pass
-            else:
-                open_xpath = f'/html/body/div/div/div/div/main/div/section/div[3]/article[{i}]/h3/button'
-                driver.find_element(By.XPATH, open_xpath).click()
-                time.sleep(1.5)
-                soup = BeautifulSoup(driver.page_source, 'lxml')
+    #         # awards
+    #         if soup.find('article', 'info__article award') is None:
+    #             product_awards = np.nan
+    #             product_awards_sector = np.nan 
+    #             product_awards_rank = np.nan
+    #             pass
+    #         else:
+    #             open_xpath = f'/html/body/div/div/div/div/main/div/section/div[3]/article[{i}]/h3/button'
+    #             driver.find_element(By.XPATH, open_xpath).click()
+    #             time.sleep(1.5)
+    #             soup = BeautifulSoup(driver.page_source, 'lxml')
                 
-                product_awards, product_awards_sector, product_awards_rank = [], [], []
-                awards = soup.find_all('p', 'awards__item__text__name')
-                awards_sector = soup.find_all('span', 'awards__item__text__award')
-                awards_rank = soup.find_all('span', 'awards__item__text__rank')
-                for award, sector, rank in zip(awards, awards_sector, awards_rank):
-                    product_awards.append(award.text.strip())
-                    product_awards_sector.append(sector.text.strip())
-                    product_awards_rank.append(rank.text.strip())
-                product_awards = str(product_awards)
-                product_awards_sector =  str(product_awards_sector)
-                product_awards_rank = str(product_awards_rank)
+    #             product_awards, product_awards_sector, product_awards_rank = [], [], []
+    #             awards = soup.find_all('p', 'awards__item__text__name')
+    #             awards_sector = soup.find_all('span', 'awards__item__text__award')
+    #             awards_rank = soup.find_all('span', 'awards__item__text__rank')
+    #             for award, sector, rank in zip(awards, awards_sector, awards_rank):
+    #                 product_awards.append(award.text.strip())
+    #                 product_awards_sector.append(sector.text.strip())
+    #                 product_awards_rank.append(rank.text.strip())
+    #             product_awards = str(product_awards)
+    #             product_awards_sector =  str(product_awards_sector)
+    #             product_awards_rank = str(product_awards_rank)
                 
-                driver.find_element(By.XPATH, close_xpath).click()
-                i += 1
+    #             driver.find_element(By.XPATH, close_xpath).click()
+    #             i += 1
             
-            # ingredient    
-            open_xpath = f'/html/body/div/div/div/div/main/div/section/div[3]/article[{i}]/h3/button'
-            driver.find_element(By.XPATH, open_xpath).click()
-            time.sleep(1.5)
-            soup = BeautifulSoup(driver.page_source, 'lxml')
+    #         # ingredient    
+    #         open_xpath = f'/html/body/div/div/div/div/main/div/section/div[3]/article[{i}]/h3/button'
+    #         driver.find_element(By.XPATH, open_xpath).click()
+    #         time.sleep(1.5)
+    #         soup = BeautifulSoup(driver.page_source, 'lxml')
             
-            if soup.find('li', 'ingredient__list__item item') is None:
-                ingredients_all_kor, ingredients_all_eng, ingredients_all_desc = np.nan, np.nan, np.nan
-            else:
-                ingredients_all_kor, ingredients_all_eng, ingredients_all_desc = [], [], []
-                kors = soup.find_all('p', 'item__wrapper__text__kor')
-                engs = soup.find_all('p', 'item__wrapper__text__eng')
-                descs = soup.find_all('p', 'item__wrapper__text__desc')
-                for kor, eng, desc in zip(kors, engs, descs):
-                    kor = kor.text.strip()
-                    if kor == "":
-                        kor = np.nan
-                    eng = eng.text.strip()
-                    if eng == "":
-                        eng = np.nan
-                    desc = desc.text.strip()
-                    if desc == "":
-                        desc = np.nan
-                    else:
-                        desc = desc.split(',')
+    #         if soup.find('li', 'ingredient__list__item item') is None:
+    #             ingredients_all_kor, ingredients_all_eng, ingredients_all_desc = np.nan, np.nan, np.nan
+    #         else:
+    #             ingredients_all_kor, ingredients_all_eng, ingredients_all_desc = [], [], []
+    #             kors = soup.find_all('p', 'item__wrapper__text__kor')
+    #             engs = soup.find_all('p', 'item__wrapper__text__eng')
+    #             descs = soup.find_all('p', 'item__wrapper__text__desc')
+    #             for kor, eng, desc in zip(kors, engs, descs):
+    #                 kor = kor.text.strip()
+    #                 if kor == "":
+    #                     kor = np.nan
+    #                 eng = eng.text.strip()
+    #                 if eng == "":
+    #                     eng = np.nan
+    #                 desc = desc.text.strip()
+    #                 if desc == "":
+    #                     desc = np.nan
+    #                 else:
+    #                     desc = desc.split(',')
                         
-                    ingredients_all_kor.append(kor)
-                    ingredients_all_eng.append(eng)
-                    ingredients_all_desc.append(desc)
-                ingredients_all_kor = str(ingredients_all_kor)
-                ingredients_all_eng =  str(ingredients_all_eng)
-                ingredients_all_desc = str(ingredients_all_desc)
-            driver.find_element(By.XPATH, close_xpath).click()
-            i += 1
+    #                 ingredients_all_kor.append(kor)
+    #                 ingredients_all_eng.append(eng)
+    #                 ingredients_all_desc.append(desc)
+    #             ingredients_all_kor = str(ingredients_all_kor)
+    #             ingredients_all_eng =  str(ingredients_all_eng)
+    #             ingredients_all_desc = str(ingredients_all_desc)
+    #         driver.find_element(By.XPATH, close_xpath).click()
+    #         i += 1
                 
-            # image source
-            soup = BeautifulSoup(driver.page_source, 'lxml')
-            if soup.find('div', 'product__image-wrapper') is None:
-                img_src = np.nan
-            else:
-                try:
-                    img_src = soup.find('div', 'product__image-wrapper').find('img', 'image__img')['src']
-                except:
-                    img_src = np.nan
+    #         # image source
+    #         soup = BeautifulSoup(driver.page_source, 'lxml')
+    #         if soup.find('div', 'product__image-wrapper') is None:
+    #             img_src = np.nan
+    #         else:
+    #             try:
+    #                 img_src = soup.find('div', 'product__image-wrapper').find('img', 'image__img')['src']
+    #             except:
+    #                 img_src = np.nan
                     
-            # descriptions
-            open_xpath = f'/html/body/div/div/div/div/main/div/section/div[3]/article[{i}]/h3/button'
-            driver.find_element(By.XPATH, open_xpath).click()
-            time.sleep(1.5)
-            soup = BeautifulSoup(driver.page_source, 'lxml')
+    #         # descriptions
+    #         open_xpath = f'/html/body/div/div/div/div/main/div/section/div[3]/article[{i}]/h3/button'
+    #         driver.find_element(By.XPATH, open_xpath).click()
+    #         time.sleep(1.5)
+    #         soup = BeautifulSoup(driver.page_source, 'lxml')
 
-            # product pre descriptions
-            if soup.find('pre', 'descriptions__article__pre') is None:
-                desc_pre = np.nan
-            else:
-                desc_pre = soup.find('pre', 'descriptions__article__pre').text.strip()
-                if desc_pre == '-':
-                    desc_pre = np.nan
-                else:
-                    desc_pre = re.sub('[\n\t\r]+', ' ', desc_pre)
-                    desc_pre = re.sub(' +', ' ', desc_pre).strip()
+    #         # product pre descriptions
+    #         if soup.find('pre', 'descriptions__article__pre') is None:
+    #             desc_pre = np.nan
+    #         else:
+    #             desc_pre = soup.find('pre', 'descriptions__article__pre').text.strip()
+    #             if desc_pre == '-':
+    #                 desc_pre = np.nan
+    #             else:
+    #                 desc_pre = re.sub('[\n\t\r]+', ' ', desc_pre)
+    #                 desc_pre = re.sub(' +', ' ', desc_pre).strip()
             
-            # product keywords
-            if soup.find('p', 'descriptions__article__keywords') is None:
-                desc_keywords = np.nan
-            else:
-                desc_keywords = soup.find('p', 'descriptions__article__keywords').text.strip()
-                reg = re.compile('#[가-힣]+')
-                desc_keywords = re.findall(reg, desc_keywords)
-                if len(desc_keywords) == 0:
-                    desc_keywords = np.nan
-                else:
-                    desc_keywords = str(desc_keywords)
+    #         # product keywords
+    #         if soup.find('p', 'descriptions__article__keywords') is None:
+    #             desc_keywords = np.nan
+    #         else:
+    #             desc_keywords = soup.find('p', 'descriptions__article__keywords').text.strip()
+    #             reg = re.compile('#[가-힣]+')
+    #             desc_keywords = re.findall(reg, desc_keywords)
+    #             if len(desc_keywords) == 0:
+    #                 desc_keywords = np.nan
+    #             else:
+    #                 desc_keywords = str(desc_keywords)
                 
-            # color | type
-            if '컬러/타입' in str(soup.select('.descriptions__article')):
-                color_type = soup.select('.descriptions__article')[1].find('pre').get_text().replace(' ', '')
-                color_type = str(color_type.split('/'))
-            else:
-                color_type = np.nan
+    #         # color | type
+    #         if '컬러/타입' in str(soup.select('.descriptions__article')):
+    #             color_type = soup.select('.descriptions__article')[1].find('pre').get_text().replace(' ', '')
+    #             color_type = str(color_type.split('/'))
+    #         else:
+    #             color_type = np.nan
                 
-            # volume & price
-            if soup.find('p', 'font-spoqa') is None:
-                volume = np.nan
-                price = np.nan
-            else:
-                vol_price = soup.find('p', 'font-spoqa').text.replace(' ', '').split('/')
-                volume = vol_price[0].replace('\n', '')
-                price = vol_price[1].replace('\n', '')
-                if price == '가격미정':
-                    price = np.nan
+    #         # volume & price
+    #         if soup.find('p', 'font-spoqa') is None:
+    #             volume = np.nan
+    #             price = np.nan
+    #         else:
+    #             vol_price = soup.find('p', 'font-spoqa').text.replace(' ', '').split('/')
+    #             volume = vol_price[0].replace('\n', '')
+    #             price = vol_price[1].replace('\n', '')
+    #             if price == '가격미정':
+    #                 price = np.nan
             
-            # categories
-            selection = np.nan
-            division = np.nan
-            groups = np.nan
-            if soup.find('span', 'descriptions__article__category') != None:
-                selection = soup.find('span', 'descriptions__article__category').text.strip()
-            categs = soup.find_all('span', 'descriptions__article__category descriptions__article__category-link')
-            i = 0
-            for categ in categs:
-                if i == 0:
-                    division = categ.text.strip()
-                elif i == 1:
-                    groups = categ.text.strip()
-                i += 1
+    #         # categories
+    #         selection = np.nan
+    #         division = np.nan
+    #         groups = np.nan
+    #         if soup.find('span', 'descriptions__article__category') != None:
+    #             selection = soup.find('span', 'descriptions__article__category').text.strip()
+    #         categs = soup.find_all('span', 'descriptions__article__category descriptions__article__category-link')
+    #         i = 0
+    #         for categ in categs:
+    #             if i == 0:
+    #                 division = categ.text.strip()
+    #             elif i == 1:
+    #                 groups = categ.text.strip()
+    #             i += 1
                 
-            stores = soup.find_all('p', 'stores__store__name')
-            if len(stores) == 0:
-                _stores = np.nan
+    #         stores = soup.find_all('p', 'stores__store__name')
+    #         if len(stores) == 0:
+    #             _stores = np.nan
+    #         else:    
+    #             _stores = []
+    #             for store in stores:
+    #                 _stores.append(store.text.strip())
+    #             _stores = str(_stores)
+    #         driver.find_element(By.XPATH, close_xpath).click()
+            
+    #         status = 1
+    #         product_scrapes = [int(product_code), product_name, brand_code, brand_name, url,
+    #                            selection, division, groups, 
+    #                            desc_pre, desc_keywords, color_type, volume, img_src, 
+    #                            ingredients_all_kor, ingredients_all_eng, ingredients_all_desc,
+    #                            rank_dict, product_awards, product_awards_sector, product_awards_rank,
+    #                            price, _stores]
+            
+    #         return product_scrapes, status, driver
+        
+    def get_value(self, json_data, key):
+        if key in json_data.keys():
+            value = json_data[key]
+        else:
+            value = None
+        return value
+        
+    def scrape_gl_info(self, wd, product_code):
+        
+        soup = BeautifulSoup(wd.page_source, 'lxml')
+        if soup is None:
+            product_scrapes = None
+            status = -1
+        
+        else:
+            scripts = soup.find_all('script',  type="application/ld+json")
+            brand_url = re.search(r'https://www.glowpick.com/brands/[0-9]+', str(scripts)).group(0)
+            brand_code = int(re.search(r'[0-9]+', brand_url).group(0).strip())
+
+            for script in scripts:
+                json_data = json.loads(script.text)
+                if 'review' in json_data.keys():
+                    break
+            
+            name = json_data['name']
+            url = f'https://www.glowpick.com/products/{product_code}'
+            brand = json_data['brand']['name']
+            category = json_data['category']
+            awards = str(json_data['awards'])
+            materials = str(json_data['materials'])
+            
+            aggregateRating = self.get_value(json_data, 'aggregateRating')
+            if aggregateRating is None:
+                ratingValue = None
+                reviewCount = None
             else:    
-                _stores = []
-                for store in stores:
-                    _stores.append(store.text.strip())
-                _stores = str(_stores)
-            driver.find_element(By.XPATH, close_xpath).click()
-            
+                ratingValue = aggregateRating['ratingValue']
+                reviewCount = aggregateRating['reviewCount']
+                
+            offers = json_data['offers']
+
+            product_scrapes = [int(product_code), url, name, brand, brand_url, brand_code, category, awards, materials, ratingValue, reviewCount, offers]
             status = 1
-            product_scrapes = [int(product_code), product_name, brand_code, brand_name, url,
-                               selection, division, groups, 
-                               desc_pre, desc_keywords, color_type, volume, img_src, 
-                               ingredients_all_kor, ingredients_all_eng, ingredients_all_desc,
-                               rank_dict, product_awards, product_awards_sector, product_awards_rank,
-                               price, _stores]
             
-        if review_check == 0:
-            driver.quit()
-            return product_scrapes, status, None
-        elif review_check == 1:
-            return product_scrapes, status, driver
+        return product_scrapes, status, wd
+        
     
     def scraping_review(self, product_code, driver, soup, reviews):
         ''' Review Data Scraper '''
@@ -539,11 +587,10 @@ class CrawlInfoRevGl():
                 count = int(soup.find('span', 'reviews__header__count').text.replace(',', '').strip())
                 if count == 0:
                     status = 0
+                
                 elif count <= 50:
                     driver, reviews = self.scraping_review(product_code, driver, soup, reviews)
-                    if len(reviews) == 0:
-                        # parsing error
-                        status = -1
+
                 else:
                     # scroll down to select rating 
                     tag = driver.find_element(By.XPATH, '/html/body/div/div/div/div/main/div/section/section/div[4]')
@@ -568,20 +615,21 @@ class CrawlInfoRevGl():
                             time.sleep(3)
                         except:
                             pass
+                        
                         # scraping review data
                         driver, reviews = self.scraping_review(product_code, driver, soup, reviews)
                     
-                    if len(reviews) == 0:
-                        # parsing error
-                        status = -1
+                if len(reviews) == 0:
+                    # parsing error
+                    status = -1
                         
             else:
                 # parsing error
-                status = -1
+                status = -404
             
         except TimeoutException:
             # parsing error
-            status = -1
+            status = -405
         
         driver.quit()
         return reviews, status
