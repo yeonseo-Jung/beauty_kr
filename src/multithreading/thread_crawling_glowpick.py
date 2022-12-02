@@ -39,6 +39,9 @@ class ThreadCrawlingGl(QtCore.QThread, QtCore.QObject):
         self.power = False
         self.check = 0
         
+        # init db
+        self.init_db()
+        
         # scrape list
         self.scrape_infos, self.scrape_reviews, self.status_list = [], [], []
         
@@ -49,13 +52,15 @@ class ThreadCrawlingGl(QtCore.QThread, QtCore.QObject):
         self.scrape_infos_path = os.path.join(tbl_cache, 'scrape_infos.txt')
         self.scrape_reviews_path = os.path.join(tbl_cache, 'scrape_reviews.txt')
         
+        
+        # error class
+        self.err = Errors()
+    
+    def init_db(self):
         # db 연결
         with open(conn_path, 'rb') as f:
             conn = pickle.load(f)
         self.db = AccessDataBase(conn[0], conn[1], conn[2])
-        
-        # error class
-        self.err = Errors()
         
     def _get_tbl(self):
         
@@ -70,14 +75,15 @@ class ThreadCrawlingGl(QtCore.QThread, QtCore.QObject):
         except:
             # db 연결 끊김: VPN 연결 해제 및 와이파이 재연결 필요
             df_mapped = pd.DataFrame()
+            self.err.errors_log()
         
         return df_mapped
     
     def _preprocess(self):
-        df_info, df_rev = None, None
+        df_info, df_rev_dedup = None, None
         if (len(self.scrape_infos) != 0) & (len(self.scrape_reviews) != 0):
             # info table
-            columns = ['product_code', 'product_url', 'product_name', 'brand', 'brand_url', 'brand_code', 'groups', 'product_awards', 'ingredients_all_kor', 'rating', 'review_counts', 'offers']
+            columns = ['product_code', 'product_url', 'product_name', 'brand_name', 'brand_code', 'groups', 'product_awards', 'ingredients_all_kor', 'rating', 'review_counts', 'offers']
             info_df = pd.DataFrame(self.scrape_infos, columns=columns)
             info_df.loc[info_df.product_awards=="[]", 'product_awards'] = None
             info_df.loc[info_df.ingredients_all_kor=="[]", 'ingredients_all_kor'] = None
@@ -99,9 +105,9 @@ class ThreadCrawlingGl(QtCore.QThread, QtCore.QObject):
             mer_df_null = mer_df_null.merge(categ_df.loc[:, ["selection", "division"]], on="division",  how="inner")
             concat_df = pd.concat([mer_df_notnull, mer_df_null], ignore_index=True)
             
-            # dedup & save
-            columns = ['product_code', 'product_name', 'product_url', 'brand', 'brand_url', 'brand_code', 'selection', 'division', 'groups', 'product_awards', 'ingredients_all_kor', 'price', 'size']
-            df_info = concat_df.loc[:, columns]
+            # dedup & rename & save
+            columns = ['product_code', 'product_name', 'product_url', 'brand_name', 'brand_code', 'selection', 'division', 'groups', 'product_awards', 'ingredients_all_kor', 'price', 'size']
+            df_info = concat_df.loc[:, columns].rename(columns={"size": "volume"})
             df_info = df_info.drop_duplicates('product_code', keep='first', ignore_index=True)
             df_info.loc[:, 'regist_date'] = pd.Timestamp(datetime.today().strftime("%Y-%m-%d"))
             df_info.to_csv(self.path_scrape_df, index=False)
@@ -116,7 +122,7 @@ class ThreadCrawlingGl(QtCore.QThread, QtCore.QObject):
             df_rev_dedup.loc[:, 'regist_date'] = pd.Timestamp(datetime.today().strftime("%Y-%m-%d"))
             df_rev_dedup.to_csv(self.path_scrape_df_rev, index=False)
         else:
-            print("\n\n수집된 데이터가 없습니다.\nds > beauty_kr > `error_log`를 확인해주세요.\n\n")
+            print("\n\n** 수집된 데이터가 없습니다.\nds > beauty_kr > `error_log`를 확인해주세요. **\n\n")
             
         return df_info, df_rev_dedup
             
@@ -126,6 +132,8 @@ class ThreadCrawlingGl(QtCore.QThread, QtCore.QObject):
         df_info, df_rev = self._preprocess()
         if df_info is not None and df_rev is not None:
             try:
+                # re-connect db
+                self.init_db()
                 if comp:
                     ''' Table Update (append) '''
                     os.remove(self.file_path)
@@ -137,7 +145,7 @@ class ThreadCrawlingGl(QtCore.QThread, QtCore.QObject):
                     df_mer = gl_info_final_v.loc[:, ['id', 'product_code']].merge(df_info, on='product_code', how='inner')
                     
                     # 기존상품 추출
-                    df_dedup = pd.concat([df_mer, gl_info_final_v]).drop_duplicates('id', keep='first').sort_values('id')
+                    df_dedup = pd.concat([gl_info_final_v, df_mer]).drop_duplicates('id', keep='first').sort_values('id')
                     
                     # 신규상품 추출
                     gl_info_new_v = pd.concat([df_mer, df_info]).drop_duplicates('product_code', keep=False, ignore_index=True)
@@ -159,17 +167,22 @@ class ThreadCrawlingGl(QtCore.QThread, QtCore.QObject):
                     
                     try:
                         # upload table into db
-                        gl_info_new_v.loc[:, 'crawling_status'] = 0
-                        self.db.create_table(gl_info_new_v, 'glowpick_product_info_update_new', append=True)
+                        if gl_info_new_v.empty:
+                            pass
+                        else:
+                            gl_info_new_v.loc[:, 'crawling_status'] = 0
+                            self.db.create_table(gl_info_new_v, 'glowpick_product_info_update_new', append=True)
                         self.db.create_table(_gl_info_final_v_dedup, 'glowpick_product_info_final_version')
                         self.db.create_table(df_dedup_rev, 'glowpick_product_info_final_version_review')
                         
-                        # init cache file목
+                        # init cache file
                         self.scrape_infos, self.scrape_reviews, self.status_list = [], [], []
                         
                         return 1
-                    except Exception as e:
+                    except:
                         # db 연결 끊김: VPN 연결 해제 및 와이파이 재연결 필요
+                        self.err.errors_log()
+                        self.init_db()
                         self.check = 2
                         return -1
                 else:
@@ -183,14 +196,17 @@ class ThreadCrawlingGl(QtCore.QThread, QtCore.QObject):
                     try:
                         self.db.engine_upload(df_info, "glowpick_product_info_final_version_temp", if_exists_option="append")
                         self.db.engine_upload(df_info, "glowpick_product_info_final_version_review_temp", if_exists_option="append")
-                    except Exception as e:
+                    except:
                         # db 연결 끊김: VPN 연결 해제 및 와이파이 재연결 필요
+                        self.err.errors_log()
+                        self.init_db()
                         self.check = 2
                         return -1
                     return 2
-                        
-            except Exception as e:
+            except:
                 # db 연결 끊김: VPN 연결 해제 및 와이파이 재연결 필요
+                self.err.errors_log()
+                self.init_db()
                 self.check = 2
                 if self.power:
                     self.stop()

@@ -505,7 +505,7 @@ class CrawlInfoRevGl():
             value = None
         return value
         
-    def scrape_gl_info(self, wd, product_code):
+    def scrape_gl_info(self, product_code, wd):
         
         soup = BeautifulSoup(wd.page_source, 'lxml')
         if soup is None:
@@ -539,11 +539,10 @@ class CrawlInfoRevGl():
                 
             offers = json_data['offers']
 
-            product_scrapes = [int(product_code), url, name, brand, brand_url, brand_code, category, awards, materials, ratingValue, reviewCount, offers]
+            product_scrapes = [int(product_code), url, name, brand, brand_code, category, awards, materials, ratingValue, reviewCount, offers]
             status = 1
             
         return product_scrapes, status, wd
-        
     
     def scraping_review(self, product_code, driver, soup, reviews):
         ''' Review Data Scraper '''
