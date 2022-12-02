@@ -330,7 +330,7 @@ def check_duplicated(grp_df):
 
     df_l = []
 
-    for i in tqdm([2,4,5]) :
+    for i in [2,4,5]:
         grp = grp_df[grp_df.status_grp == i]
         detail_grp = grp.groupby(['brand_code','prd_prepro'])
 
@@ -351,7 +351,7 @@ def check_duplicated(grp_df):
 
                 df_l.append(df)
 
-        else :
+        else:
             for key, item in detail_grp:
                 df=detail_grp.get_group(key)
                 select_prd=df[df.status == 1]
@@ -360,7 +360,7 @@ def check_duplicated(grp_df):
                 if len(select_prd) >= 2:
                     select_prd_lst = df.loc[(df.status == 1), 'product_code']
                     select_prd = max(select_prd_lst)
-                else :
+                else:
                     select_prd=max(df.product_code)
 
                 dup_prd_code = list(set(df.product_code) - {select_prd})
@@ -383,12 +383,12 @@ def check_status_and_prepro(glowpick_info_df):
     df['status'] = 1
     df.loc[df.product_name.str.contains('단종'), 'status'] = 0
     
-    for i in tqdm(df.index) :
+    for i in df.index:
         
         prd_name=df.loc[i, 'product_name']
         df.loc[i, 'prd_prepro'] = prd_name
         
-        if df.loc[i, 'status'] == 0 :
+        if df.loc[i, 'status'] == 0:
             prd_name_=re.sub(r'\[단종\]', '', prd_name).strip()
             df.loc[i, 'prd_prepro'] = prd_name_
             
@@ -413,21 +413,21 @@ def grouping(df):
         columns = ['id', 'product_name', 'product_code', 'brand_code']
     
     return values
-        - 1 : 단종 상품 없이 하나의 상품만 존재
-        - 2 : 같은 상품을 두개의 url로 할당한 경우
-        - 3 : 단종 상품만 존재
-        - 4 : 단종이 여러번 된 상품(판매중 상품은 없고 단종만 있는 경우)
-        - 5 : 단종 상품 + 판매중 상품
+        - 1: 단종 상품 없이 하나의 상품만 존재
+        - 2: 같은 상품을 두개의 url로 할당한 경우
+        - 3: 단종 상품만 존재
+        - 4: 단종이 여러번 된 상품(판매중 상품은 없고 단종만 있는 경우)
+        - 5: 단종 상품 + 판매중 상품
     """
     
     prepro_df = check_status_and_prepro(df)
     
-    grouped_df=prepro_df.groupby('brand_code')
+    grouped_df = prepro_df.groupby('brand_code')
     grouped_df_lst = []
     for key, item in tqdm(grouped_df):
         grp_df=grouped_df.get_group(key)
 
-        for j in grp_df.index :
+        for j in grp_df.index:
             prd_name = grp_df.loc[j, 'prd_prepro']
             st = grp_df.loc[j, 'status']
 
@@ -435,7 +435,7 @@ def grouping(df):
             dup_status_lst = list(dup_df.status)
             
             # 판매중인 상품만 존재
-            if len(dup_df) == 1 and st == 1 :
+            if len(dup_df) == 1 and st == 1:
                 grp_df.loc[j, 'status_grp'] = int(1)
                 
             # 같은 상품을 두개의 url로 할당한 경우 
@@ -443,7 +443,7 @@ def grouping(df):
                 grp_df.loc[j, 'status_grp'] = int(2)
             
             # 유일한 단종 상품만 존재
-            elif len(dup_df) == 1 and st == 0 :
+            elif len(dup_df) == 1 and st == 0:
                 grp_df.loc[j, 'status_grp'] = int(3)
             
             # 같은 상품이 단종이 여러번 된 경우 (단종만 존재)

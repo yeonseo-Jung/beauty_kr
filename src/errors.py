@@ -26,7 +26,7 @@ class Errors:
             conn = pickle.load(f)
         self.db = AccessDataBase(conn[0], conn[1], conn[2])
         
-    def errors_log(self, url=None):
+    def errors_log(self, url: str = ""):
         tb = traceback.format_exc()
         _datetime = pd.Timestamp(datetime.today())
         table = 'error_log'
@@ -36,8 +36,9 @@ class Errors:
         while True:
             try:
                 self.db.insert(table, fields, values)
+                print("\n\n** 에러발생: ds > beauty_kr > `error_log`를 확인해주세요. **\n\n")
                 break
             except Exception as e:
                 print(e)
-                time.sleep(100)
+                time.sleep(60)
                 self.init_db()

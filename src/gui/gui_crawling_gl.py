@@ -69,21 +69,9 @@ class CrawlingGlWindow(QMainWindow, form):
             conn = pickle.load(f)
         self.db = AccessDataBase(conn[0], conn[1], conn[2])
         
-        # today (regist date)
-        today = datetime.today()
-        year = str(today.year)
-        month = str(today.month)
-        day = str(today.day)
-        if len(month) == 1:
-            month = "0" + month
-        if len(day) == 1:
-            day = "0" + day
-        self.date = year + "-" + month + "-" + day
-        date = year[2:4] + month + day
         # table name
-        self.table_name_info = f"glowpick_product_info_update_{date}"
-        self.table_name_rev = f"glowpick_product_info_update_review_{date}"
-        self.table_name_status = f"glowpick_product_info_update_status_{date}"
+        self.table_name_info = "glowpick_product_info_final_version_temp"
+        self.table_name_rev = "glowpick_product_info_final_version_review_temp"
         
         # category toggled
         self.skincare.setChecked(False)
@@ -378,9 +366,9 @@ class CrawlingGlWindow(QMainWindow, form):
         
         # db connection check
         if ck == 1:
-            msg = QMessageBox()
             table_name = 'glowpick_product_info_final_version'
             table_name_review = 'glowpick_product_info_final_version_review'
+            msg = QMessageBox()
             msg.setText(f"<테이블 업로드 완료>\n- {table_name}\n- {table_name_review}")
             msg.exec_()
             
@@ -390,8 +378,9 @@ class CrawlingGlWindow(QMainWindow, form):
             msg.exec_()
                     
         elif ck == -1:
+            table_name = 'glowpick_product_info_final_version'
             msg = QMessageBox()
-            msg.setText("\n    ** db 연결 끊김 **\n\n- Upload failed: glowpick_product_info_final_version\n\n- VPN, wifi 재연결 필요\n\n- Upload 버튼 클릭 후 re-Run")
+            msg.setText("\n    ** db 연결 끊김 **\n\n- Upload failed: {table_name}\n\n- VPN, wifi 재연결 필요\n\n- Upload 버튼 클릭 후 re-Run")
             msg.exec_()
 
         elif ck == -2:

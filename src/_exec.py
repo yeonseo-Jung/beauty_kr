@@ -54,5 +54,6 @@ for f in add_file:
 command += f' --name "{name}"'
 # .py
 command += f' {_py}'
-   
-os.system(command)
+
+if __name__ == "__main__":
+    os.system(command)
