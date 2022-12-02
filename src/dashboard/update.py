@@ -12,14 +12,16 @@ else:
     src = os.path.abspath(os.path.join(cur_dir, os.pardir))
     sys.path.append(src)
     
-from access_database.access_db import AccessDataBase
 from mapping._preprocessing import TitlePreProcess
 tp = TitlePreProcess()
 
-user_name = "yeonseosla"
-password = "jys9807"
-db_name = "beauty_kr"
-db = AccessDataBase(user_name, password, db_name)
+from access_database.constants import AccessDb
+from access_database.access_db import AccessDataBase
+
+username = AccessDb.username
+password = AccessDb.password
+database = AccessDb.database
+db = AccessDataBase(username, password, database)
 
 ''' Update Data for Dashboard '''
 
@@ -36,7 +38,7 @@ category_list = [
     'fragrance',
 ]
 
-if __name__ == '__main__':
+def update():
     # Maaping Status
     mapping_table = db.get_tbl('beauty_kr_mapping_table')
     gl_info = db.integ_tbl(['glowpick_product_info_final_version'], ['id', 'product_code', 'brand_name', 'selection', 'division', 'groups', 'dup_check'])
@@ -74,7 +76,7 @@ if __name__ == '__main__':
     cnt_df = review_all_df.groupby('item_key').count()
     review_count_df = pd.DataFrame(cnt_df.product_rating).rename(columns={'product_rating':'review_count'})
 
-    columns = ['item_key', 'brand_name', 'category', 'mapping_status', 'review_count', 'available_status']
+    # columns = ['item_key', 'brand_name', 'category', 'mapping_status', 'review_count', 'available_status']
     dashboard_df = gl_info_dedup.loc[:, ['item_key', 'brand_name', 'category']]
 
     # mapping
@@ -90,4 +92,6 @@ if __name__ == '__main__':
     
     # create table
     db.create_table(dashboard_df_merge, 'beauty_kr_data_dashboard')
-    print(dashboard_df_merge.tail())
+
+if __name__ == '__main__':
+    update()
