@@ -1,10 +1,3 @@
-class AccessDb:
-    username = "yeonseosla"
-    password = "jys9807"
-    database = "beauty_kr"
-    host_url = "db.ds.mycelebs.com"
-    port_num = 3306
-    
 class CreateQuery:
     def __init__(self, table_name):
         self.table_name = table_name

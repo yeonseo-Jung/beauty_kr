@@ -18,10 +18,17 @@ tp = TitlePreProcess()
 from access_database.constants import AccessDb
 from access_database.access_db import AccessDataBase
 
-username = AccessDb.username
-password = AccessDb.password
-database = AccessDb.database
-db = AccessDataBase(username, password, database)
+database = "beauty_kr"
+while True:
+    try:
+        username = input("Enter the username: ")
+        password = input("Enter the password: ")
+        db = AccessDataBase(username, password, database)
+        conn, curs = db.db_connect()
+        break
+    except:
+        print("DB 접근 정보가 틀렸거나 권한이 없습니다. 확인 후 다시 입력해주세요.")
+    
 
 ''' Update Data for Dashboard '''
 
