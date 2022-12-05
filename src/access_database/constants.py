@@ -149,7 +149,7 @@ class CreateQuery:
 
             'oliveyoung_product_info_final_version_review': f"CREATE TABLE `oliveyoung_product_info_final_version_review` (\
             `pk` int(11) unsigned NOT NULL AUTO_INCREMENT,\
-            `id` int(11) NOT NULL COMMENT '자체부여 id: 매핑 시 item_key로 활용,\
+            `id` int(11) NOT NULL COMMENT '자체부여 id: 매핑 시 item_key로 활용',\
             `product_code` varchar(100) DEFAULT NULL,\
             `product_url` varchar(255) DEFAULT NULL,\
             `user_id` varchar(100) DEFAULT NULL,\
