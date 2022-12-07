@@ -111,8 +111,7 @@ class CreateQuery:
             `review_date` varchar(100) DEFAULT NULL COMMENT '리뷰 작성 일자',\
             `product_review` text DEFAULT NULL COMMENT '리뷰 내용',\
             `regist_date` datetime DEFAULT NULL COMMENT '개체 수집 일자',\
-            PRIMARY KEY (`pk`),\
-            KEY `id` (`id`)\
+            PRIMARY KEY (`pk`)\
             ) ENGINE=InnoDB DEFAULT CHARSET=utf8;",
 
             'oliveyoung_product_info_final_version': f"CREATE TABLE `oliveyoung_product_info_final_version` (\

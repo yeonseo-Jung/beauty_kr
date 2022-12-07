@@ -139,7 +139,7 @@ class ThreadCrawlingGl(QtCore.QThread, QtCore.QObject):
                     os.remove(self.file_path)
                     
                     # glowpick_product_info_final_version
-                    gl_info_final_v = self.db.get_tbl('glowpick_product_info_final_version', 'all')
+                    gl_info_final_v = self.db.get_tbl('glowpick_product_info_final_version')
                     
                     # 기존 상품 id 부여
                     df_mer = gl_info_final_v.loc[:, ['id', 'product_code']].merge(df_info, on='product_code', how='inner')
@@ -159,7 +159,7 @@ class ThreadCrawlingGl(QtCore.QThread, QtCore.QObject):
                     _gl_info_final_v_dedup = _gl_info_final_v.merge(gl_dup_ck, on='id', how='inner')
                     
                     # glowpick_product_info_final_version_review
-                    gl_rev_final_v = self.db.get_tbl('glowpick_product_info_final_version_review')
+                    gl_rev_final_v = self.db.get_tbl('glowpick_product_info_final_version_review').drop(columns="pk")
                     df_mer_rev = _gl_info_final_v_dedup.loc[:, ['id', 'product_code']].merge(df_rev, on='product_code', how='inner')
                     subset = ['product_code', 'user_id', 'product_rating', 'review_date', 'product_review']
                     df_dedup_rev = pd.concat([df_mer_rev, gl_rev_final_v]).drop_duplicates(subset=subset, keep='first').sort_values(by='id', ignore_index=True)
