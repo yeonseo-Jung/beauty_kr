@@ -19,7 +19,9 @@ add_file = [
 ]
 
 exclude_module = [
-    './.ipynb',
+    'django',
+    './src/dashboard/.py'
+    './src/.ipynb',
 ]
 
 icon = './src/mycelebs_CI.icns'
@@ -32,10 +34,10 @@ _py = "./src/_main.py"
 command = "pyinstaller -F" # onefile
 # command = "pyinstaller"
 
-# add module
-for md in add_module:
-    _md = f' --path "{md}"'
-    command += _md
+# # add module
+# for md in add_module:
+#     _md = f' --path "{md}"'
+#     command += _md
     
 # add file
 for f in add_file:
@@ -45,10 +47,10 @@ for f in add_file:
 # # set icon
 # command += f' --i={icon}'
 
-# # exclude module
-# for md in exclude_module:
-#     _md = f' --exclude "{md}"'
-#     command += _md
+# exclude module
+for md in exclude_module:
+    _md = f' --exclude "{md}"'
+    command += _md
 
 # name
 command += f' --name "{name}"'

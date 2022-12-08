@@ -624,11 +624,11 @@ class CrawlInfoRevGl():
                         
             else:
                 # parsing error
-                status = -404
+                status = 404
             
         except TimeoutException:
             # parsing error
-            status = -405
+            status = 405
         
         driver.quit()
         return reviews, status
