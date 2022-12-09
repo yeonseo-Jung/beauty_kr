@@ -146,3 +146,22 @@ def json_iterator(url, iterations=5, headers=True):
         cnt += 1
         
     return res_data, status
+
+def get_requests(url, iterations=5, headers=True):
+    
+    if headers:
+        headers = get_headers()
+    else:
+        headers = None
+    cnt = 0
+    res = None
+    while cnt <= iterations:
+        try:
+            res = requests.get(url, headers=headers)
+            status = res.status_code
+            break
+        except Exception as e:
+            print(f'Error: {e}')
+        cnt += 1
+        
+    return res, status
