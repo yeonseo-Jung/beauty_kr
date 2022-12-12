@@ -185,9 +185,8 @@ class ThreadCrawlingNvStatus(QtCore.QThread, QtCore.QObject):
         if status_df is None:
             pass
         else:
-            # status -2(모름), status 0(일시품절), 1(판매중)만 추출
             df_mapped = df_mapped.merge(status_df, on='product_url', how='left')
-            df_mapped = df_mapped.loc[(df_mapped.status==-2) | (df_mapped.status==1) | (df_mapped.status==0) | (df_mapped.status.isnull())].reset_index(drop=True)
+            df_mapped = df_mapped[df_mapped.status!=0].reset_index(drop=True)
         
         return df_mapped
 
@@ -212,7 +211,7 @@ class ThreadCrawlingNvStatus(QtCore.QThread, QtCore.QObject):
         if _status_df is None:
             status_df_dedup = status_df.copy()
         else:
-            status_df_dedup = pd.concat([status_df, _status_df]).drop_duplicates('product_url', keep='first')
+            status_df_dedup = pd.concat([status_df, _status_df]).drop_duplicates(subset='product_url', keep='first', ignore_index=True)
         
         '''info table'''
         gl_info = self.db.get_tbl('glowpick_product_info_final_version', 'all').rename(columns={'id': 'item_key', 'product_url': 'product_url_glowpick'})

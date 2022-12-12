@@ -174,7 +174,7 @@ class ProductStatusNv:
                     
             # All Tab or smart store
             elif page_status == 2:
-                if product_status == -1:
+                if product_status == 0:
                     stores = None
                 else:
                     if soup.find('a', '_2-uvQuRWK5') is None:
@@ -268,20 +268,13 @@ def crawler_nv(product_id, search_word):
         
         else:
             cnt = 0
+            max_prds = 5 # 검색어 1개 당 최대 수집 상품 수
             for item_div in item_divs:
 
                 # product name
                 tags = tags_dict['product_name']
                 if item_div.find(tags[0], tags[1]) is not None:
                     product_name = item_div.find(tags[0], tags[1]).text 
-
-                # # 문자열 유사도 스코어 확인 (levenshtein distance 활용)
-                # # input 값이 title과 50%이상 일치하면 수집 
-                # word_0 = input_txt_.replace(' ', '')
-                # word_1 = product_name.replace(' ', '')
-                # cost = _distance.jamo_levenshtein(word_0, word_1)
-                # max_len = max(len(word_0), len(word_1))
-                # sim = (max_len - cost) / max_len
                 
                 if '세트' not in product_name and '기획' not in product_name:
                     # product_url
@@ -318,30 +311,6 @@ def crawler_nv(product_id, search_word):
                             product_description = str(desc_dict)
                     else:
                         product_description = np.nan
-                        
-                    # if item_div.find('div',class_='basicList_detail_box__3ta3h') != None:
-                    #     descriptions = item_div.find('div',class_='basicList_detail_box__3ta3h')
-                    #     if descriptions.find('a', class_='basicList_detail__27Krk') != None:
-                    #         descriptions_ = descriptions.text.split('|')
-                    #         desc_dict = {}
-                    #         for desc in descriptions_:
-                    #             key = desc.split(':')[0].replace(' ', '')
-                    #             value = desc.split(':')[1].replace(' ', '')    
-                    #             desc_dict[key] = value
-                    #         product_description = str(desc_dict)
-
-                    #     elif descriptions.text != '':
-                    #         desc_dict = {}
-                    #         desc = descriptions.text
-                    #         key = desc.split(':')[0].replace(' ', '')
-                    #         value = desc.split(':')[1].replace(' ', '')    
-                    #         desc_dict[key] = value
-                    #         product_description = str(desc_dict)
-                    #     else:
-                    #         product_description = np.nan
-
-                    # else:
-                    #     product_description = np.nan
 
                     # registered_date (모든 제품은 등록일을 가지고 있고, 등록일은 동일 클래스 태그 중 맨 항상 맨 앞에 위치)
                     tags = tags_dict['registered_date']
@@ -349,36 +318,7 @@ def crawler_nv(product_id, search_word):
                         registered_date = item_div.find(tags[0], tags[1]).text
                         registered_date_ = registered_date.split('등록일')[-1].rstrip('.')
                     else:
-                        registered_date_ = np.nan
-                    
-                    # if item_div.find('span',class_='basicList_etc__2uAYO') != None: 
-                    #     registered_date = item_div.find('span',class_='basicList_etc__2uAYO').text
-                    #     registered_date_ = registered_date.split('등록일')[-1].rstrip('.')
-                    # else:
-                    #     registered_date_ = np.nan
-
-                    # # product_reviews_count
-                    # if item_div.find_all('a',class_='basicList_etc__2uAYO') != []:
-                    #     url_boxes = item_div.find_all('a',class_='basicList_etc__2uAYO')
-                    #     url_box = [x for x in url_boxes if '리뷰' in x.text]
-                    #     if len(url_box) != 0:
-                    #         product_reviews_count = url_box[0].find('em',class_='basicList_num__1yXM9').text.replace(',', '')
-                    #     else:
-                    #         product_reviews_count = 0
-                    # else:
-                    #     product_reviews_count = 0
-
-                    # # product_rating
-                    # if item_div.find('span',class_='basicList_star__3NkBn') != None:
-                    #     product_rating = float(item_div.find('span',class_='basicList_star__3NkBn').text.split('별점')[-1])
-                    # else:
-                    #     product_rating = np.nan
-
-                    # # product_store
-                    # if item_div.find_all('span',class_='basicList_mall_name__1XaKA') != []:
-                    #     product_store = item_div.find_all('span',class_='basicList_mall_name__1XaKA')[0].text # 최저가 판매처
-                    # else:
-                    #     product_store = np.nan
+                        registered_date_ = np.nan                
                     
                     scraps.append([int(product_id), str(input_txt_), str(product_name), str(product_url), str(price), str(category_), str(product_description), str(registered_date_)])
                     cnt += 1
@@ -386,8 +326,7 @@ def crawler_nv(product_id, search_word):
                 else:
                     pass
                 
-                # 최대 상품 5개 까지 수집
-                if cnt == 5:
+                if cnt == max_prds:
                     break    
         wd.quit()
         
