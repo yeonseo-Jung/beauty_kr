@@ -56,11 +56,13 @@ class ProductStatusNv:
             # all tab discrimination
             cur_url = wd.current_url
             if ('smartstore' in cur_url) | ('brand.naver.com' in cur_url):
+                # 스마트 스토어
                 page_status = 2
             else:
                 try:
                     wait_xpath = '/html/body/div/div/div[1]/div/div[3]'
                     WebDriverWait(wd, 30).until(EC.element_to_be_clickable((By.XPATH, wait_xpath)))
+                    # 가격비교 탭
                     page_status = 1
                     
                 except TimeoutException:
@@ -74,21 +76,28 @@ class ProductStatusNv:
         ''' get product status '''
         
         soup = BeautifulSoup(wd.page_source, 'lxml')
+        product_status = -2 # 페이지 상태 모름
         
-        # stp_class = 'noPrice_product_status__2T5PM'
-        stp_class = 'noPrice_product_status__WvCuy' # div class 변경됨
-        if soup.find('div', stp_class) is not None or soup.find('h3', 'noPrice_status__lBnHb') is not None:
-            # 판매중단
-            product_status = 0
-        elif soup.find('div', 'style_content_error__1XNYB') is not None or soup.find('div', 'error layout_wide theme_trendy') is not None:
-            # 상품 존재 x 
-            product_status = -1
-        elif soup.find('table', 'productByMall_list_seller__yNhgM') is not None:
+        # 상품이 존재하지 않음 or 판매중단 케이스 페이지 테그
+        # 페이지 구조 변경 시 여기에 추가하면 됩니다.
+        errors = [
+            ["div", "style_content_error__voLLC"],
+            ["div", "style_content_error__1XNYB"],
+            ["div", "error layout_wide theme_trendy"],
+            ["div", "noPrice_product_status__WvCuy"],
+            ["h3", "noPrice_status__lBnHb"],
+        ]
+        if soup.find('table', 'productByMall_list_seller__yNhgM') is not None:
             # 판매중
             product_status = 1
         else:
-            # 모름 
-            product_status = -2
+            for err in errors:
+                tag = err[0]
+                elm = err[1]
+                if soup.find(tag, elm) is not None:
+                    # 상품이 존재하지 않음 or 판매중단
+                    product_status = 0
+                    break
             
         return product_status, soup
             
@@ -163,7 +172,7 @@ class ProductStatusNv:
                 else:
                     stores = None
                     
-            # All Tab
+            # All Tab or smart store
             elif page_status == 2:
                 if product_status == -1:
                     stores = None

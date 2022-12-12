@@ -77,9 +77,9 @@ def get_url(url, window=None, image=None):
             options.add_argument('window-size=1920x1080')
             options.add_argument("--disable-gpu")
             options.add_argument('--disable-extensions')
-            if window == None:
+            if window is None:
                 options.add_argument('headless')
-            if image == None:
+            if image is None:
                 options.add_argument('--blink-settings=imagesEnabled=false')
             options.add_argument(f'user-agent={userAgent}')
 
