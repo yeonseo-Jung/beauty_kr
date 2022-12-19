@@ -50,7 +50,7 @@ class ProductStatusNv:
         wd = get_url(url, window=window, image=image)
         time.sleep(2.5)
         if wd is None:
-            page_status = -1
+            page_status = 0
             
         else:
             # all tab discrimination
@@ -66,7 +66,7 @@ class ProductStatusNv:
                     page_status = 1
                     
                 except TimeoutException:
-                    page_status = -1
+                    page_status = 0
                     wd.quit()
                     wd = None
                 
@@ -90,6 +90,8 @@ class ProductStatusNv:
         if soup.find('table', 'productByMall_list_seller__yNhgM') is not None:
             # 판매중
             product_status = 1
+        elif soup.find("div", "officialProduct_mall_public__49_Mk") is not None:
+            product_status = 2
         else:
             for err in errors:
                 tag = err[0]
@@ -100,75 +102,225 @@ class ProductStatusNv:
                     break
             
         return product_status, soup
+    
+    def scraping_status_1(self, item_key, url, soup, page_status, product_status):
+        # scraping naver price tab with multi products
+        
+        store_names, store_urls, prices, delivery_fees, npays = [], [], [], [], []    
+        try:
+            # table_class = 'productByMall_list_seller__2-bzE'
+            table_class = 'productByMall_list_seller__yNhgM' # table tag: class명 변경됨
+            store_table = soup.find('table', table_class).find('tbody')
+            store_list = store_table.find_all('tr')
+        except AttributeError:
+            store_list = []
             
-    def scraping_product_stores(self, item_key, url, window, image):
+        if len(store_list) == 0:
+            product_status = 0
+            stores = None
+        else:
+            product_status = 1
+            for store in store_list:
+                # store name
+                # store_class = 'productByMall_mall__1ITj0'
+                store_class = 'productByMall_mall__SIa50' # a tag: class명 변경됨
+                store_name = store.find('a', store_class).text.strip()
+                if store_name == '':
+                    store_name = store.find('img')['alt'].strip()
+                store_names.append(store_name)
+                
+                # store url
+                store_url = store.find('a', store_class)['href']
+                store_urls.append(store_url)
+                
+                # product price
+                price = str(store.find('em').text.replace(',', '').replace(' ', ''))
+                prices.append(price)
+                
+                # delivery_fee
+                # delivery_class = 'productByMall_gift__W92gX'
+                delivery_class = 'productByMall_gift__oidOR' # td tag: class명 변경됨
+                delivery_fee = store.find('td', delivery_class).text.replace(',', '').replace('원', '').replace(' ', '')
+                if delivery_fee == "무료배송":
+                    delivery_fee = "0"
+                else:
+                    try:
+                        delivery_fee = str(delivery_fee)
+                    except ValueError:
+                        delivery_fee = None
+                delivery_fees.append(delivery_fee)
+                
+                # naver pay
+                if store.find('span', 'n_npay_icon__DxpI2') is not None:
+                    npay = "1"
+                elif store.find('span', 'n_ico_npay_plus__1pi8I') is not None:
+                    npay = "1"
+                elif store.find('span', 'n_icon__1DV3M') is not None:
+                    npay = "1"
+                else:
+                    npay = "0"
+                npays.append(npay)
+            stores = [item_key, url, str(store_names), str(store_urls), str(prices), str(delivery_fees), str(npays), int(product_status), int(page_status)]
+            
+            return product_status, stores
+
+    def scraping_status_2(self, item_key, url, soup, page_status, product_status):
+        # scraping naver price tab with single product
+        
+        conts = soup.find("div", "officialProduct_mall_public__49_Mk")
+        prds = conts.find("div", "officialProduct_inner__BdBQv")
+        if prds is None:
+            product_status = 0
+            stores = None
+        else:    
+            # product name, product url
+            prd = prds.find("a", "officialProduct_mall__TZB2a")
+            if prd is None:
+                product_status = 0
+                stores = None
+            else:    
+                store_name = str(prd.text.strip())
+                store_url = str(prd["href"])
+            
+                # naver pay
+                if prds.find("span", "n_npay_icon__DxpI2") is not None:
+                    npay = "1"
+                else:
+                    npay = "0"
+                    
+                _price = prds.find("a", "officialProduct_price__taG3o")
+                if _price is None:
+                    price = None
+                else:
+                    price = str(_price.text.replace(',', '').replace('원', '').replace(' ', ''))
+
+                # delivery fee
+                _delivery_fee = prds.find("div", "officialProduct_gift__XK2oZ")
+                if _delivery_fee is None:
+                    delivery_fee = None
+                else:
+                    _delivery_fee_ = _delivery_fee.text
+                    if _delivery_fee_ == "무료배송":
+                        delivery_fee = "0"
+                    else:
+                        delivery_fee = str(_delivery_fee_.replace(',', '').replace('원', '').replace(' ', ''))
+                        
+                stores = [item_key, url, store_name, store_url, price, delivery_fee, npay, product_status, page_status]
+        
+        return product_status, stores
+
+    def scraping_all_tab(self, wd, item_key, url, soup, page_status, product_status):
+        # scraping naver all tab
+        
+        if soup.find('a', '_2-uvQuRWK5') is None:
+            product_status = 0
+            stores = None
+        else:
+            product_status = 1
+        
+            # store name
+            if soup.find('span', 'KasFrJs3SA') is not None:
+                store_name = str(soup.find('span', 'KasFrJs3SA').text.strip())
+            elif soup.find('img', '_1QhZSUVBeK') is not None:
+                store_name = str(soup.find('img', '_1QhZSUVBeK')['alt'])
+            else:
+                store_name = None
+            
+            # store url
+            store_url = str(wd.current_url)
+            
+            # product price
+            if len(soup.find_all('span', '_1LY7DqCnwR')) == 0:
+                price = None
+            else:
+                price = str(soup.find_all('span', '_1LY7DqCnwR')[-1].text.replace(',', '').replace(' ', ''))
+            
+            # delivery_fee
+            if soup.find('span', 'bd_3uare') is None:
+                delivery_fee = "0"
+            else:
+                delivery_fee = str(soup.find('span', 'bd_3uare').text.replace(',', '').replace(' ', ''))
+            
+            # naver pay
+            npay = "1"
+                    
+            stores = [item_key, url, store_name, store_url, price, delivery_fee, npay, product_status, page_status]
+
+        return product_status, stores
+    
+    def scraping_product_stores(self, item_key, url, window=None, image=None):
         ''' scraping product stores price tab '''
         
         wd, page_status = self._get_url(url, window, image)
         
-        if page_status == -1:
+        if page_status == 0:
             # page parsing failed
-            product_status = -1
+            product_status = 0
             stores = None
         else:
             product_status, soup = self.get_prd_status(wd)
-            store_names, store_urls, prices, delivery_fees, npays = [], [], [], [], []
             
             # Price Tab
             if page_status == 1:
                 if product_status == 1 or product_status == -2:
-                    try:
-                        # table_class = 'productByMall_list_seller__2-bzE'
-                        table_class = 'productByMall_list_seller__yNhgM' # table tag: class명 변경됨
-                        store_table = soup.find('table', table_class).find('tbody')
-                        store_list = store_table.find_all('tr')
-                    except AttributeError:
-                        store_list = []
+                    product_status, stores = self.scraping_status_1(item_key, url, soup, page_status, product_status)
+                    
+                    # try:
+                    #     # table_class = 'productByMall_list_seller__2-bzE'
+                    #     table_class = 'productByMall_list_seller__yNhgM' # table tag: class명 변경됨
+                    #     store_table = soup.find('table', table_class).find('tbody')
+                    #     store_list = store_table.find_all('tr')
+                    # except AttributeError:
+                    #     store_list = []
                         
-                    if len(store_list) == 0:
-                        stores = None
-                    else:
-                        for store in store_list:
-                            # store name
-                            # store_class = 'productByMall_mall__1ITj0'
-                            store_class = 'productByMall_mall__SIa50' # a tag: class명 변경됨
-                            store_name = store.find('a', store_class).text.strip()
-                            if store_name == '':
-                                store_name = store.find('img')['alt'].strip()
-                            store_names.append(store_name)
+                    # if len(store_list) == 0:
+                    #     stores = None
+                    # else:
+                    #     for store in store_list:
+                    #         # store name
+                    #         # store_class = 'productByMall_mall__1ITj0'
+                    #         store_class = 'productByMall_mall__SIa50' # a tag: class명 변경됨
+                    #         store_name = store.find('a', store_class).text.strip()
+                    #         if store_name == '':
+                    #             store_name = store.find('img')['alt'].strip()
+                    #         store_names.append(store_name)
                             
-                            # store url
-                            store_url = store.find('a', store_class)['href']
-                            store_urls.append(store_url)
+                    #         # store url
+                    #         store_url = store.find('a', store_class)['href']
+                    #         store_urls.append(store_url)
                             
-                            # product price
-                            price = int(store.find('em').text.replace(',', '').replace(' ', ''))
-                            prices.append(price)
+                    #         # product price
+                    #         price = str(store.find('em').text.replace(',', '').replace(' ', ''))
+                    #         prices.append(price)
                             
-                            # delivery_fee
-                            # delivery_class = 'productByMall_gift__W92gX'
-                            delivery_class = 'productByMall_gift__oidOR' # td tag: class명 변경됨
-                            delivery_fee = store.find('td', delivery_class).text.replace(',', '').replace('원', '').replace(' ', '')
-                            if delivery_fee == "무료배송":
-                                delivery_fee = 0
-                            else:
-                                try:
-                                    delivery_fee = int(delivery_fee)
-                                except ValueError:
-                                    delivery_fee = np.nan
-                            delivery_fees.append(delivery_fee)
+                    #         # delivery_fee
+                    #         # delivery_class = 'productByMall_gift__W92gX'
+                    #         delivery_class = 'productByMall_gift__oidOR' # td tag: class명 변경됨
+                    #         delivery_fee = store.find('td', delivery_class).text.replace(',', '').replace('원', '').replace(' ', '')
+                    #         if delivery_fee == "무료배송":
+                    #             delivery_fee = "0"
+                    #         else:
+                    #             try:
+                    #                 delivery_fee = str(delivery_fee)
+                    #             except ValueError:
+                    #                 delivery_fee = None
+                    #         delivery_fees.append(delivery_fee)
                             
-                            # naver pay
-                            if store.find('span', 'n_npay_icon__DxpI2') is not None:
-                                npay = 1
-                            elif store.find('span', 'n_ico_npay_plus__1pi8I') is not None:
-                                npay = 1
-                            elif store.find('span', 'n_icon__1DV3M') is not None:
-                                npay = 1
-                            else:
-                                npay = 0
-                            npays.append(npay)
-                        stores = [item_key, url, str(store_names), str(store_urls), str(prices), str(delivery_fees), str(npays), int(product_status), int(page_status)]
+                    #         # naver pay
+                    #         if store.find('span', 'n_npay_icon__DxpI2') is not None:
+                    #             npay = "1"
+                    #         elif store.find('span', 'n_ico_npay_plus__1pi8I') is not None:
+                    #             npay = "1"
+                    #         elif store.find('span', 'n_icon__1DV3M') is not None:
+                    #             npay = "1"
+                    #         else:
+                    #             npay = "0"
+                    #         npays.append(npay)
+                    #     stores = [item_key, url, str(store_names), str(store_urls), str(prices), str(delivery_fees), str(npays), int(product_status), int(page_status)]
+                    
+                elif product_status == 2:
+                    product_status, stores = self.scraping_status_2(item_key, url, soup, page_status, product_status)
+                    
                 else:
                     stores = None
                     
@@ -177,43 +329,44 @@ class ProductStatusNv:
                 if product_status == 0:
                     stores = None
                 else:
-                    if soup.find('a', '_2-uvQuRWK5') is None:
-                        product_status = 0
-                    else:
-                        product_status = 1
+                    product_status, stores = self.scraping_all_tab(wd, item_key, url, soup, page_status, product_status)
+                    # if soup.find('a', '_2-uvQuRWK5') is None:
+                    #     product_status = 0
+                    # else:
+                    #     product_status = 1
                     
-                    # store name
-                    if soup.find('span', 'KasFrJs3SA') is not None:
-                        store_name = soup.find('span', 'KasFrJs3SA').text.strip()
-                    elif soup.find('img', '_1QhZSUVBeK') is not None:
-                        store_name = soup.find('img', '_1QhZSUVBeK')['alt']
-                    else:
-                        store_name = np.nan
-                    store_names.append(store_name)
+                    # # store name
+                    # if soup.find('span', 'KasFrJs3SA') is not None:
+                    #     store_name = soup.find('span', 'KasFrJs3SA').text.strip()
+                    # elif soup.find('img', '_1QhZSUVBeK') is not None:
+                    #     store_name = soup.find('img', '_1QhZSUVBeK')['alt']
+                    # else:
+                    #     store_name = np.nan
+                    # store_names.append(store_name)
                     
-                    # store url
-                    store_url = wd.current_url
-                    store_urls.append(store_url)
+                    # # store url
+                    # store_url = wd.current_url
+                    # store_urls.append(store_url)
                     
-                    # product price
-                    if len(soup.find_all('span', '_1LY7DqCnwR')) == 0:
-                        price = np.nan
-                    else:
-                        price = int(soup.find_all('span', '_1LY7DqCnwR')[-1].text.replace(',', '').replace(' ', ''))
-                    prices.append(price)
+                    # # product price
+                    # if len(soup.find_all('span', '_1LY7DqCnwR')) == 0:
+                    #     price = np.nan
+                    # else:
+                    #     price = str(soup.find_all('span', '_1LY7DqCnwR')[-1].text.replace(',', '').replace(' ', ''))
+                    # prices.append(price)
                     
-                    # delivery_fee
-                    if soup.find('span', 'bd_3uare') is None:
-                        delivery_fee = 0
-                    else:
-                        delivery_fee = int(soup.find('span', 'bd_3uare').text.replace(',', '').replace(' ', ''))
-                    delivery_fees.append(delivery_fee)
+                    # # delivery_fee
+                    # if soup.find('span', 'bd_3uare') is None:
+                    #     delivery_fee = "0"
+                    # else:
+                    #     delivery_fee = str(soup.find('span', 'bd_3uare').text.replace(',', '').replace(' ', ''))
+                    # delivery_fees.append(delivery_fee)
                     
-                    # naver pay
-                    npay = 1
-                    npays.append(npay)
+                    # # naver pay
+                    # npay = "1"
+                    # npays.append(npay)
                         
-                    stores = [item_key, url, str(store_names), str(store_urls), str(prices), str(delivery_fees), str(npays), int(product_status), int(page_status)]
+                    # stores = [item_key, url, str(store_names), str(store_urls), str(prices), str(delivery_fees), str(npays), int(product_status), int(page_status)]
                         
         return product_status, stores
     

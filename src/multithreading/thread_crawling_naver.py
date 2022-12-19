@@ -219,13 +219,15 @@ class ThreadCrawlingNvStatus(QtCore.QThread, QtCore.QObject):
         nv_prd_status_update = pd.DataFrame(self.store_list, columns=columns)
         nv_prd_status_update.to_csv(self.path_scrape_df, index=False)
         
-        _nv_prd_status_update = nv_prd_status_update[nv_prd_status_update.product_status==1]    # 판매 중 상품
+        _nv_prd_status_update = nv_prd_status_update[(nv_prd_status_update.product_status==1) | (nv_prd_status_update.product_status==2)]    # 판매 중 상품
         _nv_prd_status_update_price = _nv_prd_status_update.loc[_nv_prd_status_update.page_status==1]    # 네이버 뷰티윈도 가격비교 탭 상품
         _nv_prd_status_update_all = _nv_prd_status_update.loc[_nv_prd_status_update.page_status==2]    # 네이버 뷰티윈도 전체 탭 상품
-        _nv_prd_status_update_dedup = pd.concat([_nv_prd_status_update_price, _nv_prd_status_update_all]).drop_duplicates('item_key', keep='first')
+        
+        subset = ["item_key", "page_status", "product_status"]
+        _nv_prd_status_update_dedup = pd.concat([_nv_prd_status_update_price, _nv_prd_status_update_all]).drop_duplicates(subset=subset, keep='first')
         
         # merge naver info & glowpick info
-        df_mer = _nv_prd_status_update_dedup.merge(gl_info, on='item_key', how='left').sort_values(by='item_key', ignore_index=True)
+        df_mer = _nv_prd_status_update_dedup.merge(gl_info, on='item_key', how='left').sort_values(by=subset, ignore_index=True)
         
         # category 
         df_mer.loc[:, 'category'] = self.categ
@@ -237,7 +239,7 @@ class ThreadCrawlingNvStatus(QtCore.QThread, QtCore.QObject):
         if df_temp is None:
             pass
         else:
-            df_mer = pd.concat([df_mer, df_temp]).drop_duplicates('item_key', keep='first').sort_values(by='item_key', ignore_index=True)
+            df_mer = pd.concat([df_mer, df_temp]).drop_duplicates(subset=subset, keep='first').sort_values(by=subset, ignore_index=True)
         
         return status_df_dedup, df_mer
         
@@ -318,9 +320,7 @@ class ThreadCrawlingNvStatus(QtCore.QThread, QtCore.QObject):
                         self.check = 1
                         break
                     
-                    if store_info == None:
-                        pass
-                    else:
+                    if store_info is not None:
                         self.store_list.append(store_info)
                     cnt += 1  
                 except:
